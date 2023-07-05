@@ -17,17 +17,16 @@ The `bios-boot-tutorial.py` script simulates the bios boot sequence.
 
 ## Steps
 
-1. Install Leap 3.1 binaries by following the steps provided in the [Leap README](https://github.com/alacrityio/alanode/tree/release/3.1#software-installation).
+1. Install alanode binaries by following the steps provided in the [alanode README](https://github.com/alacrityio/alanode/tree/release#software-installation).
 
-2. Install CDT 3.0 binaries by following the steps provided in the [CDT README](https://github.com/AntelopeIO/cdt/tree/release/3.0#binary-releases).
+2. Install CDT by following the steps provided in the [CDT README](https://github.com/alacrityio/alaio.cdt-1.6.1).
 
-3. Compile EOS System Contracts 3.1:
+3. Compile ALAIO System Contracts 1.7.0:
 
 ```bash
 $ cd ~
-$ git clone https://github.com/eosnetworkfoundation/eos-system-contracts system-contracts-3.1
-$ cd ./system-contracts-3.1/
-$ git checkout release/3.1
+$ git clone https://github.com/alacrityio/alaio.contracts-1.7.0 alaio.contracts-1.7.0
+$ cd ./alaio.contracts-1.7.0/
 $ mkdir build
 $ cd ./build
 $ cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -44,6 +43,6 @@ $ pwd
 ```bash
 $ cd ~
 $ git clone https://github.com/alacrityio/alanode
-$ cd ./leap/tutorials/bios-boot-tutorial/
-$ python3 bios-boot-tutorial.py --cleos=cleos --nodeos=nodeos --keosd=keosd --contracts-dir="${CONTRACTS_DIRECTORY}" -w -a
+$ cd ./alanode/tutorials/bios-boot-tutorial/
+$ python3 bios-boot-tutorial.py --alacli=alacli --nodeos=nodeos --kalad=kalad --contracts-dir="${CONTRACTS_DIRECTORY}" -w -a
 ```
