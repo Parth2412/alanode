@@ -1,10 +1,10 @@
-#include <eosio/state_history/compression.hpp>
+#include <alaio/state_history/compression.hpp>
 
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 
-namespace eosio {
+namespace alaio {
 namespace state_history {
 
 namespace bio = boost::iostreams;
@@ -29,4 +29,4 @@ bytes zlib_decompress(const bytes& in) {
 }
 
 } // namespace state_history
-} // namespace eosio
+} // namespace alaio

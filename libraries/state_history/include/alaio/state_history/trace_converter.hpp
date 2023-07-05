@@ -1,9 +1,9 @@
 #pragma once
 
-#include <eosio/chain/block_state.hpp>
-#include <eosio/state_history/types.hpp>
+#include <alaio/chain/block_state.hpp>
+#include <alaio/state_history/types.hpp>
 
-namespace eosio {
+namespace alaio {
 namespace state_history {
 
 using chain::block_state_ptr;
@@ -18,4 +18,4 @@ struct trace_converter {
 };
 
 } // namespace state_history
-} // namespace eosio
+} // namespace alaio

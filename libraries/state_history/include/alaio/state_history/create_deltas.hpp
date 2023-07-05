@@ -1,11 +1,11 @@
 #pragma once
 
-#include <eosio/state_history/types.hpp>
+#include <alaio/state_history/types.hpp>
 
-namespace eosio {
+namespace alaio {
 namespace state_history {
 
 std::vector<table_delta> create_deltas(const chainbase::database& db, bool full_snapshot);
 
 } // namespace state_history
-} // namespace eosio
+} // namespace alaio

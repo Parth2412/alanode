@@ -1,7 +1,7 @@
-#include <eosio/state_history/create_deltas.hpp>
-#include <eosio/state_history/serialization.hpp>
+#include <alaio/state_history/create_deltas.hpp>
+#include <alaio/state_history/serialization.hpp>
 
-namespace eosio {
+namespace alaio {
 namespace state_history {
 
 template <typename T>
@@ -49,7 +49,7 @@ bool include_delta(const chain::account_metadata_object& old, const chain::accou
 
 bool include_delta(const chain::code_object& old, const chain::code_object& curr) { //
    // code_object data that is exported by SHiP is never modified they are only deleted or created,
-   // see serialization of history_serial_wrapper<eosio::chain::code_object>
+   // see serialization of history_serial_wrapper<alaio::chain::code_object>
    return false;
 }
 
@@ -69,7 +69,7 @@ std::vector<table_delta> create_deltas(const chainbase::database& db, bool full_
       if (obj)
          return *obj;
       auto it = removed_table_id.find(tid);
-      EOS_ASSERT(it != removed_table_id.end(), chain::plugin_exception, "can not found table id ${tid}", ("tid", tid));
+      ALA_ASSERT(it != removed_table_id.end(), chain::plugin_exception, "can not found table id ${tid}", ("tid", tid));
       return *it->second;
    };
 
@@ -141,4 +141,4 @@ std::vector<table_delta> create_deltas(const chainbase::database& db, bool full_
 }
 
 } // namespace state_history
-} // namespace eosio
+} // namespace alaio

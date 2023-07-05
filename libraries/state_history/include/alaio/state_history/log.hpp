@@ -6,14 +6,14 @@
 
 #include <boost/asio.hpp>
 
-#include <eosio/chain/block_header.hpp>
-#include <eosio/chain/exceptions.hpp>
-#include <eosio/chain/types.hpp>
+#include <alaio/chain/block_header.hpp>
+#include <alaio/chain/exceptions.hpp>
+#include <alaio/chain/types.hpp>
 #include <fc/io/cfile.hpp>
 #include <fc/log/logger.hpp>
 #include <fc/log/logger_config.hpp> //set_thread_name
 
-namespace eosio {
+namespace alaio {
 
 /*
  *   *.log:
@@ -39,11 +39,11 @@ namespace eosio {
  */
 
 inline uint64_t       ship_magic(uint16_t version, uint16_t features = 0) {
-   using namespace eosio::chain::literals;
+   using namespace alaio::chain::literals;
    return "ship"_n.to_uint64_t() | version | features<<16;
 }
 inline bool is_ship(uint64_t magic) {
-   using namespace eosio::chain::literals;
+   using namespace alaio::chain::literals;
    return (magic & 0xffff'ffff'0000'0000) == "ship"_n.to_uint64_t();
 }
 inline uint16_t       get_ship_version(uint64_t magic) { return magic; }
@@ -101,8 +101,8 @@ class state_history_log {
       open_index();
      
       if(prune_config) {
-         EOS_ASSERT(prune_config->prune_blocks, chain::plugin_exception, "state history log prune configuration requires at least one block");
-         EOS_ASSERT(__builtin_popcount(prune_config->prune_threshold) == 1, chain::plugin_exception, "state history prune threshold must be power of 2");
+         ALA_ASSERT(prune_config->prune_blocks, chain::plugin_exception, "state history log prune configuration requires at least one block");
+         ALA_ASSERT(__builtin_popcount(prune_config->prune_threshold) == 1, chain::plugin_exception, "state history prune threshold must be power of 2");
          //switch this over to the mask that will be used
          prune_config->prune_threshold = ~(prune_config->prune_threshold-1);
       }
@@ -178,9 +178,9 @@ class state_history_log {
       log.read(bytes, sizeof(bytes));
       fc::datastream<const char*> ds(bytes, sizeof(bytes));
       fc::raw::unpack(ds, header);
-      EOS_ASSERT(!ds.remaining(), chain::plugin_exception, "state_history_log_header_serial_size mismatch");
+      ALA_ASSERT(!ds.remaining(), chain::plugin_exception, "state_history_log_header_serial_size mismatch");
       if (assert_version)
-         EOS_ASSERT(is_ship(header.magic) && is_ship_supported_version(header.magic), chain::plugin_exception,
+         ALA_ASSERT(is_ship(header.magic) && is_ship_supported_version(header.magic), chain::plugin_exception,
                     "corrupt ${name}.log (0)", ("name", name));
    }
 
@@ -188,7 +188,7 @@ class state_history_log {
       char                  bytes[state_history_log_header_serial_size];
       fc::datastream<char*> ds(bytes, sizeof(bytes));
       fc::raw::pack(ds, header);
-      EOS_ASSERT(!ds.remaining(), chain::plugin_exception, "state_history_log_header_serial_size mismatch");
+      ALA_ASSERT(!ds.remaining(), chain::plugin_exception, "state_history_log_header_serial_size mismatch");
       log.write(bytes, sizeof(bytes));
    }
 
@@ -201,17 +201,17 @@ class state_history_log {
       std::unique_lock<std::recursive_mutex> lock(mx);
       
       auto block_num = chain::block_header::num_from_id(header.block_id);
-      EOS_ASSERT(_begin_block == _end_block || block_num <= _end_block, chain::plugin_exception,
+      ALA_ASSERT(_begin_block == _end_block || block_num <= _end_block, chain::plugin_exception,
                  "missed a block in ${name}.log", ("name", name));
 
       if (_begin_block != _end_block && block_num > _begin_block) {
          if (block_num == _end_block) {
-            EOS_ASSERT(prev_id == last_block_id, chain::plugin_exception, "missed a fork change in ${name}.log",
+            ALA_ASSERT(prev_id == last_block_id, chain::plugin_exception, "missed a fork change in ${name}.log",
                        ("name", name));
          } else {
             state_history_log_header prev;
             get_entry(block_num - 1, prev);
-            EOS_ASSERT(prev_id == prev.block_id, chain::plugin_exception, "missed a fork change in ${name}.log",
+            ALA_ASSERT(prev_id == prev.block_id, chain::plugin_exception, "missed a fork change in ${name}.log",
                        ("name", name));
          }
       }
@@ -220,7 +220,7 @@ class state_history_log {
          // This is typically because of a fork, and we need to truncate the log back to the beginning of the fork.
          static uint32_t start_block_num = block_num;
          // Guard agaisnt accidently starting a fresh chain with an existing ship log, require manual removal of ship logs.
-         EOS_ASSERT( block_num > 2, chain::plugin_exception, "Existing ship log with ${eb} blocks when starting from genesis block ${b}",
+         ALA_ASSERT( block_num > 2, chain::plugin_exception, "Existing ship log with ${eb} blocks when starting from genesis block ${b}",
                      ("eb", _end_block)("b", block_num) );
          // block_num < _begin_block = pruned log, need to call truncate() to reset
          // get_block_id_i check is an optimization to avoid writing a block that is already in the log (snapshot or replay)
@@ -246,7 +246,7 @@ class state_history_log {
       write_header(header);
       write_payload(log);
 
-      EOS_ASSERT(log.tellp() == pos + state_history_log_header_serial_size + header.payload_size, chain::plugin_exception,
+      ALA_ASSERT(log.tellp() == pos + state_history_log_header_serial_size + header.payload_size, chain::plugin_exception,
                  "wrote payload with incorrect size to ${name}.log", ("name", name));
       fc::raw::pack(log, pos);
 
@@ -282,7 +282,7 @@ class state_history_log {
  private:
 
    fc::cfile& get_entry_i(uint32_t block_num, state_history_log_header& header) {
-      EOS_ASSERT(block_num >= _begin_block && block_num < _end_block, chain::plugin_exception,
+      ALA_ASSERT(block_num >= _begin_block && block_num < _end_block, chain::plugin_exception,
                  "read non-existing block in ${name}.log", ("name", name));
       log.seek(get_pos(block_num));
       read_header(header);
@@ -359,7 +359,7 @@ class state_history_log {
          uint64_t suffix;
          if (!is_ship(header.magic) || !is_ship_supported_version(header.magic) || header.payload_size > size ||
              pos + state_history_log_header_serial_size + header.payload_size + sizeof(suffix) > size) {
-            EOS_ASSERT(!is_ship(header.magic) || is_ship_supported_version(header.magic), chain::plugin_exception,
+            ALA_ASSERT(!is_ship(header.magic) || is_ship_supported_version(header.magic), chain::plugin_exception,
                        "${name}.log has an unsupported version", ("name", name));
             break;
          }
@@ -377,7 +377,7 @@ class state_history_log {
       log.flush();
 
       log.seek_end(-sizeof(pos));
-      EOS_ASSERT(get_last_block(), chain::plugin_exception, "recover ${name}.log failed", ("name", name));
+      ALA_ASSERT(get_last_block(), chain::plugin_exception, "recover ${name}.log failed", ("name", name));
    }
 
    // only called from constructor
@@ -393,7 +393,7 @@ class state_history_log {
          state_history_log_header header;
          log.seek(0);
          read_header(header, false);
-         EOS_ASSERT(is_ship(header.magic) && is_ship_supported_version(header.magic) &&
+         ALA_ASSERT(is_ship(header.magic) && is_ship_supported_version(header.magic) &&
                         state_history_log_header_serial_size + header.payload_size + sizeof(uint64_t) <= size,
                     chain::plugin_exception, "corrupt ${name}.log (1)", ("name", name));
 
@@ -413,7 +413,7 @@ class state_history_log {
          last_block_id = header.block_id;
          log.skip(-sizeof(uint64_t));
          if(!get_last_block()) {
-            EOS_ASSERT(!is_ship_log_pruned(header.magic), chain::plugin_exception, "${name}.log is pruned and cannot have recovery attempted", ("name", name));
+            ALA_ASSERT(!is_ship_log_pruned(header.magic), chain::plugin_exception, "${name}.log is pruned and cannot have recovery attempted", ("name", name));
             recover_blocks();
          }
 
@@ -422,7 +422,7 @@ class state_history_log {
 
          ilog("${name}.log has blocks ${b}-${e}", ("name", name)("b", _begin_block)("e", _end_block - 1));
       } else {
-         EOS_ASSERT(!size, chain::plugin_exception, "corrupt ${name}.log (5)", ("name", name));
+         ALA_ASSERT(!size, chain::plugin_exception, "corrupt ${name}.log (5)", ("name", name));
          ilog("${name}.log is empty", ("name", name));
       }
    }
@@ -458,7 +458,7 @@ class state_history_log {
             log.seek(pos);
             read_header(header, false);
             log.seek(pos);
-            EOS_ASSERT(is_ship(header.magic) && is_ship_supported_version(header.magic), chain::plugin_exception, "corrupt ${name}.log (6)", ("name", name));
+            ALA_ASSERT(is_ship(header.magic) && is_ship_supported_version(header.magic), chain::plugin_exception, "corrupt ${name}.log (6)", ("name", name));
 
             index.skip(-sizeof(uint64_t));
             fc::raw::pack(index, pos);
@@ -513,7 +513,7 @@ class state_history_log {
       log.seek(0);
       uint64_t magic;
       fc::raw::unpack(log, magic);
-      EOS_ASSERT(is_ship_log_pruned(magic), chain::plugin_exception, "vacuum can only be performed on pruned logs");
+      ALA_ASSERT(is_ship_log_pruned(magic), chain::plugin_exception, "vacuum can only be performed on pruned logs");
 
       //may happen if _begin_block is still first block on-disk of log. clear the pruned feature flag & erase
       // the 4 byte trailer. The pruned flag is only set on the first header in the log, so it does not need
@@ -585,6 +585,6 @@ class state_history_log {
    }
 }; // state_history_log
 
-} // namespace eosio
+} // namespace alaio
 
-FC_REFLECT(eosio::state_history_log_header, (magic)(block_id)(payload_size))
+FC_REFLECT(alaio::state_history_log_header, (magic)(block_id)(payload_size))
