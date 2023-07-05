@@ -414,7 +414,7 @@ commands = [
     ('l', 'log',                stepLog,                    True,    "Show tail of node's log"),
 ]
 
-parser.add_argument('--public-key', metavar='', help="ALAIO Public Key", default='EOS8Znrtgwt8TfpmbVpTKvA2oB8Nqey625CLN8bCN3TEbgx86Dsvr', dest="public_key")
+parser.add_argument('--public-key', metavar='', help="ALAIO Public Key", default='ALA8Znrtgwt8TfpmbVpTKvA2oB8Nqey625CLN8bCN3TEbgx86Dsvr', dest="public_key")
 parser.add_argument('--private-Key', metavar='', help="ALAIO Private Key", default='5K463ynhZoCDDa4RDcr63cUwWLTnKqmdcoTKTHBjqoKfv4u5V7p', dest="private_key")
 parser.add_argument('--alacli', metavar='', help="Alacli command", default='../../build/programs/alacli/alacli --wallet-url http://127.0.0.1:6666 ')
 parser.add_argument('--alanode', metavar='', help="Path to alanode binary", default='../../build/programs/alanode/alanode')
