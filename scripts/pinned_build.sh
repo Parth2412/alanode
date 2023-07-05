@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo "Leap Pinned Build"
+echo "Alanode Pinned Build"
 
 if [[ "$(uname)" == "Linux" ]]; then
    if [[ -e /etc/os-release ]]; then
@@ -18,13 +18,13 @@ fi
 
 if [ $# -eq 0 ] || [ -z "$1" ]
    then
-      echo "Please supply a directory for the build dependencies to be placed and a directory for leap build and a value for the number of jobs to use for building."
-      echo "The binary packages will be created and placed into the leap build directory."
-      echo "./pinned_build.sh <dependencies directory> <leap build directory> <1-100>"
+      echo "Please supply a directory for the build dependencies to be placed and a directory for alanode build and a value for the number of jobs to use for building."
+      echo "The binary packages will be created and placed into the alanode build directory."
+      echo "./pinned_build.sh <dependencies directory> <alanode build directory> <1-100>"
       exit -1
 fi
 
-CORE_SYM=EOS
+CORE_SYM=ALA
 # CMAKE_C_COMPILER requires absolute path
 DEP_DIR=`realpath $1`
 LEAP_DIR=$2
@@ -130,22 +130,20 @@ popdir ${START_DIR}
 
 pushdir ${LEAP_DIR}
 
-# build Leap
-echo "Building Leap ${SCRIPT_DIR}"
+# build alanode
+echo "Building alanode ${SCRIPT_DIR}"
 try cmake -DCMAKE_TOOLCHAIN_FILE=${SCRIPT_DIR}/pinned_toolchain.cmake -DCMAKE_INSTALL_PREFIX=${LEAP_PINNED_INSTALL_PREFIX:-/usr/local} -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=${LLVM_DIR}/lib/cmake -DCMAKE_PREFIX_PATH=${BOOST_DIR}/bin ${SCRIPT_DIR}/..
 
 try make -j${JOBS}
 try cpack
 
-echo " .----------------.  .----------------.  .----------------.  .----------------. ";
-echo "| .--------------. || .--------------. || .--------------. || .--------------. |";
-echo "| |   _____      | || |  _________   | || |      __      | || |   ______     | |";
-echo "| |  |_   _|     | || | |_   ___  |  | || |     /  \     | || |  |_   __ \   | |";
-echo "| |    | |       | || |   | |_  \_|  | || |    / /\ \    | || |    | |__) |  | |";
-echo "| |    | |   _   | || |   |  _|  _   | || |   / ____ \   | || |    |  ___/   | |";
-echo "| |   _| |__/ |  | || |  _| |___/ |  | || | _/ /    \ \_ | || |   _| |_      | |";
-echo "| |  |________|  | || | |_________|  | || ||____|  |____|| || |  |_____|     | |";
-echo "| |              | || |              | || |              | || |              | |";
-echo "| '--------------' || '--------------' || '--------------' || '--------------' |";
-echo " '----------------'  '----------------'  '----------------'  '----------------' ";
-echo "Leap has successfully built and constructed its packages.  You should be able to find the packages at ${LEAP_DIR}.  Enjoy!!!"
+echo " __________   __          __________   __________  _________ ";
+echo "(   ____   ) (  )        (   ____   )  \__    __/ (   ___   )";
+echo "|  (    )  | |  |        |  (    )  |     )  (    |  (   )  |";
+echo "|  (____)  | |  |        |  (____)  |     |  |    |  |   |  |";
+echo "|   ____   | |  |        |   ____   |     |  |    |  |   |  |";
+echo "|  (    )  | |  |        |  (    )  |     |  |    |  |   |  |";
+echo "|  |    |  | |  )______  |  |    |  |  ___)  (___ |  (___)  |";
+echo "(__)    (__) (_________) (__)    (__)  \________/ (_________)";
+echo "=============================================================";
+echo "Alanode has successfully built and constructed its packages.  You should be able to find the packages at ${LEAP_DIR}.  Enjoy!!!"

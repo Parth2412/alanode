@@ -1,18 +1,18 @@
 #!/bin/bash
 #
-# eosio-tn_down.sh is used by the eosio-tn_bounce.sh and eosio-tn_roll.sh scripts.
-# It is intended to terminate specific EOS.IO daemon processes.
+# alaio-tn_down.sh is used by the alaio-tn_bounce.sh and alaio-tn_roll.sh scripts.
+# It is intended to terminate specific ALA.IO daemon processes.
 #
 
 
-if [ "$PWD" != "$EOSIO_HOME" ]; then
-    echo $0 must only be run from $EOSIO_HOME
+if [ "$PWD" != "$ALAIO_HOME" ]; then
+    echo $0 must only be run from $ALAIO_HOME
     exit -1
 fi
 
-prog=nodeos
+prog=alanode
 
-DD=var/lib/node_$EOSIO_NODE
+DD=var/lib/node_$ALAIO_NODE
 runtest=`cat $DD/$prog.pid`
 echo runtest = $runtest
 running=`ps -e | grep $runtest | grep -cv grep `
