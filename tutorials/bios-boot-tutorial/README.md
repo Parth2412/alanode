@@ -44,5 +44,5 @@ $ pwd
 $ cd ~
 $ git clone https://github.com/alacrityio/alanode
 $ cd ./alanode/tutorials/bios-boot-tutorial/
-$ python3 bios-boot-tutorial.py --alacli=alacli --nodeos=nodeos --kalad=kalad --contracts-dir="${CONTRACTS_DIRECTORY}" -w -a
+$ python3 bios-boot-tutorial.py --alacli=alacli --alanode=alanode --kalad=kalad --contracts-dir="${CONTRACTS_DIRECTORY}" -w -a
 ```
