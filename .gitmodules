@@ -1,0 +1,30 @@
+[submodule "libraries/appbase"]
+	path = libraries/appbase
+	url = https://github.com/AntelopeIO/appbase
+[submodule "libraries/chainbase"]
+	path = libraries/chainbase
+	url = https://github.com/AntelopeIO/chainbase
+[submodule "libraries/softfloat"]
+	path = libraries/softfloat
+	url = https://github.com/AntelopeIO/berkeley-softfloat-3
+[submodule "libraries/rapidjson"]
+	path = libraries/rapidjson
+	url = https://github.com/Tencent/rapidjson/
+[submodule "libraries/yubihsm"]
+	path = libraries/yubihsm
+	url = https://github.com/Yubico/yubihsm-shell
+[submodule "libraries/libfc/include/fc/crypto/webauthn_json"]
+	path = libraries/libfc/include/fc/crypto/webauthn_json
+	url = https://github.com/Tencent/rapidjson/
+[submodule "libraries/libfc/secp256k1/secp256k1"]
+	path = libraries/libfc/secp256k1/secp256k1
+	url = https://github.com/bitcoin-core/secp256k1
+[submodule "libraries/libfc/libraries/ff"]
+	path = libraries/libfc/libraries/ff
+	url = https://github.com/AntelopeIO/libff
+[submodule "libraries/ala-vm"]
+	path = libraries/ala-vm
+	url = https://github.com/alacrityio/ala-vm
+[submodule "tests/abiala"]
+	path = tests/abiala
+	url = https://github.com/alacrityio/abiala
