@@ -7,7 +7,7 @@ import time
 from TestHarness import Cluster, TestHelper, Utils, WalletMgr
 
 ###############################################################
-# nodeos_read_terminate_at_block_test
+# alanode_read_terminate_at_block_test
 #
 # A few tests centered around read mode of irreversible,
 # speculative and head with terminate-at-block set
@@ -34,7 +34,7 @@ Utils.Debug = args.v
 killAll = args.clean_run
 dumpErrorDetails = args.dump_error_details
 dontKill = args.leave_running
-killEosInstances = not dontKill
+killAlaInstances = not dontKill
 killWallet = not dontKill
 keepLogs = args.keep_logs
 
@@ -186,7 +186,7 @@ cluster.setWalletMgr(walletMgr)
 testResultMsgs = []
 testSuccessful = False
 try:
-    specificNodeosArgs = {
+    specificAlanodeArgs = {
         0 : "--enable-stale-production",
         1 : "--read-mode irreversible --terminate-at-block 75",
         2 : "--read-mode speculative --terminate-at-block 100",
@@ -204,7 +204,7 @@ try:
         pnodes=1,
         useBiosBootFile=False,
         topo="mesh",
-        specificExtraNodeosArgs=specificNodeosArgs,
+        specificExtraAlanodeArgs=specificAlanodeArgs,
     )
 
     producingNodeId = 0
@@ -218,7 +218,7 @@ try:
     # Start executing test cases here
     Utils.Print("Script Begin .............................")
 
-    for nodeId, nodeArgs in specificNodeosArgs.items():
+    for nodeId, nodeArgs in specificAlanodeArgs.items():
         # The test only needs to be run on the non-producer nodes.
         if nodeId == producingNodeId:
             continue
@@ -242,7 +242,7 @@ finally:
         cluster,
         walletMgr,
         testSuccessful,
-        killEosInstances,
+        killAlaInstances,
         killWallet,
         keepLogs,
         killAll,

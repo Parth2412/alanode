@@ -17,7 +17,7 @@ delay=1
 read -d '' genesis << EOF
 {
   "initial_timestamp": "2018-06-01T12:00:00.000",
-  "initial_key": "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
+  "initial_key": "ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
   "initial_configuration": {
     "max_block_net_usage": 1048576,
     "target_block_net_usage_pct": 1000,
@@ -41,21 +41,21 @@ EOF
 
 read -d '' configbios << EOF
 p2p-server-address = localhost:9876
-plugin = eosio::producer_plugin
-plugin = eosio::chain_api_plugin
-plugin = eosio::net_plugin
-plugin = eosio::trace_api_plugin
+plugin = alaio::producer_plugin
+plugin = alaio::chain_api_plugin
+plugin = alaio::net_plugin
+plugin = alaio::trace_api_plugin
 trace-no-abis = true
 http-server-address = 127.0.0.1:8888
 blocks-dir = blocks
 p2p-listen-endpoint = 0.0.0.0:9876
 allowed-connection = any
-private-key = ['EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV','5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3']
+private-key = ['ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV','5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3']
 send-whole-blocks = true
 readonly = 0
 p2p-max-nodes-per-host = 10
 enable-stale-production = true
-producer-name = eosio
+producer-name = alaio
 EOF
 
 read -d '' config00 << EOF
@@ -67,7 +67,7 @@ p2p-listen-endpoint = 0.0.0.0:9877
 p2p-server-address = localhost:9877
 allowed-connection = any
 p2p-peer-address = localhost:9876
-plugin = eosio::chain_api_plugin
+plugin = alaio::chain_api_plugin
 EOF
 
 read -d '' config01 << EOF
@@ -79,7 +79,7 @@ p2p-listen-endpoint = 0.0.0.0:9878
 p2p-server-address = localhost:9877
 allowed-connection = any
 p2p-peer-address = localhost:9876
-plugin = eosio::chain_api_plugin
+plugin = alaio::chain_api_plugin
 EOF
 
 read -d '' loggingbios << EOF
@@ -245,32 +245,32 @@ read -d '' logging01 << EOF
 EOF
 
 rm -rf staging
-rm -rf etc/eosio/node_*
+rm -rf etc/alaio/node_*
 rm -rf var/lib
 cName=config.ini
 lName=logging.json
 gName=genesis.json
 
-path=staging/etc/eosio/node_bios
+path=staging/etc/alaio/node_bios
 mkdir -p $path
 echo "$configbios" > $path/$cName
 echo "$loggingbios" > $path/$lName
 echo "$genesis" > $path/$gName
 
-path=staging/etc/eosio/node_00
+path=staging/etc/alaio/node_00
 mkdir -p $path
 echo "$config00" > $path/$cName
 echo "$logging00" > $path/$lName
 echo "$genesis" > $path/$gName
 
-path=staging/etc/eosio/node_01
+path=staging/etc/alaio/node_01
 mkdir -p $path
 echo "$config01" > $path/$cName
 echo "$logging01" > $path/$lName
 echo "$genesis" > $path/$gName
 
 
-programs/eosio-launcher/eosio-launcher -p $pnodes -n $total_nodes --nogen -d $delay
+programs/alaio-launcher/alaio-launcher -p $pnodes -n $total_nodes --nogen -d $delay
 
 sleep 5
 res=$(grep "reason = duplicate" var/lib/node_*/stderr.txt | wc -l)
@@ -281,9 +281,9 @@ if [ $res -ne 0 ]; then
     ret=1
 fi
 
-b5idbios=`./programs/cleos/cleos -u http://localhost:8888 get block 5 | grep "^ *\"id\""`
-b5id00=`./programs/cleos/cleos -u http://localhost:8889 get block 5 | grep "^ *\"id\""`
-b5id01=`./programs/cleos/cleos -u http://localhost:8890 get block 5 | grep "^ *\"id\""`
+b5idbios=`./programs/alacli/alacli -u http://localhost:8888 get block 5 | grep "^ *\"id\""`
+b5id00=`./programs/alacli/alacli -u http://localhost:8889 get block 5 | grep "^ *\"id\""`
+b5id01=`./programs/alacli/alacli -u http://localhost:8890 get block 5 | grep "^ *\"id\""`
 
 if [ "$b5idbios" != "$b5id00" ]; then
     echo FAILURE: nodes are not in sync
@@ -299,8 +299,8 @@ if [ $ret  -eq 0 ]; then
     echo SUCCESS
 fi
 
-programs/eosio-launcher/eosio-launcher -k 15
+programs/alaio-launcher/alaio-launcher -k 15
 rm -rf staging
 rm -rf var/lib/node_*
-rm -rf etc/eosio/node_*
+rm -rf etc/alaio/node_*
 exit $ret

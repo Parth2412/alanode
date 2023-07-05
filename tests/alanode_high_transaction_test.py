@@ -10,7 +10,7 @@ from TestHarness.TestHelper import AppArgs
 from core_symbol import CORE_SYMBOL
 
 ###############################################################
-# nodeos_high_transaction_test
+# alanode_high_transaction_test
 # 
 # This test sets up <-p> producing node(s) and <-n - -p>
 #   non-producing node(s). The non-producing node will be sent
@@ -59,11 +59,11 @@ numRounds = int(numTransactions / args.total_accounts)
 
 walletMgr=WalletMgr(True, port=walletPort)
 testSuccessful=False
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 killWallet=not dontKill
 
-WalletdName=Utils.EosWalletName
-ClientName="cleos"
+WalletdName=Utils.AlaWalletName
+ClientName="alacli"
 
 maxTransactionAttempts = 2            # max number of attempts to try to send a transaction
 maxTransactionAttemptsNoSend = 1      # max number of attempts to try to create a transaction to be sent as a duplicate
@@ -80,7 +80,7 @@ try:
                       totalNodes=totalNodes, totalProducers=totalProducers,
                       useBiosBootFile=False, topo="ring") is False:
         Utils.cmdError("launcher")
-        Utils.errorExit("Failed to stand up eos cluster.")
+        Utils.errorExit("Failed to stand up ala cluster.")
 
     # ***   create accounts to vote in desired producers   ***
 
@@ -88,7 +88,7 @@ try:
     namedAccounts=NamedAccounts(cluster,args.total_accounts)
     accounts=namedAccounts.accounts
 
-    accountsToCreate = [cluster.eosioAccount]
+    accountsToCreate = [cluster.alaioAccount]
     for account in accounts:
         accountsToCreate.append(account)
 
@@ -126,20 +126,20 @@ try:
     node=nonProdNodes[0]
     checkTransIds = []
     startTime = time.perf_counter()
-    Print("Create new accounts via %s" % (cluster.eosioAccount.name))
+    Print("Create new accounts via %s" % (cluster.alaioAccount.name))
     for account in accounts:
-        trans = node.createInitializeAccount(account, cluster.eosioAccount, stakedDeposit=0, waitForTransBlock=(account == accounts[-1]), stakeNet=1000, stakeCPU=1000, buyRAM=1000, exitOnError=True)
+        trans = node.createInitializeAccount(account, cluster.alaioAccount, stakedDeposit=0, waitForTransBlock=(account == accounts[-1]), stakeNet=1000, stakeCPU=1000, buyRAM=1000, exitOnError=True)
         checkTransIds.append(Node.getTransId(trans))
 
     nextTime = time.perf_counter()
     Print("Create new accounts took %s sec" % (nextTime - startTime))
     startTime = nextTime
 
-    Print("Transfer funds to new accounts via %s" % (cluster.eosioAccount.name))
+    Print("Transfer funds to new accounts via %s" % (cluster.alaioAccount.name))
     for account in accounts:
         transferAmount="1000.0000 {0}".format(CORE_SYMBOL)
-        Print("Transfer funds %s from account %s to %s" % (transferAmount, cluster.eosioAccount.name, account.name))
-        trans = node.transferFunds(cluster.eosioAccount, account, transferAmount, "test transfer", waitForTransBlock=(account == accounts[-1]), reportStatus=False)
+        Print("Transfer funds %s from account %s to %s" % (transferAmount, cluster.alaioAccount.name, account.name))
+        trans = node.transferFunds(cluster.alaioAccount, account, transferAmount, "test transfer", waitForTransBlock=(account == accounts[-1]), reportStatus=False)
         checkTransIds.append(Node.getTransId(trans))
 
     nextTime = time.perf_counter()
@@ -382,7 +382,7 @@ try:
 
     testSuccessful = not delayedReportError
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killEosInstances=killEosInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killAlaInstances=killAlaInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
     if not testSuccessful:
         Print(Utils.FileDivider)
         Print("Compare Blocklog")

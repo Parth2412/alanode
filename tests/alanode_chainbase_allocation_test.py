@@ -9,7 +9,7 @@ import filecmp
 from TestHarness import Account, Cluster, Node, TestHelper, Utils, WalletMgr
 
 ###############################################################
-# nodeos_chainbase_allocation_test
+# alanode_chainbase_allocation_test
 #
 # Test snapshot creation and restarting from snapshot
 #
@@ -21,7 +21,7 @@ Utils.Debug = args.v
 killAll=args.clean_run
 dumpErrorDetails=args.dump_error_details
 dontKill=args.leave_running
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 killWallet=not dontKill
 keepLogs=args.keep_logs
 
@@ -45,7 +45,7 @@ try:
     # - permission_object (bootstrap)
     # The bootstrap process has created account_object and code_object (by uploading the bios contract),
     # key_value_object (token creation), protocol_state_object (preactivation feature), and permission_object
-    # (automatically taken care by the automatically generated eosio account)
+    # (automatically taken care by the automatically generated alaio account)
     assert cluster.launch(
         pnodes=1,
         prodCount=1,
@@ -53,8 +53,8 @@ try:
         totalNodes=2,
         useBiosBootFile=False,
         loadSystemContract=False,
-        specificExtraNodeosArgs={
-            1:"--read-mode irreversible --plugin eosio::producer_api_plugin"})
+        specificExtraAlanodeArgs={
+            1:"--read-mode irreversible --plugin alaio::producer_api_plugin"})
 
     producerNodeId = 0
     irrNodeId = 1
@@ -62,22 +62,22 @@ try:
     irrNode = cluster.getNode(irrNodeId)
 
     # Create delayed transaction to create "generated_transaction_object"
-    cmd = "create account -j eosio sample EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\
-         EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV --delay-sec 600 -p eosio"
-    trans = producerNode.processCleosCmd(cmd, cmd, silentErrors=False)
+    cmd = "create account -j alaio sample ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\
+         ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV --delay-sec 600 -p alaio"
+    trans = producerNode.processAlacliCmd(cmd, cmd, silentErrors=False)
     assert trans
 
     # Schedule a new producer to trigger new producer schedule for "global_property_object"
     newProducerAcc = Account("newprod")
-    newProducerAcc.ownerPublicKey = "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
-    newProducerAcc.activePublicKey = "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
-    producerNode.createAccount(newProducerAcc, cluster.eosioAccount)
+    newProducerAcc.ownerPublicKey = "ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
+    newProducerAcc.activePublicKey = "ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
+    producerNode.createAccount(newProducerAcc, cluster.alaioAccount)
 
     setProdsStr = '{"schedule": ['
     setProdsStr += '{"producer_name":' + newProducerAcc.name + ',"block_signing_key":' + newProducerAcc.activePublicKey + '}'
     setProdsStr += ']}'
-    cmd="push action -j eosio setprods '{}' -p eosio".format(setProdsStr)
-    trans = producerNode.processCleosCmd(cmd, cmd, silentErrors=False)
+    cmd="push action -j alaio setprods '{}' -p alaio".format(setProdsStr)
+    trans = producerNode.processAlacliCmd(cmd, cmd, silentErrors=False)
     assert trans
     setProdsBlockNum = int(trans["processed"]["block_num"])
 
@@ -106,7 +106,7 @@ try:
 
     testSuccessful = True
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killEosInstances, killWallet, keepLogs, killAll, dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killAlaInstances, killWallet, keepLogs, killAll, dumpErrorDetails)
 
 exitCode = 0 if testSuccessful else 1
 exit(exitCode)

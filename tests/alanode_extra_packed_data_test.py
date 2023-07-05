@@ -13,9 +13,9 @@ from TestHarness.Cluster import PFSetupPolicy
 from TestHarness.TestHelper import AppArgs
 
 ###############################################################
-# nodeos_run_test
+# alanode_run_test
 #
-# General test that tests a wide range of general use actions around nodeos and keosd
+# General test that tests a wide range of general use actions around alanode and kalad
 #
 ###############################################################
 
@@ -50,12 +50,12 @@ cluster=Cluster(host=server,
                 defproducerbPrvtKey=defproducerbPrvtKey)
 walletMgr=WalletMgr(True, port=walletPort)
 testSuccessful=False
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 killWallet=not dontKill
 dontBootstrap=sanityTest # intent is to limit the scope of the sanity test to just verifying that nodes can be started
 
-WalletdName=Utils.EosWalletName
-ClientName="cleos"
+WalletdName=Utils.AlaWalletName
+ClientName="alacli"
 timeout = .5 * 12 * 2 + 60 # time for finalization with 1 producer + 60 seconds padding
 Utils.setIrreversibleTimeout(timeout)
 
@@ -69,32 +69,32 @@ try:
         cluster.killall(allInstances=killAll)
         cluster.cleanup()
         Print("Stand up cluster")
-        specificExtraNodeosArgs = {}
+        specificExtraAlanodeArgs = {}
         associatedNodeLabels = {}
         if pnodes > 1:
-            specificExtraNodeosArgs[pnodes - 1] = ""
+            specificExtraAlanodeArgs[pnodes - 1] = ""
         if pnodes > 3:
-            specificExtraNodeosArgs[pnodes - 2] = ""
+            specificExtraAlanodeArgs[pnodes - 2] = ""
 
         if cluster.launch(totalNodes=pnodes, 
                           pnodes=pnodes,
                           dontBootstrap=dontBootstrap,
                           pfSetupPolicy=PFSetupPolicy.PREACTIVATE_FEATURE_ONLY,
-                          specificExtraNodeosArgs=specificExtraNodeosArgs,
+                          specificExtraAlanodeArgs=specificExtraAlanodeArgs,
                           associatedNodeLabels=associatedNodeLabels) is False:
             cmdError("launcher")
-            errorExit("Failed to stand up eos cluster.")
+            errorExit("Failed to stand up ala cluster.")
     else:
         Print("Collecting cluster info.")
         cluster.initializeNodes(defproduceraPrvtKey=defproduceraPrvtKey, defproducerbPrvtKey=defproducerbPrvtKey)
-        killEosInstances=False
+        killAlaInstances=False
         Print("Stand up %s" % (WalletdName))
         walletMgr.killall(allInstances=killAll)
         walletMgr.cleanup()
         print("Stand up walletd")
         if walletMgr.launch() is False:
             cmdError("%s" % (WalletdName))
-            errorExit("Failed to stand up eos walletd.")
+            errorExit("Failed to stand up ala walletd.")
     
     if sanityTest:
         testSuccessful=True
@@ -115,7 +115,7 @@ try:
     Print("Creating wallet \"%s\"" % (testWalletName))
     walletAccounts=copy.deepcopy(cluster.defProducerAccounts)
     if dontLaunch:
-        del walletAccounts["eosio"]
+        del walletAccounts["alaio"]
     testWallet = walletMgr.create(testWalletName, walletAccounts.values())
 
     Print("Wallet \"%s\" password=%s." % (testWalletName, testWallet.password.encode("utf-8")))
@@ -152,7 +152,7 @@ try:
         cmdDesc = "convert pack_transaction"
         cmd     = "%s --pack-action-data '%s'" % (cmdDesc, json.dumps(trx))
         exitMsg = "failed to pack transaction: %s" % (trx)
-        packedTrx = node.processCleosCmd(cmd, cmdDesc, silentErrors=False, exitOnError=True, exitMsg=exitMsg)
+        packedTrx = node.processAlacliCmd(cmd, cmdDesc, silentErrors=False, exitOnError=True, exitMsg=exitMsg)
 
         packed_trx_param = packedTrx["packed_trx"]
         if packed_trx_param is None:
@@ -187,4 +187,4 @@ try:
     
     testSuccessful=True
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killEosInstances, killWallet, keepLogs, killAll, dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killAlaInstances, killWallet, keepLogs, killAll, dumpErrorDetails)

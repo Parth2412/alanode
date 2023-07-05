@@ -21,7 +21,7 @@ errorExit=Utils.errorExit
 
 args=TestHelper.parse_args({"--keep-logs" ,"--dump-error-details","-v","--leave-running","--clean-run" })
 debug=args.v
-killEosInstances= not args.leave_running
+killAlaInstances= not args.leave_running
 dumpErrorDetails=args.dump_error_details
 keepLogs=args.keep_logs
 killAll=args.clean_run
@@ -50,13 +50,13 @@ try:
     walletMgr.killall(allInstances=killAll)
     walletMgr.cleanup()
 
-    specificExtraNodeosArgs={}
-    specificExtraNodeosArgs[0]=f' --block-log-retain-blocks 0 '
-    specificExtraNodeosArgs[1]=f' --block-log-retain-blocks 10 '
+    specificExtraAlanodeArgs={}
+    specificExtraAlanodeArgs[0]=f' --block-log-retain-blocks 0 '
+    specificExtraAlanodeArgs[1]=f' --block-log-retain-blocks 10 '
 
     Print("Stand up cluster")
-    if cluster.launch(pnodes=pnodes, totalNodes=total_nodes, specificExtraNodeosArgs=specificExtraNodeosArgs) is False:
-        errorExit("Failed to stand up eos cluster.")
+    if cluster.launch(pnodes=pnodes, totalNodes=total_nodes, specificExtraAlanodeArgs=specificExtraAlanodeArgs) is False:
+        errorExit("Failed to stand up ala cluster.")
 
     Print ("Wait for Cluster stabilization")
     # wait for cluster to start producing blocks
@@ -87,7 +87,7 @@ try:
 
     testSuccessful=True
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killEosInstances=killEosInstances, killWallet=killEosInstances, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killAlaInstances=killAlaInstances, killWallet=killAlaInstances, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
 
 exitCode = 0 if testSuccessful else 1
 exit(exitCode)

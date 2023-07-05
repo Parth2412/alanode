@@ -1,13 +1,13 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
-#include <eosio/testing/tester.hpp>
-#include <eosio/chain/abi_serializer.hpp>
-#include <eosio/chain/wasm_eosio_constraints.hpp>
-#include <eosio/chain/resource_limits.hpp>
-#include <eosio/chain/exceptions.hpp>
-#include <eosio/chain/wast_to_wasm.hpp>
-#include <eosio/chain_plugin/chain_plugin.hpp>
+#include <alaio/testing/tester.hpp>
+#include <alaio/chain/abi_serializer.hpp>
+#include <alaio/chain/wasm_alaio_constraints.hpp>
+#include <alaio/chain/resource_limits.hpp>
+#include <alaio/chain/exceptions.hpp>
+#include <alaio/chain/wast_to_wasm.hpp>
+#include <alaio/chain_plugin/chain_plugin.hpp>
 
 #include <contracts.hpp>
 
@@ -27,9 +27,9 @@
 #define TESTER validating_tester
 #endif
 
-using namespace eosio;
-using namespace eosio::chain;
-using namespace eosio::testing;
+using namespace alaio;
+using namespace alaio::chain;
+using namespace alaio::testing;
 using namespace fc;
 
 BOOST_AUTO_TEST_SUITE(get_table_seckey_tests)

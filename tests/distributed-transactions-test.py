@@ -36,9 +36,9 @@ killAll=args.clean_run
 keepLogs=args.keep_logs
 
 killWallet=not dontKill
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 if nodesFile is not None:
-    killEosInstances=False
+    killAlaInstances=False
 
 Utils.Debug=debug
 testSuccessful=False
@@ -62,7 +62,7 @@ try:
         walletMgr.cleanup()
         print("Stand up walletd")
         if walletMgr.launch() is False:
-            errorExit("Failed to stand up keosd.")
+            errorExit("Failed to stand up kalad.")
     else:
         cluster.killall(allInstances=killAll)
         cluster.cleanup()
@@ -72,7 +72,7 @@ try:
 
         Print("Stand up cluster")
         if cluster.launch(pnodes=pnodes, totalNodes=total_nodes, topo=topo, delay=delay) is False:
-            errorExit("Failed to stand up eos cluster.")
+            errorExit("Failed to stand up ala cluster.")
 
         Print ("Wait for Cluster stabilization")
         # wait for cluster to start producing blocks
@@ -84,7 +84,7 @@ try:
     Print("Creating wallet %s if one doesn't already exist." % walletName)
     walletAccounts=[cluster.defproduceraAccount,cluster.defproducerbAccount]
     if not dontLaunch:
-        walletAccounts.append(cluster.eosioAccount)
+        walletAccounts.append(cluster.alaioAccount)
     wallet=walletMgr.create(walletName, walletAccounts)
     if wallet is None:
         errorExit("Failed to create wallet %s" % (walletName))
@@ -95,10 +95,10 @@ try:
 
     defproduceraAccount=cluster.defproduceraAccount
     defproducerbAccount=cluster.defproducerbAccount
-    eosioAccount=cluster.eosioAccount
+    alaioAccount=cluster.alaioAccount
 
     Print("Create accounts.")
-    if not cluster.createAccounts(eosioAccount):
+    if not cluster.createAccounts(alaioAccount):
         errorExit("Accounts creation failed.")
 
     Print("Spread funds and validate")
@@ -116,7 +116,7 @@ try:
 
     testSuccessful=True
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killEosInstances, killWallet, keepLogs, killAll, dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killAlaInstances, killWallet, keepLogs, killAll, dumpErrorDetails)
 
 exitCode = 0 if testSuccessful else 1
 exit(exitCode)

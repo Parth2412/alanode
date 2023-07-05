@@ -14,16 +14,16 @@ class PluginHttpTest(unittest.TestCase):
     sleep_s = 2
     base_node_cmd_str = ("curl http://%s:%s/v1/") % (TestHelper.LOCAL_HOST, TestHelper.DEFAULT_PORT)
     base_wallet_cmd_str = ("curl http://%s:%s/v1/") % (TestHelper.LOCAL_HOST, TestHelper.DEFAULT_WALLET_PORT)
-    keosd = WalletMgr(True, TestHelper.DEFAULT_PORT, TestHelper.LOCAL_HOST, TestHelper.DEFAULT_WALLET_PORT, TestHelper.LOCAL_HOST)
+    kalad = WalletMgr(True, TestHelper.DEFAULT_PORT, TestHelper.LOCAL_HOST, TestHelper.DEFAULT_WALLET_PORT, TestHelper.LOCAL_HOST)
     node_id = 1
-    nodeos = Node(TestHelper.LOCAL_HOST, TestHelper.DEFAULT_PORT, node_id, walletMgr=keosd)
+    alanode = Node(TestHelper.LOCAL_HOST, TestHelper.DEFAULT_PORT, node_id, walletMgr=kalad)
     data_dir = Utils.getNodeDataDir(node_id)
     config_dir = Utils.getNodeConfigDir(node_id)
     http_post_str = " -X POST -d "
     http_post_invalid_param = " '{invalid}' "
     empty_content_str = " ' { } '  "
-    EOSIO_ACCT_PRIVATE_DEFAULT_KEY = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
-    EOSIO_ACCT_PUBLIC_DEFAULT_KEY = "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
+    ALAIO_ACCT_PRIVATE_DEFAULT_KEY = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
+    ALAIO_ACCT_PUBLIC_DEFAULT_KEY = "ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
 
     # make a fresh data dir
     def createDataDir(self):
@@ -37,60 +37,60 @@ class PluginHttpTest(unittest.TestCase):
             shutil.rmtree(self.config_dir)
         os.makedirs(self.config_dir)
 
-    # kill nodeos and keosd and clean up dirs
+    # kill alanode and kalad and clean up dirs
     def cleanEnv(self) :
-        self.keosd.killall(True)
+        self.kalad.killall(True)
         WalletMgr.cleanup()
-        Node.killAllNodeos()
+        Node.killAllAlanode()
         if os.path.exists(self.data_dir):
             shutil.rmtree(self.data_dir)
         if os.path.exists(self.config_dir):
             shutil.rmtree(self.config_dir)
         time.sleep(self.sleep_s)
 
-    # start keosd and nodeos
+    # start kalad and alanode
     def startEnv(self) :
         self.createDataDir(self)
         self.createConfigDir(self)
-        self.keosd.launch()
-        nodeos_plugins = (" --plugin %s --plugin %s --plugin %s --plugin %s --plugin %s --plugin %s"
-                          " --plugin %s --plugin %s --plugin %s --plugin %s ") % ( "eosio::trace_api_plugin",
-                                                                                   "eosio::test_control_api_plugin",
-                                                                                   "eosio::test_control_plugin",
-                                                                                   "eosio::net_plugin",
-                                                                                   "eosio::net_api_plugin",
-                                                                                   "eosio::producer_plugin",
-                                                                                   "eosio::producer_api_plugin",
-                                                                                   "eosio::chain_api_plugin",
-                                                                                   "eosio::http_plugin",
-                                                                                   "eosio::db_size_api_plugin")
-        nodeos_flags = (" --data-dir=%s --config-dir=%s --trace-dir=%s --trace-no-abis --access-control-allow-origin=%s "
+        self.kalad.launch()
+        alanode_plugins = (" --plugin %s --plugin %s --plugin %s --plugin %s --plugin %s --plugin %s"
+                          " --plugin %s --plugin %s --plugin %s --plugin %s ") % ( "alaio::trace_api_plugin",
+                                                                                   "alaio::test_control_api_plugin",
+                                                                                   "alaio::test_control_plugin",
+                                                                                   "alaio::net_plugin",
+                                                                                   "alaio::net_api_plugin",
+                                                                                   "alaio::producer_plugin",
+                                                                                   "alaio::producer_api_plugin",
+                                                                                   "alaio::chain_api_plugin",
+                                                                                   "alaio::http_plugin",
+                                                                                   "alaio::db_size_api_plugin")
+        alanode_flags = (" --data-dir=%s --config-dir=%s --trace-dir=%s --trace-no-abis --access-control-allow-origin=%s "
                         "--contracts-console --http-validate-host=%s --verbose-http-errors "
                         "--p2p-peer-address localhost:9011 --resource-monitor-not-shutdown-on-threshold-exceeded ") % (self.data_dir, self.config_dir, self.data_dir, "\'*\'", "false")
-        start_nodeos_cmd = ("%s -e -p eosio %s %s ") % (Utils.EosServerPath, nodeos_plugins, nodeos_flags)
-        self.nodeos.launchCmd(start_nodeos_cmd, self.node_id)
+        start_alanode_cmd = ("%s -e -p alaio %s %s ") % (Utils.AlaServerPath, alanode_plugins, alanode_flags)
+        self.alanode.launchCmd(start_alanode_cmd, self.node_id)
         time.sleep(self.sleep_s*2)
-        self.nodeos.waitForBlock(1, timeout=30)
+        self.alanode.waitForBlock(1, timeout=30)
 
     def activateAllBuiltinProtocolFeatures(self):
-        self.nodeos.activatePreactivateFeature()
+        self.alanode.activatePreactivateFeature()
 
-        contract = "eosio.bios"
+        contract = "alaio.bios"
         contractDir = "unittests/contracts/old_versions/v1.7.0-develop-preactivate_feature/%s" % (contract)
         wasmFile = "%s.wasm" % (contract)
         abiFile = "%s.abi" % (contract)
 
-        eosioAccount = Account("eosio")
-        eosioAccount.ownerPrivateKey = eosioAccount.activePrivateKey = self.EOSIO_ACCT_PRIVATE_DEFAULT_KEY
-        eosioAccount.ownerPublicKey = eosioAccount.activePublicKey = self.EOSIO_ACCT_PUBLIC_DEFAULT_KEY
+        alaioAccount = Account("alaio")
+        alaioAccount.ownerPrivateKey = alaioAccount.activePrivateKey = self.ALAIO_ACCT_PRIVATE_DEFAULT_KEY
+        alaioAccount.ownerPublicKey = alaioAccount.activePublicKey = self.ALAIO_ACCT_PUBLIC_DEFAULT_KEY
 
         testWalletName = "test"
-        walletAccounts = [eosioAccount]
-        self.keosd.create(testWalletName, walletAccounts)
+        walletAccounts = [alaioAccount]
+        self.kalad.create(testWalletName, walletAccounts)
 
-        retMap = self.nodeos.publishContract(eosioAccount, contractDir, wasmFile, abiFile, waitForTransBlock=True)
+        retMap = self.alanode.publishContract(alaioAccount, contractDir, wasmFile, abiFile, waitForTransBlock=True)
 
-        self.nodeos.preactivateAllBuiltinProtocolFeature()
+        self.alanode.preactivateAllBuiltinProtocolFeature()
 
     # test all chain api
     def test_ChainApi(self) :
@@ -111,7 +111,7 @@ class PluginHttpTest(unittest.TestCase):
 
         # activate the builtin protocol features and get some useful data
         self.activateAllBuiltinProtocolFeatures()
-        allProtocolFeatures = self.nodeos.getSupportedProtocolFeatures()
+        allProtocolFeatures = self.alanode.getSupportedProtocolFeatures()
         allFeatureDigests = [d['feature_digest'] for d in allProtocolFeatures]
         allFeatureCodenames = []
         for s in allProtocolFeatures:
@@ -499,7 +499,7 @@ class PluginHttpTest(unittest.TestCase):
         self.assertEqual(ret_json["code"], 400)
         self.assertEqual(ret_json["error"]["code"], 3200006)
         # get_currency_balance with valid parameter
-        valid_cmd = default_cmd + self.http_post_str + ("'{\"code\":\"eosio.token\", \"account\":\"unknown\"}'")
+        valid_cmd = default_cmd + self.http_post_str + ("'{\"code\":\"alaio.token\", \"account\":\"unknown\"}'")
         ret_json = Utils.runCmdReturnJson(valid_cmd)
         self.assertEqual(ret_json["code"], 500)
 
@@ -519,7 +519,7 @@ class PluginHttpTest(unittest.TestCase):
         self.assertEqual(ret_json["code"], 400)
         self.assertEqual(ret_json["error"]["code"], 3200006)
         # get_currency_stats with valid parameter
-        valid_cmd = default_cmd + self.http_post_str + ("'{\"code\":\"eosio.token\",\"symbol\":\"SYS\"}'")
+        valid_cmd = default_cmd + self.http_post_str + ("'{\"code\":\"alaio.token\",\"symbol\":\"SYS\"}'")
         ret_json = Utils.runCmdReturnJson(valid_cmd)
         self.assertEqual(ret_json["code"], 500)
 
@@ -595,9 +595,9 @@ class PluginHttpTest(unittest.TestCase):
         # abi_json_to_bin with valid parameter
         valid_cmd = ("%s%s '{%s,%s,%s}'") % (default_cmd,
                                              self.http_post_str,
-                                             "\"code\":\"eosio.token\"",
+                                             "\"code\":\"alaio.token\"",
                                              "\"action\":\"issue\"",
-                                             "\"args\":{\"to\":\"eosio.token\", \"quantity\":\"1.0000\%20EOS\",\"memo\":\"m\"}")
+                                             "\"args\":{\"to\":\"alaio.token\", \"quantity\":\"1.0000\%20ALA\",\"memo\":\"m\"}")
         ret_json = Utils.runCmdReturnJson(valid_cmd)
         self.assertEqual(ret_json["code"], 500)
 
@@ -619,7 +619,7 @@ class PluginHttpTest(unittest.TestCase):
         # abi_bin_to_json with valid parameter
         valid_cmd = ("%s%s '{%s,%s,%s}'") % (default_cmd,
                                              self.http_post_str,
-                                             "\"code\":\"eosio.token\"",
+                                             "\"code\":\"alaio.token\"",
                                              "\"action\":\"issue\"",
                                              "\"args\":\"ee6fff5a5c02c55b6304000000000100a6823403ea3055000000572d3ccdcd0100000000007015d600000000a8ed32322a00000000007015d6000000005c95b1ca102700000000000004454f53000000000968656c6c6f206d616e00\"")
         ret_json = Utils.runCmdReturnJson(valid_cmd)
@@ -651,9 +651,9 @@ class PluginHttpTest(unittest.TestCase):
                      "\"actions\": [{\"code\": \"currency\",\"type\":\"transfer\",\"recipients\": [\"initb\", \"initc\"],\"authorization\": [{\"account\": \"initb\", \"permission\": \"active\"}],\"data\":\"000000000041934b000000008041934be803000000000000\"}]",
                      "\"signatures\": []",
                      "\"authorizations\": []",
-                     "\"EOS4toFS3YXEQCkuuw1aqDLrtHim86Gz9u3hBdcBw5KNPZcursVHq\"",
-                     "\"EOS7d9A3uLe6As66jzN8j44TXJUqJSK3bFjjEEqR4oTvNAB3iM9SA\"",
-                     "\"EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\"")
+                     "\"ALA4toFS3YXEQCkuuw1aqDLrtHim86Gz9u3hBdcBw5KNPZcursVHq\"",
+                     "\"ALA7d9A3uLe6As66jzN8j44TXJUqJSK3bFjjEEqR4oTvNAB3iM9SA\"",
+                     "\"ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\"")
         ret_json = Utils.runCmdReturnJson(valid_cmd)
         self.assertEqual(ret_json["code"], 500)
 
@@ -683,7 +683,7 @@ class PluginHttpTest(unittest.TestCase):
                      "\"max_cpu_usage_ms\":0",
                      "\"delay_sec\":0",
                      "\"context_free_actions\":[]",
-                     "\"actions\":[{\"account\":\"eosio.token\",\"name\": \"transfer\",\"authorization\": [{\"actor\": \"han\",\"permission\": \"active\"}],\"data\": \"000000000000a6690000000000ea305501000000000000000453595300000000016d\"}]",
+                     "\"actions\":[{\"account\":\"alaio.token\",\"name\": \"transfer\",\"authorization\": [{\"actor\": \"han\",\"permission\": \"active\"}],\"data\": \"000000000000a6690000000000ea305501000000000000000453595300000000016d\"}]",
                      "\"transaction_extensions\": []",
                      "\"signatures\": [\"SIG_K1_KeqfqiZu1GwUxQb7jzK9Fdks6HFaVBQ9AJtCZZj56eG9qGgvVMVtx8EerBdnzrhFoX437sgwtojf2gfz6S516Ty7c22oEp\"]",
                      "\"context_free_data\": []")
@@ -1233,7 +1233,7 @@ class PluginHttpTest(unittest.TestCase):
                                                                         "\"signatures\": [\"SIG_K1_KeqfqiZu1GwUxQb7jzK9Fdks6HFaVBQ9AJtCZZj56eG9qGgvVMVtx8EerBdnzrhFoX437sgwtojf2gfz6S516Ty7c22oEp\"]",
                                                                         "\"context_free_data\": []")
         valid_cmd = default_cmd + self.http_post_str + ("'[%s, %s, %s]'") % (signed_transaction,
-                                                                             "[\"EOS696giL6VxeJhtEgKtWPK8aQeT8YXNjw2a7vE5wHunffhfa5QSQ\"]",
+                                                                             "[\"ALA696giL6VxeJhtEgKtWPK8aQeT8YXNjw2a7vE5wHunffhfa5QSQ\"]",
                                                                              "\"cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f\"")
         ret_json = Utils.runCmdReturnJson(valid_cmd)
         self.assertEqual(ret_json["code"], 500)
@@ -1512,8 +1512,8 @@ class PluginHttpTest(unittest.TestCase):
 
     def test_multipleRequests(self):
         """Test keep-alive ability of HTTP plugin.  Handle multiple requests in a single session"""
-        host = self.nodeos.host
-        port = self.nodeos.port
+        host = self.alanode.host
+        port = self.alanode.port
         addr = (host, port)
         body1 = '{ "block_num_or_id": "1" }\r\n' 
         body2 = '{ "block_num_or_id": "2" }\r\n' 
@@ -1530,7 +1530,7 @@ class PluginHttpTest(unittest.TestCase):
         except Exception as e:
             print(f"unable to connect to {host}:{port}")
             print(e)
-            Utils.errorExit("Failed to connect to nodeos.")
+            Utils.errorExit("Failed to connect to alanode.")
 
         enc = "utf-8"
         sock.settimeout(3)

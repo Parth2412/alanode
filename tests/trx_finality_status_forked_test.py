@@ -40,14 +40,14 @@ walletPort=args.wallet_port
 
 walletMgr=WalletMgr(True, port=walletPort)
 testSuccessful=False
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 killWallet=not dontKill
 
-WalletdName=Utils.EosWalletName
-ClientName="cleos"
+WalletdName=Utils.AlaWalletName
+ClientName="alacli"
 
-EOSIO_ACCT_PRIVATE_DEFAULT_KEY = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
-EOSIO_ACCT_PUBLIC_DEFAULT_KEY = "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
+ALAIO_ACCT_PRIVATE_DEFAULT_KEY = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
+ALAIO_ACCT_PUBLIC_DEFAULT_KEY = "ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
 
 try:
     TestHelper.printSystemInfo("BEGIN")
@@ -56,16 +56,16 @@ try:
     cluster.killall(allInstances=killAll)
     cluster.cleanup()
     Print("Stand up cluster")
-    specificExtraNodeosArgs={}
+    specificExtraAlanodeArgs={}
     # producer nodes will be mapped to 0 through totalProducerNodes-1, so the number totalProducerNodes will be the non-producing node
-    specificExtraNodeosArgs[totalProducerNodes]="--plugin eosio::test_control_api_plugin"
+    specificExtraAlanodeArgs[totalProducerNodes]="--plugin alaio::test_control_api_plugin"
 
     # ensure that transactions don't get cleaned up too early
     successDuration = 360
     failure_duration = 360
-    extraNodeosArgs=" --transaction-finality-status-max-storage-size-gb 1 " + \
+    extraAlanodeArgs=" --transaction-finality-status-max-storage-size-gb 1 " + \
                    f"--transaction-finality-status-success-duration-sec {successDuration} --transaction-finality-status-failure-duration-sec {failure_duration}"
-    extraNodeosArgs+=" --http-max-response-time-ms 990000"
+    extraAlanodeArgs+=" --http-max-response-time-ms 990000"
 
 
     # ***   setup topogrophy   ***
@@ -74,10 +74,10 @@ try:
     # and the only connection between those 2 groups is through the bridge node
     if cluster.launch(prodCount=2, topo="bridge", pnodes=totalProducerNodes,
                       totalNodes=totalNodes, totalProducers=totalProducers,
-                      useBiosBootFile=False, specificExtraNodeosArgs=specificExtraNodeosArgs,
-                      extraNodeosArgs=extraNodeosArgs) is False:
+                      useBiosBootFile=False, specificExtraAlanodeArgs=specificExtraAlanodeArgs,
+                      extraAlanodeArgs=extraAlanodeArgs) is False:
         Utils.cmdError("launcher")
-        Utils.errorExit("Failed to stand up eos cluster.")
+        Utils.errorExit("Failed to stand up ala cluster.")
     Print("Validating system accounts after bootstrap")
     cluster.validateAccounts(None)
 
@@ -110,9 +110,9 @@ try:
 
     Print("Creating account1")
     account1 = Account('account1')
-    account1.ownerPublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    account1.activePublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    cluster.createAccountAndVerify(account1, cluster.eosioAccount, stakedDeposit=1000)
+    account1.ownerPublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    account1.activePublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    cluster.createAccountAndVerify(account1, cluster.alaioAccount, stakedDeposit=1000)
 
     Print("Validating accounts after bootstrap")
     cluster.validateAccounts([account1])
@@ -145,7 +145,7 @@ try:
         return status["state"]
 
     transferAmount = 10
-    prodC.transferFunds(cluster.eosioAccount, account1, f"{transferAmount}.0000 {CORE_SYMBOL}", "fund account")
+    prodC.transferFunds(cluster.alaioAccount, account1, f"{transferAmount}.0000 {CORE_SYMBOL}", "fund account")
     transId = prodC.getLastTrackedTransactionId()
     retStatus = prodC.getTransactionStatus(transId)
     state = getState(retStatus)
@@ -236,7 +236,7 @@ try:
 
     testSuccessful=True
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killEosInstances=killEosInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killAlaInstances=killAlaInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
 
 errorCode = 0 if testSuccessful else 1
 exit(errorCode)

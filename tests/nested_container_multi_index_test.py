@@ -48,9 +48,9 @@ killAll=args.clean_run
 keepLogs=args.keep_logs
 
 killWallet=not dontKill
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 if nodesFile is not None:
-    killEosInstances=False
+    killAlaInstances=False
 
 Utils.Debug=debug
 testSuccessful=False
@@ -58,15 +58,15 @@ testSuccessful=False
 cluster=Cluster(walletd=True)
 
 walletMgr=WalletMgr(True)
-EOSIO_ACCT_PRIVATE_DEFAULT_KEY = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
-EOSIO_ACCT_PUBLIC_DEFAULT_KEY = "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
+ALAIO_ACCT_PRIVATE_DEFAULT_KEY = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
+ALAIO_ACCT_PUBLIC_DEFAULT_KEY = "ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
 contractDir='unittests/test-contracts/nested_container_multi_index'
 wasmFile='nested_container_multi_index.wasm'
 abiFile='nested_container_multi_index.abi'
 
 def create_action(action, data, contract_account, usr):
-    cmdArr= [Utils.EosClientPath, '-v', 'push', 'action', contract_account, action, data, '-p', usr+'@active']
-    clargs = node.eosClientArgs().split()
+    cmdArr= [Utils.AlaClientPath, '-v', 'push', 'action', contract_account, action, data, '-p', usr+'@active']
+    clargs = node.alaClientArgs().split()
     for x in clargs[::-1]:
         cmdArr.insert(1, x)
     result = Utils.checkOutput(cmdArr, ignoreError=False)
@@ -81,7 +81,7 @@ try:
 
     Print("Stand up cluster")
     if cluster.launch(pnodes=1, totalNodes=1) is False:
-        errorExit("Failed to stand up eos cluster.")
+        errorExit("Failed to stand up ala cluster.")
 
     Print ("Wait for Cluster stabilization")
     # wait for cluster to start producing blocks
@@ -90,20 +90,20 @@ try:
 
     Print("Creating multi_index account")
     MIacct = Account('nestcontnmi')
-    MIacct.ownerPublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    MIacct.activePublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    cluster.createAccountAndVerify(MIacct, cluster.eosioAccount, buyRAM=7000000)
+    MIacct.ownerPublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    MIacct.activePublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    cluster.createAccountAndVerify(MIacct, cluster.alaioAccount, buyRAM=7000000)
     Print("Creating user account alice")
     useracct_I = Account('alice')
-    useracct_I.ownerPublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    useracct_I.activePublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    cluster.createAccountAndVerify(useracct_I, cluster.eosioAccount, buyRAM=7000000)
+    useracct_I.ownerPublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    useracct_I.activePublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    cluster.createAccountAndVerify(useracct_I, cluster.alaioAccount, buyRAM=7000000)
 
     Print("Creating user account bob")
     useracct_II = Account('bob')
-    useracct_II.ownerPublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    useracct_II.activePublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    cluster.createAccountAndVerify(useracct_II, cluster.eosioAccount, buyRAM=7000000)
+    useracct_II.ownerPublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    useracct_II.activePublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    cluster.createAccountAndVerify(useracct_II, cluster.alaioAccount, buyRAM=7000000)
 
     Print("Validating accounts")
     cluster.validateAccounts([MIacct, useracct_I, useracct_II])
@@ -111,7 +111,7 @@ try:
     node = cluster.getNode()
 
     Print("Setting account privilege")
-    node.pushMessage(cluster.eosioAccount.name, 'setpriv', '["nestcontnmi", 1]', '-p eosio@active')
+    node.pushMessage(cluster.alaioAccount.name, 'setpriv', '["nestcontnmi", 1]', '-p alaio@active')
 
     Print("Loading nested container contract")
     node.publishContract(MIacct, contractDir, wasmFile, abiFile, waitForTransBlock=True)
@@ -249,7 +249,7 @@ try:
 
     cmd="get table %s %s people2" % (MIacct.name, MIacct.name)   
 
-    transaction = node.processCleosCmd(cmd, cmd, False, returnType=ReturnType.raw)
+    transaction = node.processAlacliCmd(cmd, cmd, False, returnType=ReturnType.raw)
     transaction_json = json.loads(transaction)
 
     assert "[[3], [10], [400, 500, 600]]" == str(transaction_json['rows'][0]['stst']), \
@@ -384,7 +384,7 @@ try:
     assert testSuccessful
     
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killEosInstances, killWallet)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killAlaInstances, killWallet)
 
 if testSuccessful:
     exit(0)

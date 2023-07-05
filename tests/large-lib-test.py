@@ -25,7 +25,7 @@ args=TestHelper.parse_args({"--kill-sig","--kill-count","--keep-logs"
 pnodes=1
 total_nodes=3 # first one is producer, and last two are speculative nodes
 debug=args.v
-killEosInstances=not args.leave_running
+killAlaInstances=not args.leave_running
 dumpErrorDetails=args.dump_error_details
 keepLogs=args.keep_logs
 killAll=args.clean_run
@@ -59,9 +59,9 @@ try:
     walletMgr.cleanup()
 
     # set the last two nodes as speculative
-    specificExtraNodeosArgs={}
-    specificExtraNodeosArgs[1]="--read-mode speculative "
-    specificExtraNodeosArgs[2]="--read-mode speculative "
+    specificExtraAlanodeArgs={}
+    specificExtraAlanodeArgs[1]="--read-mode speculative "
+    specificExtraAlanodeArgs[2]="--read-mode speculative "
 
     Print("Stand up cluster")
     if cluster.launch(
@@ -70,8 +70,8 @@ try:
             totalProducers=1,
             useBiosBootFile=False,
             topo="mesh",
-            specificExtraNodeosArgs=specificExtraNodeosArgs) is False:
-        errorExit("Failed to stand up eos cluster.")
+            specificExtraAlanodeArgs=specificExtraAlanodeArgs) is False:
+        errorExit("Failed to stand up ala cluster.")
 
     producingNode=cluster.getNode(0)
     speculativeNode1=cluster.getNode(1)
@@ -89,7 +89,7 @@ try:
     for clusterNode in cluster.nodes:
         clusterNode.kill(signal.SIGTERM)
     cluster.biosNode.kill(signal.SIGTERM)
-    Print("All nodeos instances killed.")
+    Print("All alanode instances killed.")
 
     # Remove both state and blocks such that no replay happens
     Print("Remove producer node's state and blocks directories")
@@ -98,8 +98,8 @@ try:
     Utils.rmNodeDataDir(2)
 
     Print ("Relaunch all cluster nodes instances.")
-    # -e -p eosio for resuming production, skipGenesis=False for launch the same chain as before
-    relaunchNode(producingNode, chainArg="-e -p eosio --sync-fetch-span 5 ", skipGenesis=False)
+    # -e -p alaio for resuming production, skipGenesis=False for launch the same chain as before
+    relaunchNode(producingNode, chainArg="-e -p alaio --sync-fetch-span 5 ", skipGenesis=False)
     relaunchNode(speculativeNode1, chainArg="--sync-fetch-span 5 ")
     relaunchNode(speculativeNode2, chainArg="--sync-fetch-span 5 ", skipGenesis=False)
 
@@ -123,7 +123,7 @@ try:
     testSuccessful=True
 
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killEosInstances=killEosInstances, killWallet=killEosInstances, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killAlaInstances=killAlaInstances, killWallet=killAlaInstances, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
 
 exitCode = 0 if testSuccessful else 1
 exit(exitCode)

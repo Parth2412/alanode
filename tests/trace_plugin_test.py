@@ -16,7 +16,7 @@ class TraceApiPluginTest(unittest.TestCase):
     accounts = []
     cluster.setWalletMgr(walletMgr)
 
-    # kill nodeos and keosd and clean up dir
+    # kill alanode and kalad and clean up dir
     def cleanEnv(self, shouldCleanup: bool) :
         self.cluster.killall(allInstances=True)
         if shouldCleanup:
@@ -25,15 +25,15 @@ class TraceApiPluginTest(unittest.TestCase):
         if shouldCleanup:
             self.walletMgr.cleanup()
 
-    # start keosd and nodeos
+    # start kalad and alanode
     def startEnv(self) :
         account_names = ["alice", "bob", "charlie"]
-        abs_path = os.path.abspath(os.getcwd() + '/unittests/contracts/eosio.token/eosio.token.abi')
-        traceNodeosArgs = " --trace-rpc-abi eosio.token=" + abs_path
-        self.cluster.launch(totalNodes=1, extraNodeosArgs=traceNodeosArgs)
+        abs_path = os.path.abspath(os.getcwd() + '/unittests/contracts/alaio.token/alaio.token.abi')
+        traceAlanodeArgs = " --trace-rpc-abi alaio.token=" + abs_path
+        self.cluster.launch(totalNodes=1, extraAlanodeArgs=traceAlanodeArgs)
         self.walletMgr.launch()
         testWalletName="testwallet"
-        testWallet=self.walletMgr.create(testWalletName, [self.cluster.eosioAccount, self.cluster.defproduceraAccount])
+        testWallet=self.walletMgr.create(testWalletName, [self.cluster.alaioAccount, self.cluster.defproduceraAccount])
         self.cluster.validateAccounts(None)
         self.accounts=Cluster.createAccountKeys(len(account_names))
         node = self.cluster.getNode(0)
@@ -41,7 +41,7 @@ class TraceApiPluginTest(unittest.TestCase):
             self.accounts[idx].name =  account_names[idx]
             self.walletMgr.importKey(self.accounts[idx], testWallet)
         for account in self.accounts:
-            node.createInitializeAccount(account, self.cluster.eosioAccount, buyRAM=1000000, stakedDeposit=5000000, waitForTransBlock=True, exitOnError=True)
+            node.createInitializeAccount(account, self.cluster.alaioAccount, buyRAM=1000000, stakedDeposit=5000000, waitForTransBlock=True, exitOnError=True)
         time.sleep(self.sleep_s)
 
     def get_block(self, params: str, node: Node) -> json:
@@ -57,7 +57,7 @@ class TraceApiPluginTest(unittest.TestCase):
         expectedAmount = Node.currencyIntToStr(5000000, CORE_SYMBOL)
         account_balances = []
         for account in self.accounts:
-            amount = node.getAccountEosBalanceStr(account.name)
+            amount = node.getAccountAlaBalanceStr(account.name)
             self.assertEqual(amount, expectedAmount)
             account_balances.append(amount)
 
@@ -66,8 +66,8 @@ class TraceApiPluginTest(unittest.TestCase):
         transId = Node.getTransId(trans)
         blockNum = Node.getTransBlockNum(trans)
 
-        self.assertEqual(node.getAccountEosBalanceStr(self.accounts[0].name), Utils.deduceAmount(expectedAmount, xferAmount))
-        self.assertEqual(node.getAccountEosBalanceStr(self.accounts[1].name), Utils.addAmount(expectedAmount, xferAmount))
+        self.assertEqual(node.getAccountAlaBalanceStr(self.accounts[0].name), Utils.deduceAmount(expectedAmount, xferAmount))
+        self.assertEqual(node.getAccountAlaBalanceStr(self.accounts[1].name), Utils.addAmount(expectedAmount, xferAmount))
         time.sleep(self.sleep_s)
 
         # verify trans via node api before calling trace_api RPC

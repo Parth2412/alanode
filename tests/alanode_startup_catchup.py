@@ -11,7 +11,7 @@ from TestHarness.Node import BlockType
 from TestHarness.TestHelper import AppArgs
 
 ###############################################################
-# nodeos_startup_catchup
+# alanode_startup_catchup
 #
 #  Test configures a producing node and <--txn-plugins count> non-producing nodes with the
 #  txn_test_gen_plugin.  Each non-producing node starts generating transactions and sending them
@@ -50,11 +50,11 @@ totalNodes=startedNonProdNodes+pnodes+catchupCount
 
 walletMgr=WalletMgr(True, port=walletPort)
 testSuccessful=False
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 killWallet=not dontKill
 
-WalletdName=Utils.EosWalletName
-ClientName="cleos"
+WalletdName=Utils.AlaWalletName
+ClientName="alacli"
 
 try:
     TestHelper.printSystemInfo("BEGIN")
@@ -62,14 +62,14 @@ try:
 
     cluster.killall(allInstances=killAll)
     cluster.cleanup()
-    specificExtraNodeosArgs={}
+    specificExtraAlanodeArgs={}
     txnGenNodeNum=pnodes  # next node after producer nodes
     for nodeNum in range(txnGenNodeNum, txnGenNodeNum+startedNonProdNodes):
-        specificExtraNodeosArgs[nodeNum]="--plugin eosio::txn_test_gen_plugin --txn-test-gen-account-prefix txntestacct"
+        specificExtraAlanodeArgs[nodeNum]="--plugin alaio::txn_test_gen_plugin --txn-test-gen-account-prefix txntestacct"
     Print("Stand up cluster")
     if cluster.launch(prodCount=prodCount, onlyBios=False, pnodes=pnodes, totalNodes=totalNodes, totalProducers=pnodes*prodCount,
-                      useBiosBootFile=False, specificExtraNodeosArgs=specificExtraNodeosArgs, unstartedNodes=catchupCount, loadSystemContract=False) is False:
-        Utils.errorExit("Failed to stand up eos cluster.")
+                      useBiosBootFile=False, specificExtraAlanodeArgs=specificExtraAlanodeArgs, unstartedNodes=catchupCount, loadSystemContract=False) is False:
+        Utils.errorExit("Failed to stand up ala cluster.")
 
     Print("Validating system accounts after bootstrap")
     cluster.validateAccounts(None)
@@ -80,7 +80,7 @@ try:
         txnGenNodes.append(cluster.getNode(nodeNum))
 
     Print("Create accounts for generated txns")
-    txnGenNodes[0].txnGenCreateTestAccounts(cluster.eosioAccount.name, cluster.eosioAccount.activePrivateKey)
+    txnGenNodes[0].txnGenCreateTestAccounts(cluster.alaioAccount.name, cluster.alaioAccount.activePrivateKey)
 
     def lib(node):
         return node.getBlockNum(BlockType.lib)
@@ -192,7 +192,7 @@ try:
     testSuccessful=True
 
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killEosInstances=killEosInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killAlaInstances=killAlaInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
 
 exitCode = 0 if testSuccessful else 1
 exit(exitCode)

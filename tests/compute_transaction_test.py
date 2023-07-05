@@ -33,9 +33,9 @@ killAll=args.clean_run
 keepLogs=args.keep_logs
 
 killWallet=not dontKill
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 if nodesFile is not None:
-    killEosInstances=False
+    killAlaInstances=False
 
 Utils.Debug=debug
 testSuccessful=False
@@ -44,8 +44,8 @@ random.seed(seed) # Use a fixed seed for repeatability.
 cluster=Cluster(walletd=True)
 
 walletMgr=WalletMgr(True)
-EOSIO_ACCT_PRIVATE_DEFAULT_KEY = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
-EOSIO_ACCT_PUBLIC_DEFAULT_KEY = "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
+ALAIO_ACCT_PRIVATE_DEFAULT_KEY = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
+ALAIO_ACCT_PUBLIC_DEFAULT_KEY = "ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
 
 try:
     if dontLaunch: # run test against remote cluster
@@ -60,7 +60,7 @@ try:
         walletMgr.cleanup()
         print("Stand up walletd")
         if walletMgr.launch() is False:
-            errorExit("Failed to stand up keosd.")
+            errorExit("Failed to stand up kalad.")
         else:
             cluster.killall(allInstances=killAll)
             cluster.cleanup()
@@ -68,9 +68,9 @@ try:
     Print ("producing nodes: %s, non-producing nodes: %d, topology: %s, delay between nodes launch(seconds): %d" % (pnodes, total_nodes-pnodes, topo, delay))
 
     Print("Stand up cluster")
-    extraNodeosArgs=" --http-max-response-time-ms 990000 --disable-subjective-api-billing false "
-    if cluster.launch(pnodes=pnodes, totalNodes=total_nodes, topo=topo, delay=delay,extraNodeosArgs=extraNodeosArgs ) is False:
-       errorExit("Failed to stand up eos cluster.")
+    extraAlanodeArgs=" --http-max-response-time-ms 990000 --disable-subjective-api-billing false "
+    if cluster.launch(pnodes=pnodes, totalNodes=total_nodes, topo=topo, delay=delay,extraAlanodeArgs=extraAlanodeArgs ) is False:
+       errorExit("Failed to stand up ala cluster.")
 
     Print ("Wait for Cluster stabilization")
     # wait for cluster to start producing blocks
@@ -79,15 +79,15 @@ try:
 
     Print("Creating account1")
     account1 = Account('account1')
-    account1.ownerPublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    account1.activePublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    cluster.createAccountAndVerify(account1, cluster.eosioAccount, stakedDeposit=1000)
+    account1.ownerPublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    account1.activePublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    cluster.createAccountAndVerify(account1, cluster.alaioAccount, stakedDeposit=1000)
 
     Print("Creating account2")
     account2 = Account('account2')
-    account2.ownerPublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    account2.activePublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    cluster.createAccountAndVerify(account2, cluster.eosioAccount, stakedDeposit=1000, stakeCPU=1)
+    account2.ownerPublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    account2.activePublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    cluster.createAccountAndVerify(account2, cluster.alaioAccount, stakedDeposit=1000, stakeCPU=1)
 
     Print("Validating accounts after bootstrap")
     cluster.validateAccounts([account1, account2])
@@ -100,14 +100,14 @@ try:
 
     transferAmount="1000.0000 {0}".format(CORE_SYMBOL)
 
-    node.transferFunds(cluster.eosioAccount, account1, transferAmount, "fund account")
-    preBalances = node.getEosBalances([account1, account2])
+    node.transferFunds(cluster.alaioAccount, account1, transferAmount, "fund account")
+    preBalances = node.getAlaBalances([account1, account2])
     Print("Starting balances:")
     Print(preBalances)
 
     Print("Sending read-only transfer")
     trx = {
-        "actions": [{"account": "eosio.token","name": "transfer",
+        "actions": [{"account": "alaio.token","name": "transfer",
         "authorization": [{"actor": "account1","permission": "active"}],
         "data": {"from": "account1","to": "account2","quantity": "1.0001 SYS","memo": "tx1"},
         "compression": "none"}]
@@ -119,7 +119,7 @@ try:
     assert(results[0])
     node.waitForLibToAdvance(30)
 
-    postBalances = node.getEosBalances([account1, account2])
+    postBalances = node.getAlaBalances([account1, account2])
     assert(postBalances == preBalances)
 
     results = node.pushTransaction(trx, opts='--read-only --skip-sign')
@@ -128,7 +128,7 @@ try:
     assert(results[0])
     node.waitForLibToAdvance(30)
 
-    postBalances = node.getEosBalances([account1, account2])
+    postBalances = node.getAlaBalances([account1, account2])
 
     assert(postBalances == preBalances)
 
@@ -137,7 +137,7 @@ try:
         memo = 'tx-{}'.format(x)
         trx2 = {
 
-            "actions": [{"account": "eosio.token","name": "transfer",
+            "actions": [{"account": "alaio.token","name": "transfer",
                          "authorization": [{"actor": "account2","permission": "active"}],
                          "data": {"from": "account2","to": "account1","quantity": "10.0001 SYS","memo": memo},
                          "compression": "none"}]
@@ -157,7 +157,7 @@ try:
         memo = 'tx-{}'.format(x)
         trx2 = {
 
-            "actions": [{"account": "eosio.token","name": "transfer",
+            "actions": [{"account": "alaio.token","name": "transfer",
                          "authorization": [{"actor": "account2","permission": "active"}],
                          "data": {"from": "account2","to": "account1","quantity": "10.0001 SYS","memo": memo},
                          "compression": "none"}]
@@ -173,7 +173,7 @@ try:
     # Test that irrelavent signature doesn't break read-only txn
     trx3 = {
 
-        "actions": [{"account": "eosio.token","name": "transfer",
+        "actions": [{"account": "alaio.token","name": "transfer",
                      "authorization": [{"actor": "account1","permission": "active"},{"actor": "account2","permission": "active"}],
                      "data": {"from": "account1","to": "account2","quantity": "10.0001 SYS","memo": memo},
                      "compression": "none"}]
@@ -185,7 +185,7 @@ try:
 
     testSuccessful = True
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killEosInstances, killWallet, keepLogs, killAll, dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killAlaInstances, killWallet, keepLogs, killAll, dumpErrorDetails)
 
 errorCode = 0 if testSuccessful else 1
 exit(errorCode)

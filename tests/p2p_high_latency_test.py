@@ -59,24 +59,24 @@ dontKill=args.leave_running
 killAll=args.clean_run
 
 testSuccessful=False
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 
-specificExtraNodeosArgs={}
+specificExtraAlanodeArgs={}
 producerNodeId=0
 syncingNodeId=1
 
-specificExtraNodeosArgs[producerNodeId]=" --p2p-listen-endpoint 0.0.0.0:{}".format(9876+producerNodeId)
-specificExtraNodeosArgs[syncingNodeId]="--p2p-peer-address 0.0.0.0:{}".format(9876+producerNodeId)
+specificExtraAlanodeArgs[producerNodeId]=" --p2p-listen-endpoint 0.0.0.0:{}".format(9876+producerNodeId)
+specificExtraAlanodeArgs[syncingNodeId]="--p2p-peer-address 0.0.0.0:{}".format(9876+producerNodeId)
 
 try:
     TestHelper.printSystemInfo("BEGIN")
     cluster.killall(allInstances=killAll)
     cluster.cleanup()
-    traceNodeosArgs=" --plugin eosio::producer_plugin --produce-time-offset-us 0 --last-block-time-offset-us 0 --cpu-effort-percent 100 \
-        --last-block-cpu-effort-percent 100 --producer-threads 1 --plugin eosio::net_plugin --net-threads 1"
-    if cluster.launch(pnodes=1, totalNodes=totalNodes, totalProducers=1, useBiosBootFile=False, specificExtraNodeosArgs=specificExtraNodeosArgs, extraNodeosArgs=traceNodeosArgs) is False:
+    traceAlanodeArgs=" --plugin alaio::producer_plugin --produce-time-offset-us 0 --last-block-time-offset-us 0 --cpu-effort-percent 100 \
+        --last-block-cpu-effort-percent 100 --producer-threads 1 --plugin alaio::net_plugin --net-threads 1"
+    if cluster.launch(pnodes=1, totalNodes=totalNodes, totalProducers=1, useBiosBootFile=False, specificExtraAlanodeArgs=specificExtraAlanodeArgs, extraAlanodeArgs=traceAlanodeArgs) is False:
         Utils.cmdError("launcher")
-        Utils.errorExit("Failed to stand up eos cluster.")
+        Utils.errorExit("Failed to stand up ala cluster.")
 
     cluster.waitOnClusterSync(blockAdvancing=5)
     Utils.Print("Cluster in Sync")
@@ -107,7 +107,7 @@ try:
         print(err.decode("utf-8")) # print error details of network slowdown termination commands
         Utils.errorExit("failed to remove network latency, exited with error code {}".format(ReturnCode))
 finally:
-    TestHelper.shutdown(cluster, None, testSuccessful, killEosInstances, False, keepLogs, killAll, dumpErrorDetails)
+    TestHelper.shutdown(cluster, None, testSuccessful, killAlaInstances, False, keepLogs, killAll, dumpErrorDetails)
 
 exitCode = 0 if testSuccessful else 1
 exit(exitCode)

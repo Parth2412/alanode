@@ -1,6 +1,6 @@
-#include <eosio/abi.hpp>
-#include <eosio/convert.hpp>
-#include <eosio/from_json.hpp>
+#include <alaio/abi.hpp>
+#include <alaio/convert.hpp>
+#include <alaio/from_json.hpp>
 
 #include <rapidjson/document.h>
 #include <rapidjson/prettywriter.h>
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
    boost::asio::io_context ctx;
    boost::asio::ip::tcp::resolver resolver(ctx);
    ws::stream<boost::asio::ip::tcp::socket> tcp_stream(ctx);
-   eosio::abi abi;
+   alaio::abi abi;
 
    unixs::socket unix_socket(ctx);
    ws::stream<unixs::socket> unix_stream(ctx);
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
       statehistory_server = socket_address.substr(socket_address.find("unix://") + strlen("unix://") + 1);
    } else {
       std::string::size_type colon = socket_address.find(':');
-      eosio::check(colon != std::string::npos, "Missing ':' seperator in Websocket address and port");
+      alaio::check(colon != std::string::npos, "Missing ':' seperator in Websocket address and port");
       statehistory_server = socket_address.substr(0, colon);
       statehistory_port = socket_address.substr(colon + 1);
    }
@@ -82,16 +82,16 @@ int main(int argc, char* argv[]) {
             stream.read(abi_buffer);
             std::string abi_string((const char*)abi_buffer.data().data(),
                                    abi_buffer.data().size());
-            eosio::json_token_stream token_stream(abi_string.data());
-            eosio::abi_def abidef =
-                eosio::from_json<eosio::abi_def>(token_stream);
-            eosio::convert(abidef, abi);
+            alaio::json_token_stream token_stream(abi_string.data());
+            alaio::abi_def abidef =
+                alaio::from_json<alaio::abi_def>(token_stream);
+            alaio::convert(abidef, abi);
          }
 
          std::cerr << "{\n   \"status\": \"set_abi\",\n   \"time\": " << time(NULL) << "\n},\n";
 
-         const eosio::abi_type& request_type = abi.abi_types.at("request");
-         const eosio::abi_type& result_type = abi.abi_types.at("result");
+         const alaio::abi_type& request_type = abi.abi_types.at("request");
+         const alaio::abi_type& result_type = abi.abi_types.at("result");
 
          bool is_first = true;
          uint32_t first_block_num = 0;
@@ -112,21 +112,21 @@ int main(int argc, char* argv[]) {
             boost::beast::flat_buffer buffer;
             stream.read(buffer);
 
-            eosio::input_stream is((const char*)buffer.data().data(), buffer.data().size());
+            alaio::input_stream is((const char*)buffer.data().data(), buffer.data().size());
             rapidjson::Document result_doucment;
             result_doucment.Parse(result_type.bin_to_json(is).c_str());
 
-            eosio::check(!result_doucment.HasParseError(),                                      "Failed to parse result JSON from abieos");
-            eosio::check(result_doucment.IsArray(),                                             "result should have been an array (variant) but it's not");
-            eosio::check(result_doucment.Size() == 2,                                           "result was an array but did not contain 2 items like a variant should");
-            eosio::check(std::string(result_doucment[0].GetString()) == "get_status_result_v0", "result type doesn't look like get_status_result_v0");
-            eosio::check(result_doucment[1].IsObject(),                                         "second item in result array is not an object");
-            eosio::check(result_doucment[1].HasMember("head"),                                  "cannot find 'head' in result");
-            eosio::check(result_doucment[1]["head"].IsObject(),                                 "'head' is not an object");
-            eosio::check(result_doucment[1]["head"].HasMember("block_num"),                     "'head' does not contain 'block_num'");
-            eosio::check(result_doucment[1]["head"]["block_num"].IsUint(),                      "'head.block_num' isn't a number");
-            eosio::check(result_doucment[1]["head"].HasMember("block_id"),                      "'head' does not contain 'block_id'");
-            eosio::check(result_doucment[1]["head"]["block_id"].IsString(),                     "'head.block_id' isn't a string");
+            alaio::check(!result_doucment.HasParseError(),                                      "Failed to parse result JSON from abiala");
+            alaio::check(result_doucment.IsArray(),                                             "result should have been an array (variant) but it's not");
+            alaio::check(result_doucment.Size() == 2,                                           "result was an array but did not contain 2 items like a variant should");
+            alaio::check(std::string(result_doucment[0].GetString()) == "get_status_result_v0", "result type doesn't look like get_status_result_v0");
+            alaio::check(result_doucment[1].IsObject(),                                         "second item in result array is not an object");
+            alaio::check(result_doucment[1].HasMember("head"),                                  "cannot find 'head' in result");
+            alaio::check(result_doucment[1]["head"].IsObject(),                                 "'head' is not an object");
+            alaio::check(result_doucment[1]["head"].HasMember("block_num"),                     "'head' does not contain 'block_num'");
+            alaio::check(result_doucment[1]["head"]["block_num"].IsUint(),                      "'head.block_num' isn't a number");
+            alaio::check(result_doucment[1]["head"].HasMember("block_id"),                      "'head' does not contain 'block_id'");
+            alaio::check(result_doucment[1]["head"]["block_id"].IsString(),                     "'head.block_id' isn't a string");
 
             uint32_t this_block_num = result_doucment[1]["head"]["block_num"].GetUint();
 

@@ -1,14 +1,14 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
-#include <eosio/testing/tester.hpp>
-#include <eosio/chain/abi_serializer.hpp>
-#include <eosio/chain/wasm_eosio_constraints.hpp>
-#include <eosio/chain/resource_limits.hpp>
-#include <eosio/chain/exceptions.hpp>
-#include <eosio/chain/wast_to_wasm.hpp>
-#include <eosio/chain/global_property_object.hpp>
-#include <eosio/chain_plugin/chain_plugin.hpp>
+#include <alaio/testing/tester.hpp>
+#include <alaio/chain/abi_serializer.hpp>
+#include <alaio/chain/wasm_alaio_constraints.hpp>
+#include <alaio/chain/resource_limits.hpp>
+#include <alaio/chain/exceptions.hpp>
+#include <alaio/chain/wast_to_wasm.hpp>
+#include <alaio/chain/global_property_object.hpp>
+#include <alaio/chain_plugin/chain_plugin.hpp>
 
 #include <contracts.hpp>
 
@@ -28,9 +28,9 @@
 #define TESTER validating_tester
 #endif
 
-using namespace eosio;
-using namespace eosio::chain;
-using namespace eosio::testing;
+using namespace alaio;
+using namespace alaio::chain;
+using namespace alaio::testing;
 using namespace fc;
 
 BOOST_AUTO_TEST_SUITE(chain_plugin_tests)
@@ -175,7 +175,7 @@ BOOST_FIXTURE_TEST_CASE( get_account, TESTER ) try {
 
    chain_apis::read_only::get_account_results result = plugin.read_only::get_account(p, fc::time_point::maximum());
 
-   auto check_result_basic = [](chain_apis::read_only::get_account_results result, eosio::name nm, bool isPriv) {
+   auto check_result_basic = [](chain_apis::read_only::get_account_results result, alaio::name nm, bool isPriv) {
       BOOST_REQUIRE_EQUAL(nm, result.account_name);
       BOOST_REQUIRE_EQUAL(isPriv, result.privileged);
 
@@ -208,7 +208,7 @@ BOOST_FIXTURE_TEST_CASE( get_account, TESTER ) try {
       if (perm.linked_actions.has_value())
          BOOST_REQUIRE_EQUAL(0, perm.linked_actions->size());
    }
-   BOOST_REQUIRE_EQUAL(0, result.eosio_any_linked_actions.size());
+   BOOST_REQUIRE_EQUAL(0, result.alaio_any_linked_actions.size());
 
    // test link authority
    link_authority(name("alice"_n), name("bob"_n), name("active"_n), name("foo"_n));
@@ -226,21 +226,21 @@ BOOST_FIXTURE_TEST_CASE( get_account, TESTER ) try {
          BOOST_REQUIRE_EQUAL(name("foo"_n), la.action.value());
       }
    }
-   BOOST_REQUIRE_EQUAL(0, result.eosio_any_linked_actions.size());
+   BOOST_REQUIRE_EQUAL(0, result.alaio_any_linked_actions.size());
 
-   // test link authority to eosio.any
-   link_authority(name("alice"_n), name("bob"_n), name("eosio.any"_n), name("foo"_n));
+   // test link authority to alaio.any
+   link_authority(name("alice"_n), name("bob"_n), name("alaio.any"_n), name("foo"_n));
    produce_block();
    result = plugin.read_only::get_account(p, fc::time_point::maximum());
    check_result_basic(result, name("alice"_n), false);
-   // active permission should no longer have linked auth, as eosio.any replaces it
+   // active permission should no longer have linked auth, as alaio.any replaces it
    perm = result.permissions[0];
    BOOST_REQUIRE_EQUAL(0, perm.linked_actions->size());
 
-   auto eosio_any_la = result.eosio_any_linked_actions;
-   BOOST_REQUIRE_EQUAL(1, eosio_any_la.size());
-   if (eosio_any_la.size() >= 1) {
-      auto la = eosio_any_la[0];
+   auto alaio_any_la = result.alaio_any_linked_actions;
+   BOOST_REQUIRE_EQUAL(1, alaio_any_la.size());
+   if (alaio_any_la.size() >= 1) {
+      auto la = alaio_any_la[0];
       BOOST_REQUIRE_EQUAL(name("bob"_n), la.account);
       BOOST_REQUIRE_EQUAL(true, la.action.has_value());
       if(la.action.has_value()) {

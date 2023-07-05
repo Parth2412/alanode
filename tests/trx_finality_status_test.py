@@ -47,14 +47,14 @@ walletPort=TestHelper.DEFAULT_WALLET_PORT
 
 walletMgr=WalletMgr(True, port=walletPort)
 testSuccessful=False
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 killWallet=not dontKill
 
-WalletdName=Utils.EosWalletName
-ClientName="cleos"
+WalletdName=Utils.AlaWalletName
+ClientName="alacli"
 
-EOSIO_ACCT_PRIVATE_DEFAULT_KEY = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
-EOSIO_ACCT_PUBLIC_DEFAULT_KEY = "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
+ALAIO_ACCT_PRIVATE_DEFAULT_KEY = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
+ALAIO_ACCT_PUBLIC_DEFAULT_KEY = "ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
 
 try:
     TestHelper.printSystemInfo("BEGIN")
@@ -65,12 +65,12 @@ try:
     Print("Stand up cluster")
     successDuration = 60
     failure_duration = 40
-    extraNodeosArgs=" --transaction-finality-status-max-storage-size-gb 1 " + \
+    extraAlanodeArgs=" --transaction-finality-status-max-storage-size-gb 1 " + \
                    f"--transaction-finality-status-success-duration-sec {successDuration} --transaction-finality-status-failure-duration-sec {failure_duration}"
-    extraNodeosArgs+=" --http-max-response-time-ms 990000"
+    extraAlanodeArgs+=" --http-max-response-time-ms 990000"
     if cluster.launch(prodCount=prodCount, onlyBios=False, pnodes=pnodes, totalNodes=totalNodes, totalProducers=pnodes*prodCount,
-                      useBiosBootFile=False, topo="line", extraNodeosArgs=extraNodeosArgs) is False:
-        Utils.errorExit("Failed to stand up eos cluster.")
+                      useBiosBootFile=False, topo="line", extraAlanodeArgs=extraAlanodeArgs) is False:
+        Utils.errorExit("Failed to stand up ala cluster.")
 
     Print("Validating system accounts after bootstrap")
     cluster.validateAccounts(None)
@@ -88,15 +88,15 @@ try:
 
     Print("Creating account1")
     account1 = Account('account1')
-    account1.ownerPublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    account1.activePublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    cluster.createAccountAndVerify(account1, cluster.eosioAccount, stakedDeposit=1000)
+    account1.ownerPublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    account1.activePublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    cluster.createAccountAndVerify(account1, cluster.alaioAccount, stakedDeposit=1000)
 
     Print("Creating account2")
     account2 = Account('account2')
-    account2.ownerPublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    account2.activePublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    cluster.createAccountAndVerify(account2, cluster.eosioAccount, stakedDeposit=1000)
+    account2.ownerPublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    account2.activePublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    cluster.createAccountAndVerify(account2, cluster.alaioAccount, stakedDeposit=1000)
 
     Print("Validating accounts after bootstrap")
     cluster.validateAccounts([account1, account2])
@@ -136,7 +136,7 @@ try:
     # through the chain of nodes to node0 to be added to a block. It is still possible to hit the end of a block and state be IN_BLOCK here.
     # defproducera -> defproducerb -> defproducerc -> NPN
     prod0.waitForProducer("defproducera", exitOnError=True)
-    testNode.transferFunds(cluster.eosioAccount, account1, f"{transferAmount}.0000 {CORE_SYMBOL}", "fund account")
+    testNode.transferFunds(cluster.alaioAccount, account1, f"{transferAmount}.0000 {CORE_SYMBOL}", "fund account")
     transId=testNode.getLastTrackedTransactionId()
     retStatus=testNode.getTransactionStatus(transId)
     state = getState(retStatus)
@@ -217,7 +217,7 @@ try:
     testSuccessful=True
 
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killEosInstances=killEosInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killAlaInstances=killAlaInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
 
 exitCode = 0 if testSuccessful else 1
 exit(exitCode)

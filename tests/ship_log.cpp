@@ -6,7 +6,7 @@
 #include <fc/io/raw.hpp>
 #include <fc/bitutil.hpp>
 
-#include <eosio/state_history/log.hpp>
+#include <alaio/state_history/log.hpp>
 
 namespace bdata = boost::unit_test::data;
 
@@ -28,7 +28,7 @@ struct ship_log_fixture {
          return m;
       };
 
-      eosio::state_history_log_header header;
+      alaio::state_history_log_header header;
       header.block_id = block_for_id(index, fillchar);
       header.payload_size = a.size();
 
@@ -48,7 +48,7 @@ struct ship_log_fixture {
          for(auto i = first; i <= last; i++) {
             std::vector<char> buff;
             buff.resize(written_data.at(i).size());
-            eosio::state_history_log_header header;
+            alaio::state_history_log_header header;
             fc::cfile& cf = log->get_entry(i, header);
             cf.read(buff.data(), written_data.at(i).size());
             BOOST_REQUIRE(buff == written_data.at(i));
@@ -57,8 +57,8 @@ struct ship_log_fixture {
    }
 
    void check_not_present(uint32_t index) {
-      eosio::state_history_log_header header;
-      BOOST_REQUIRE_EXCEPTION(log->get_entry(index, header), eosio::chain::plugin_exception, [](const eosio::chain::plugin_exception& e) {
+      alaio::state_history_log_header header;
+      BOOST_REQUIRE_EXCEPTION(log->get_entry(index, header), alaio::chain::plugin_exception, [](const alaio::chain::plugin_exception& e) {
           return e.to_detail_string().find("read non-existing block in") != std::string::npos;
       });
    }
@@ -82,7 +82,7 @@ struct ship_log_fixture {
    fc::temp_file log_file;
    fc::temp_file index_file;
 
-   std::optional<eosio::state_history_log> log;
+   std::optional<alaio::state_history_log> log;
 
    std::vector<std::vector<char>> written_data;
 
@@ -91,7 +91,7 @@ private:
       log.reset();
       if(remove_index_on_reopen)
          fc::remove(index_file.path());
-      std::optional<eosio::state_history_log_prune_config> prune_conf;
+      std::optional<alaio::state_history_log_prune_config> prune_conf;
       if(prune_blocks) {
          prune_conf.emplace();
          prune_conf->prune_blocks = *prune_blocks;
@@ -217,12 +217,12 @@ BOOST_DATA_TEST_CASE(basic_prune_test, bdata::xrange(2) * bdata::xrange(2) * bda
    });
 
    //invalid fork, previous should be 'X'
-   BOOST_REQUIRE_EXCEPTION(t.add(14, payload_size, '*', 'W' ), eosio::chain::plugin_exception, [](const eosio::chain::plugin_exception& e) {
+   BOOST_REQUIRE_EXCEPTION(t.add(14, payload_size, '*', 'W' ), alaio::chain::plugin_exception, [](const alaio::chain::plugin_exception& e) {
       return e.to_detail_string().find("missed a fork change") != std::string::npos;
    });
 
    //start from genesis not allowed
-   BOOST_REQUIRE_EXCEPTION(t.add(2, payload_size, 'A', 'A');, eosio::chain::plugin_exception, [](const eosio::chain::plugin_exception& e) {
+   BOOST_REQUIRE_EXCEPTION(t.add(2, payload_size, 'A', 'A');, alaio::chain::plugin_exception, [](const alaio::chain::plugin_exception& e) {
       std::string err = e.to_detail_string();
       return err.find("Existing ship log") != std::string::npos && err.find("when starting from genesis block") != std::string::npos;
    });
@@ -273,33 +273,33 @@ BOOST_AUTO_TEST_CASE(empty) { try {
    fc::temp_file index_file;
 
    {
-      eosio::state_history_log log("empty", log_file.path().string(), index_file.path().string());
+      alaio::state_history_log log("empty", log_file.path().string(), index_file.path().string());
       BOOST_REQUIRE_EQUAL(log.begin_block(), log.end_block());
    }
    //reopen
    {
-      eosio::state_history_log log("empty", log_file.path().string(), index_file.path().string());
+      alaio::state_history_log log("empty", log_file.path().string(), index_file.path().string());
       BOOST_REQUIRE_EQUAL(log.begin_block(), log.end_block());
    }
    //reopen but prunned set
-   const eosio::state_history_log_prune_config simple_prune_conf = {
+   const alaio::state_history_log_prune_config simple_prune_conf = {
       .prune_blocks = 4
    };
    {
-      eosio::state_history_log log("empty", log_file.path().string(), index_file.path().string(), simple_prune_conf);
+      alaio::state_history_log log("empty", log_file.path().string(), index_file.path().string(), simple_prune_conf);
       BOOST_REQUIRE_EQUAL(log.begin_block(), log.end_block());
    }
    {
-      eosio::state_history_log log("empty", log_file.path().string(), index_file.path().string(), simple_prune_conf);
+      alaio::state_history_log log("empty", log_file.path().string(), index_file.path().string(), simple_prune_conf);
       BOOST_REQUIRE_EQUAL(log.begin_block(), log.end_block());
    }
    //back to non pruned
    {
-      eosio::state_history_log log("empty", log_file.path().string(), index_file.path().string());
+      alaio::state_history_log log("empty", log_file.path().string(), index_file.path().string());
       BOOST_REQUIRE_EQUAL(log.begin_block(), log.end_block());
    }
    {
-      eosio::state_history_log log("empty", log_file.path().string(), index_file.path().string());
+      alaio::state_history_log log("empty", log_file.path().string(), index_file.path().string());
       BOOST_REQUIRE_EQUAL(log.begin_block(), log.end_block());
    }
 
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE(empty) { try {
 
    //one more time to pruned, just to make sure
    {
-      eosio::state_history_log log("empty", log_file.path().string(), index_file.path().string(), simple_prune_conf);
+      alaio::state_history_log log("empty", log_file.path().string(), index_file.path().string(), simple_prune_conf);
       BOOST_REQUIRE_EQUAL(log.begin_block(), log.end_block());
    }
    BOOST_REQUIRE(fc::file_size(log_file.path()) == 0);

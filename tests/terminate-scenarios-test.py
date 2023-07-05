@@ -7,9 +7,9 @@ from TestHarness import Cluster, TestHelper, Utils, WalletMgr
 ###############################################################
 # terminate-scenarios-test
 #
-# Tests terminate scenarios for nodeos.  Uses "-c" flag to indicate "replay" (--replay-blockchain), "resync"
+# Tests terminate scenarios for alanode.  Uses "-c" flag to indicate "replay" (--replay-blockchain), "resync"
 # (--delete-all-blocks), "hardReplay"(--hard-replay-blockchain), and "none" to indicate what kind of restart flag should
-# be used. This is one of the only test that actually verify that nodeos terminates with a good exit status.
+# be used. This is one of the only test that actually verify that alanode terminates with a good exit status.
 #
 ###############################################################
 
@@ -27,7 +27,7 @@ chainSyncStrategyStr=args.c
 debug=args.v
 total_nodes = pnodes
 killSignal=args.kill_sig
-killEosInstances= not args.leave_running
+killAlaInstances= not args.leave_running
 dumpErrorDetails=args.dump_error_details
 keepLogs=args.keep_logs
 killAll=args.clean_run
@@ -58,7 +58,7 @@ try:
 
     Print("Stand up cluster")
     if cluster.launch(pnodes=pnodes, totalNodes=total_nodes, topo=topo, delay=delay) is False:
-        errorExit("Failed to stand up eos cluster.")
+        errorExit("Failed to stand up ala cluster.")
 
     Print ("Wait for Cluster stabilization")
     # wait for cluster to start producing blocks
@@ -66,23 +66,23 @@ try:
         errorExit("Cluster never stabilized")
 
     Print("Kill cluster node instance.")
-    if cluster.killSomeEosInstances(1, killSignal) is False:
-        errorExit("Failed to kill Eos instances")
+    if cluster.killSomeAlaInstances(1, killSignal) is False:
+        errorExit("Failed to kill Ala instances")
     assert not cluster.getNode(0).verifyAlive()
-    Print("nodeos instances killed.")
+    Print("alanode instances killed.")
 
     Print ("Relaunch dead cluster node instance.")
     nodeArg = "--terminate-at-block %d" % terminate if terminate > 0 else ""
     if nodeArg != "":
         if chainSyncStrategyStr == "hardReplay":
             nodeArg += " --truncate-at-block %d" % terminate
-    if cluster.relaunchEosInstances(cachePopen=True, nodeArgs=nodeArg, waitForTerm=(terminate > 0)) is False:
-        errorExit("Failed to relaunch Eos instance")
-    Print("nodeos instance relaunched.")
+    if cluster.relaunchAlaInstances(cachePopen=True, nodeArgs=nodeArg, waitForTerm=(terminate > 0)) is False:
+        errorExit("Failed to relaunch Ala instance")
+    Print("alanode instance relaunched.")
 
     testSuccessful=True
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killEosInstances=killEosInstances, killWallet=killEosInstances, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killAlaInstances=killAlaInstances, killWallet=killAlaInstances, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
 
 exitCode = 0 if testSuccessful else 1
 exit(exitCode)

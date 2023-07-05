@@ -18,7 +18,7 @@ cmdError=Utils.cmdError
 args = TestHelper.parse_args({"-v","--clean-run", "--dump-error-details","--keep-logs"})
 debug=args.v
 killAll=args.clean_run
-killEosInstances = True
+killAlaInstances = True
 keepLogs = args.keep_logs
 dumpErrorDetails = dumpErrorDetails=args.dump_error_details
 
@@ -29,7 +29,7 @@ cluster=Cluster(host="127.0.0.1", walletd=True)
 
 testSuccessful=False
 
-ClientName="cleos"
+ClientName="alacli"
 timeout = .5 * 12 * 2 + 60 # time for finalization with 1 producer + 60 seconds padding
 Utils.setIrreversibleTimeout(timeout)
 
@@ -38,9 +38,9 @@ try:
 
     Print("Stand up cluster")
 
-    if cluster.launch(dontBootstrap=True, loadSystemContract=False, specificExtraNodeosArgs = {0: "--http-validate-host true"}) is False:
+    if cluster.launch(dontBootstrap=True, loadSystemContract=False, specificExtraAlanodeArgs = {0: "--http-validate-host true"}) is False:
         cmdError("launcher")
-        errorExit("Failed to stand up eos cluster.")
+        errorExit("Failed to stand up ala cluster.")
     Print("Getting cluster info")
     cluster.getInfos()
 
@@ -64,7 +64,7 @@ try:
     testSuccessful = True
 
 finally:
-    TestHelper.shutdown(cluster, None, testSuccessful, killEosInstances, True, keepLogs, killAll, dumpErrorDetails)
+    TestHelper.shutdown(cluster, None, testSuccessful, killAlaInstances, True, keepLogs, killAll, dumpErrorDetails)
 
 exitCode = 0 if testSuccessful else 1
 exit(exitCode)

@@ -9,7 +9,7 @@ from TestHarness.Cluster import PFSetupPolicy
 
 ###############################################################
 # prod_preactivation_test
-# --dump-error-details <Upon error print etc/eosio/node_*/config.ini and var/lib/node_*/stderr.log to stdout>
+# --dump-error-details <Upon error print etc/alaio/node_*/config.ini and var/lib/node_*/stderr.log to stdout>
 # --keep-logs <Don't delete var/lib/node_* folders upon test completion>
 ###############################################################
 
@@ -41,12 +41,12 @@ localTest=True
 cluster=Cluster(host=server, port=port, walletd=True, defproduceraPrvtKey=defproduceraPrvtKey, defproducerbPrvtKey=defproducerbPrvtKey)
 walletMgr=WalletMgr(True, port=walletPort)
 testSuccessful=False
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 killWallet=not dontKill
 dontBootstrap=sanityTest
 
-WalletdName=Utils.EosWalletName
-ClientName="cleos"
+WalletdName=Utils.AlaWalletName
+ClientName="alacli"
 
 try:
     TestHelper.printSystemInfo("BEGIN prod_preactivation_test.py")
@@ -60,9 +60,9 @@ try:
         Print("Stand up cluster")
         if cluster.launch(pnodes=prodCount, totalNodes=prodCount, prodCount=1, onlyBios=onlyBios,
                          dontBootstrap=dontBootstrap, useBiosBootFile=False,
-                         pfSetupPolicy=PFSetupPolicy.NONE, extraNodeosArgs=" --plugin eosio::producer_api_plugin  --http-max-response-time-ms 990000 ") is False:
+                         pfSetupPolicy=PFSetupPolicy.NONE, extraAlanodeArgs=" --plugin alaio::producer_api_plugin  --http-max-response-time-ms 990000 ") is False:
             cmdError("launcher")
-            errorExit("Failed to stand up eos cluster.")
+            errorExit("Failed to stand up ala cluster.")
 
     Print("Validating system accounts after bootstrap")
     cluster.validateAccounts(None)
@@ -99,13 +99,13 @@ try:
     Print("found digest ", digest, " of PREACTIVATE_FEATURE")
 
     node0 = cluster.getNode(0)
-    contract="eosio.bios"
+    contract="alaio.bios"
     contractDir="unittests/contracts/old_versions/v1.7.0-develop-preactivate_feature/%s" % (contract)
     wasmFile="%s.wasm" % (contract)
     abiFile="%s.abi" % (contract)
 
     Print("publish a new bios contract %s should fails because env.is_feature_activated unresolveable" % (contractDir))
-    retMap = node0.publishContract(cluster.eosioAccount, contractDir, wasmFile, abiFile, True, shouldFail=True)
+    retMap = node0.publishContract(cluster.alaioAccount, contractDir, wasmFile, abiFile, True, shouldFail=True)
 
     outPut = retMap["output"].decode("utf-8")
     if outPut.find("unresolveable") < 0:
@@ -146,7 +146,7 @@ try:
 
     time.sleep(0.6)
     Print("publish a new bios contract %s should fails because node1 is not producing block yet" % (contractDir))
-    retMap = node0.publishContract(cluster.eosioAccount, contractDir, wasmFile, abiFile, True, shouldFail=True)
+    retMap = node0.publishContract(cluster.alaioAccount, contractDir, wasmFile, abiFile, True, shouldFail=True)
     if retMap["output"].decode("utf-8").find("unresolveable") < 0:
         errorExit("bios contract not result in expected unresolveable error")
 
@@ -163,12 +163,12 @@ try:
        errorExit("No blocks produced by node 1")
 
     time.sleep(0.6)
-    retMap = node0.publishContract(cluster.eosioAccount, contractDir, wasmFile, abiFile, True)
+    retMap = node0.publishContract(cluster.alaioAccount, contractDir, wasmFile, abiFile, True)
     Print("sucessfully set new contract with new intrinsic!!!")
 
     testSuccessful=True
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killEosInstances, killWallet, keepLogs, killAll, dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killAlaInstances, killWallet, keepLogs, killAll, dumpErrorDetails)
 
 exitCode = 0 if testSuccessful else 1
 exit(exitCode)

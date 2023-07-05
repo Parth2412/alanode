@@ -6,10 +6,10 @@ import os
 from TestHarness import Cluster, TestHelper, Utils
 
 ###############################################################
-# nodeos_run_remote_test
+# alanode_run_remote_test
 #
-#  Tests remote capability of the nodeos_run_test. Test will setup cluster and pass nodes info to nodeos_run_test. E.g.
-#  nodeos_run_remote_test.py -v --clean-run --dump-error-detail
+#  Tests remote capability of the alanode_run_test. Test will setup cluster and pass nodes info to alanode_run_test. E.g.
+#  alanode_run_remote_test.py -v --clean-run --dump-error-detail
 #
 ###############################################################
 
@@ -25,13 +25,13 @@ killAll=args.clean_run
 
 Utils.Debug=debug
 
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 topo="mesh"
 delay=1
 prodCount=1 # producers per producer node
 pnodes=1
 total_nodes=pnodes
-actualTest="tests/nodeos_run_test.py"
+actualTest="tests/alanode_run_test.py"
 testSuccessful=False
 
 cluster=Cluster(walletd=True)
@@ -44,10 +44,10 @@ try:
            (pnodes, total_nodes-pnodes, topo, delay))
     Print("Stand up cluster")
 
-    abs_path = os.path.abspath(os.getcwd() + '/unittests/contracts/eosio.token/eosio.token.abi')
-    traceNodeosArgs = " --trace-rpc-abi eosio.token=" + abs_path
-    if cluster.launch(pnodes=pnodes, totalNodes=total_nodes, prodCount=prodCount, topo=topo, delay=delay, onlyBios=onlyBios, extraNodeosArgs=traceNodeosArgs) is False:
-        errorExit("Failed to stand up eos cluster.")
+    abs_path = os.path.abspath(os.getcwd() + '/unittests/contracts/alaio.token/alaio.token.abi')
+    traceAlanodeArgs = " --trace-rpc-abi alaio.token=" + abs_path
+    if cluster.launch(pnodes=pnodes, totalNodes=total_nodes, prodCount=prodCount, topo=topo, delay=delay, onlyBios=onlyBios, extraAlanodeArgs=traceAlanodeArgs) is False:
+        errorExit("Failed to stand up ala cluster.")
 
     Print ("Wait for Cluster stabilization")
     # wait for cluster to start producing blocks
@@ -59,14 +59,14 @@ try:
     defproducerbPrvtKey=producerKeys["defproducerb"]["private"]
 
     cmd="%s --dont-launch --defproducera_prvt_key %s --defproducerb_prvt_key %s %s %s %s" % (actualTest, defproduceraPrvtKey, defproducerbPrvtKey, "-v" if debug else "", "--leave-running" if dontKill else "", "--only-bios" if onlyBios else "")
-    Print("Starting up %s test: %s" % ("nodeos", actualTest))
+    Print("Starting up %s test: %s" % ("alanode", actualTest))
     Print("cmd: %s\n" % (cmd))
     if 0 != subprocess.call(cmd, shell=True):
         errorExit("failed to run cmd.")
 
     testSuccessful=True
 finally:
-    TestHelper.shutdown(cluster, None, testSuccessful, killEosInstances, False, False, killAll, dumpErrorDetails)
+    TestHelper.shutdown(cluster, None, testSuccessful, killAlaInstances, False, False, killAll, dumpErrorDetails)
 
 errorCode = 0 if testSuccessful else 1 
 exit(errorCode) 

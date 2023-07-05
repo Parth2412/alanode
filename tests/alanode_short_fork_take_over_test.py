@@ -1,35 +1,22 @@
 #!/usr/bin/env python3
 
-from datetime import datetime
-from datetime import timedelta
 import time
-import json
+import decimal
+import math
+import re
 import signal
 
 from TestHarness import Cluster, Node, TestHelper, Utils, WalletMgr
+from TestHarness.Node import BlockType
 
 ###############################################################
-# nodeos_forked_chain_test
-# 
-# This test sets up 2 producing nodes and one "bridge" node using test_control_api_plugin.
-#   One producing node has 11 of the elected producers and the other has 10 of the elected producers.
-#   All the producers are named in alphabetical order, so that the 11 producers, in the one production node, are
-#       scheduled first, followed by the 10 producers in the other producer node. Each producing node is only connected
-#       to the other producing node via the "bridge" node.
-#   The bridge node has the test_control_api_plugin, which exposes a restful interface that the test script uses to kill
-#       the "bridge" node at a specific producer in the production cycle. This is used to fork the producer network
-#       precisely when the 11 producer node has finished producing and the other producing node is about to produce.
-#   The fork in the producer network results in one fork of the block chain that advances with 10 producers with a LIB
-#      that has advanced, since all of the previous blocks were confirmed and the producer that was scheduled for that
-#      slot produced it, and one with 11 producers with a LIB that has not advanced.  This situation is validated by
-#      the test script.
-#   After both chains are allowed to produce, the "bridge" node is turned back on.
-#   Time is allowed to progress so that the "bridge" node can catchup and both producer nodes to come to consensus
-#   The block log is then checked for both producer nodes to verify that the 10 producer fork is selected and that
-#       both nodes are in agreement on the block log.
+# alanode_short_fork_take_over_test
+#
+# Similar scenario to alanode_forked_chain_test, except that there are only 3 producers and, after the "bridge" node is
+# shutdown, the second producer node is also shutdown.  Then the "bridge" node is re-started followed by the producer
+# node being started.
 #
 ###############################################################
-
 Print=Utils.Print
 
 from core_symbol import CORE_SYMBOL
@@ -130,23 +117,22 @@ Utils.Debug=args.v
 totalProducerNodes=2
 totalNonProducerNodes=1
 totalNodes=totalProducerNodes+totalNonProducerNodes
-maxActiveProducers=21
+maxActiveProducers=3
 totalProducers=maxActiveProducers
 cluster=Cluster(walletd=True)
 dumpErrorDetails=args.dump_error_details
 keepLogs=args.keep_logs
 dontKill=args.leave_running
-prodCount=args.prod_count
 killAll=args.clean_run
 walletPort=args.wallet_port
 
 walletMgr=WalletMgr(True, port=walletPort)
 testSuccessful=False
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 killWallet=not dontKill
 
-WalletdName=Utils.EosWalletName
-ClientName="cleos"
+WalletdName=Utils.AlaWalletName
+ClientName="alacli"
 
 try:
     TestHelper.printSystemInfo("BEGIN")
@@ -155,46 +141,22 @@ try:
     cluster.killall(allInstances=killAll)
     cluster.cleanup()
     Print("Stand up cluster")
-    specificExtraNodeosArgs={}
+    specificExtraAlanodeArgs={}
     # producer nodes will be mapped to 0 through totalProducerNodes-1, so the number totalProducerNodes will be the non-producing node
-    specificExtraNodeosArgs[totalProducerNodes]="--plugin eosio::test_control_api_plugin"
+    specificExtraAlanodeArgs[totalProducerNodes]="--plugin alaio::test_control_api_plugin"
 
 
     # ***   setup topogrophy   ***
 
     # "bridge" shape connects defprocera through defproducerk (in node0) to each other and defproducerl through defproduceru (in node01)
     # and the only connection between those 2 groups is through the bridge node
-
-    if cluster.launch(prodCount=prodCount, topo="bridge", pnodes=totalProducerNodes,
+    if cluster.launch(prodCount=2, topo="bridge", pnodes=totalProducerNodes,
                       totalNodes=totalNodes, totalProducers=totalProducers,
-                      useBiosBootFile=False, specificExtraNodeosArgs=specificExtraNodeosArgs) is False:
+                      useBiosBootFile=False, specificExtraAlanodeArgs=specificExtraAlanodeArgs, onlySetProds=True) is False:
         Utils.cmdError("launcher")
-        Utils.errorExit("Failed to stand up eos cluster.")
+        Utils.errorExit("Failed to stand up ala cluster.")
     Print("Validating system accounts after bootstrap")
     cluster.validateAccounts(None)
-
-
-    # ***   create accounts to vote in desired producers   ***
-
-    accounts=cluster.createAccountKeys(5)
-    if accounts is None:
-        Utils.errorExit("FAILURE - create keys")
-    accounts[0].name="tester111111"
-    accounts[1].name="tester222222"
-    accounts[2].name="tester333333"
-    accounts[3].name="tester444444"
-    accounts[4].name="tester555555"
-
-    testWalletName="test"
-
-    Print("Creating wallet \"%s\"." % (testWalletName))
-    testWallet=walletMgr.create(testWalletName, [cluster.eosioAccount,accounts[0],accounts[1],accounts[2],accounts[3],accounts[4]])
-
-    for _, account in cluster.defProducerAccounts.items():
-        walletMgr.importKey(account, testWallet, ignoreDupKeyWarning=True)
-
-    Print("Wallet \"%s\" password=%s." % (testWalletName, testWallet.password.encode("utf-8")))
-
 
     # ***   identify each node (producers and non-producing node)   ***
 
@@ -213,173 +175,55 @@ try:
             else:
                 Utils.errorExit("More than one non-producing nodes")
         else:
-            for prod in node.producers:
-                trans=node.regproducer(cluster.defProducerAccounts[prod], "http::/mysite.com", 0, waitForTransBlock=False, exitOnError=True)
-
             prodNodes.append(node)
             producers.extend(node.producers)
 
 
-    # ***   delegate bandwidth to accounts   ***
-
     node=prodNodes[0]
-    # create accounts via eosio as otherwise a bid is needed
-    for account in accounts:
-        Print("Create new account %s via %s" % (account.name, cluster.eosioAccount.name))
-        trans=node.createInitializeAccount(account, cluster.eosioAccount, stakedDeposit=0, waitForTransBlock=True, stakeNet=1000, stakeCPU=1000, buyRAM=1000, exitOnError=True)
-        transferAmount="100000000.0000 {0}".format(CORE_SYMBOL)
-        Print("Transfer funds %s from account %s to %s" % (transferAmount, cluster.eosioAccount.name, account.name))
-        node.transferFunds(cluster.eosioAccount, account, transferAmount, "test transfer", waitForTransBlock=True)
-        trans=node.delegatebw(account, 20000000.0000, 20000000.0000, waitForTransBlock=False, exitOnError=True)
-
-
-    # ***   vote using accounts   ***
-
-    #verify nodes are in sync and advancing
-    cluster.waitOnClusterSync(blockAdvancing=5)
-    index=0
-    for account in accounts:
-        Print("Vote for producers=%s" % (producers))
-        trans=prodNodes[index % len(prodNodes)].vote(account, producers, waitForTransBlock=False)
-        index+=1
-
+    node1=prodNodes[1]
 
     # ***   Identify a block where production is stable   ***
 
     #verify nodes are in sync and advancing
     cluster.waitOnClusterSync(blockAdvancing=5)
-    blockNum=node.getNextCleanProductionCycle(trans)
-    blockProducer=node.getBlockProducerByNum(blockNum)
-    Print("Validating blockNum=%s, producer=%s" % (blockNum, blockProducer))
     cluster.biosNode.kill(signal.SIGTERM)
 
-    class HeadWaiter:
-        def __init__(self, node):
-            self.node=node
-            self.cachedHeadBlockNum=node.getBlockNum()
-
-        def waitIfNeeded(self, blockNum):
-            delta=self.cachedHeadBlockNum-blockNum
-            if delta >= 0:
-                return
-            previousHeadBlockNum=self.cachedHeadBlockNum
-            delta=-1*delta
-            timeout=(delta+1)/2 + 3 # round up to nearest second and 3 second extra leeway
-            self.node.waitForBlock(blockNum, timeout=timeout)
-            self.cachedHeadBlockNum=node.getBlockNum()
-            if blockNum > self.cachedHeadBlockNum:
-                Utils.errorExit("Failed to advance from block number %d to %d in %d seconds.  Only got to block number %d" % (previousHeadBlockNum, blockNum, timeout, self.cachedHeadBlockNum))
-
-        def getBlock(self, blockNum):
-            self.waitIfNeeded(blockNum)
-            return self.node.getBlock(blockNum)
-
-    #advance to the next block of 12
-    lastBlockProducer=blockProducer
-
-    waiter=HeadWaiter(node)
-
-    while blockProducer==lastBlockProducer:
+    Utils.Print("catching defproducera")
+    tries = 120
+    blockNum = node.getHeadBlockNum()
+    blockProducer=node.getBlockProducerByNum(blockNum)
+    while blockProducer != "defproducera" and tries > 0:
         blockNum+=1
-        block=waiter.getBlock(blockNum)
-        Utils.Print("Block num: %d, block: %s" % (blockNum, json.dumps(block, indent=4, sort_keys=True)))
-        blockProducer=Node.getBlockAttribute(block, "producer", blockNum)
+        blockProducer=node.getBlockProducerByNum(blockNum)
+        tries = tries - 1
 
-    timestampStr=Node.getBlockAttribute(block, "timestamp", blockNum)
-    timestamp=datetime.strptime(timestampStr, Utils.TimeFmt)
+    if tries == 0:
+        Utils.errorExit("failed to catch a block produced by defproducera")
 
+    Utils.Print("catching the start of defproducerb")
+    tries = 30
+    while blockProducer != "defproducerb" and tries > 0:
+        blockNum+=1
+        blockProducer=node.getBlockProducerByNum(blockNum)
+        tries = tries - 1
 
-    # ***   Identify what the production cycle is   ***
+    if tries == 0:
+        Utils.errorExit("failed to catch a block produced by defproducerb")
 
-    productionCycle=[]
-    producerToSlot={}
-    slot=-1
-    inRowCountPerProducer=12
-    minNumBlocksPerProducer=10
-    lastTimestamp=timestamp
-    headBlockNum=node.getBlockNum()
-    firstBlockForWindowMissedSlot=None
-    while True:
-        if blockProducer not in producers:
-            Utils.errorExit("Producer %s was not one of the voted on producers" % blockProducer)
-
-        productionCycle.append(blockProducer)
-        slot+=1
-        if blockProducer in producerToSlot:
-            Utils.errorExit("Producer %s was first seen in slot %d, but is repeated in slot %d" % (blockProducer, producerToSlot[blockProducer], slot))
-
-        producerToSlot[blockProducer]={"slot":slot, "count":0}
-        lastBlockProducer=blockProducer
-        blockSkip=[]
-        roundSkips=0
-        missedSlotAfter=[]
-        if firstBlockForWindowMissedSlot is not None:
-            missedSlotAfter.append(firstBlockForWindowMissedSlot)
-            firstBlockForWindowMissedSlot=None
-
-        while blockProducer==lastBlockProducer:
-            producerToSlot[blockProducer]["count"]+=1
-            blockNum+=1
-            block=waiter.getBlock(blockNum)
-            blockProducer=Node.getBlockAttribute(block, "producer", blockNum)
-            timestampStr=Node.getBlockAttribute(block, "timestamp", blockNum)
-            timestamp=datetime.strptime(timestampStr, Utils.TimeFmt)
-            timediff=timestamp-lastTimestamp
-            slotTime=0.5
-            slotsDiff=int(timediff.total_seconds() / slotTime)
-            if slotsDiff != 1:
-                slotTimeDelta=timedelta(slotTime)
-                first=lastTimestamp + slotTimeDelta
-                missed=first.strftime(Utils.TimeFmt)
-                if slotsDiff > 2:
-                    last=timestamp - slotTimeDelta
-                    missed+= " thru " + last.strftime(Utils.TimeFmt)
-                missedSlotAfter.append("%d (%s)" % (blockNum-1, missed))
-            lastTimestamp=timestamp
-
-        if producerToSlot[lastBlockProducer]["count"] < minNumBlocksPerProducer or producerToSlot[lastBlockProducer]["count"] > inRowCountPerProducer:
-            Utils.errorExit("Producer %s, in slot %d, expected to produce %d blocks but produced %d blocks.  At block number %d. " %
-                            (lastBlockProducer, slot, inRowCountPerProducer, producerToSlot[lastBlockProducer]["count"], blockNum-1) +
-                            "Slots were missed after the following blocks: %s" % (", ".join(missedSlotAfter)))
-
-        if len(missedSlotAfter) > 0:
-            # it may be the most recent producer missed a slot
-            possibleMissed=missedSlotAfter[-1]
-            if possibleMissed == blockNum - 1:
-                firstBlockForWindowMissedSlot=possibleMissed
-
-        if blockProducer==productionCycle[0]:
-            break
-
-    output=None
-    for blockProducer in productionCycle:
-        if output is None:
-            output=""
-        else:
-            output+=", "
-        output+=blockProducer+":"+str(producerToSlot[blockProducer]["count"])
-    Print("ProductionCycle ->> {\n%s\n}" % output)
-
-    #retrieve the info for all the nodes to report the status for each
-    for node in cluster.getNodes():
-        node.getInfo()
-    cluster.reportStatus()
-
+    blockNum+=1
+    blockProducer=node.getBlockProducerByNum(blockNum)
+    blockProducer1=node1.getBlockProducerByNum(blockNum)
+    Utils.Print("block number %d is producer by %s in node0" % (blockNum, blockProducer))
+    Utils.Print("block number %d is producer by %s in node1" % (blockNum, blockProducer1))
 
     # ***   Killing the "bridge" node   ***
-
     Print("Sending command to kill \"bridge\" node to separate the 2 producer groups.")
     # block number to start expecting node killed after
     preKillBlockNum=nonProdNode.getBlockNum()
     preKillBlockProducer=nonProdNode.getBlockProducerByNum(preKillBlockNum)
-    if preKillBlockProducer == "defproducerj" or preKillBlockProducer == "defproducerk":
-        # wait for defproduceri so there is plenty of time to send kill before defproducerk
-        nonProdNode.waitForProducer("defproduceri")
-        preKillBlockNum=nonProdNode.getBlockNum()
-        preKillBlockProducer=nonProdNode.getBlockProducerByNum(preKillBlockNum)
-    Print("preKillBlockProducer = {}".format(preKillBlockProducer))
     # kill at last block before defproducerl, since the block it is killed on will get propagated
-    killAtProducer="defproducerk"
+    killAtProducer="defproducerb"
+    inRowCountPerProducer=12
     nonProdNode.killNodeOnProducer(producer=killAtProducer, whereInSequence=(inRowCountPerProducer-1))
 
 
@@ -491,13 +335,23 @@ try:
         info=prodNode.getInfo()
         Print("node info: %s" % (info))
 
-    Print("Relaunching the non-producing bridge node to connect the producing nodes again")
+    Print("killing node1(defproducerc) so that bridge node will frist connect to node0 (defproducera, defproducerb)")
+    node1.kill(killSignal=15)
+    time.sleep(2)
+    if node1.verifyAlive():
+        Utils.errorExit("Expected the node 1 to have shutdown.")
 
-    if not nonProdNode.relaunch():
-        Utils.errorExit("Failure - (non-production) node %d should have restarted" % (nonProdNode.nodeNum))
+    Print("Relaunching the non-producing bridge node to connect the node 0 (defproducera, defproducerb)")
+    if not nonProdNode.relaunch(None):
+        errorExit("Failure - (non-production) node %d should have restarted" % (nonProdNode.nodeNum))
 
+    Print("Relaunch node 1 (defproducerc) and let it connect to brigde node that already synced up with node 0")
+    time.sleep(10)
+    if not node1.relaunch(chainArg=" --enable-stale-production "):
+        errorExit("Failure - (non-production) node 1 should have restarted")
 
     Print("Waiting to allow forks to resolve")
+    time.sleep(3)
 
     for prodNode in prodNodes:
         info=prodNode.getInfo()
@@ -558,7 +412,7 @@ try:
         if prod["blockNum"]==killBlockNum:
             resolvedKillBlockProducer = prod["prod"]
     if resolvedKillBlockProducer is None:
-        Utils.errorExit("Did not find find block %s (the original divergent block) in blockProducers0, test setup is wrong.  blockProducers0: %s" % (killBlockNum, ", ".join(blockProducers0)))
+        Utils.errorExit("Did not find find block %s (the original divergent block) in blockProducers0, test setup is wrong.  blockProducers0: %s" % (killBlockNum, ", ".join(blockProducers)))
     Print("Fork resolved and determined producer %s for block %s" % (resolvedKillBlockProducer, killBlockNum))
 
     blockProducers0=[]
@@ -566,14 +420,14 @@ try:
 
     testSuccessful=True
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killEosInstances=killEosInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killAlaInstances=killAlaInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
 
     if not testSuccessful:
         Print(Utils.FileDivider)
         Print("Compare Blocklog")
         cluster.compareBlockLogs()
         Print(Utils.FileDivider)
-        Print("Print Blocklog")
+        Print("Compare Blocklog")
         cluster.printBlockLog()
         Print(Utils.FileDivider)
 

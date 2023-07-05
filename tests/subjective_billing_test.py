@@ -34,9 +34,9 @@ killAll=args.clean_run
 keepLogs=args.keep_logs
 
 killWallet=not dontKill
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 if nodesFile is not None:
-    killEosInstances=False
+    killAlaInstances=False
 
 Utils.Debug=debug
 testSuccessful=False
@@ -45,8 +45,8 @@ random.seed(seed) # Use a fixed seed for repeatability.
 cluster=Cluster(walletd=True)
 
 walletMgr=WalletMgr(True)
-EOSIO_ACCT_PRIVATE_DEFAULT_KEY = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
-EOSIO_ACCT_PUBLIC_DEFAULT_KEY = "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
+ALAIO_ACCT_PRIVATE_DEFAULT_KEY = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
+ALAIO_ACCT_PUBLIC_DEFAULT_KEY = "ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"
 
 try:
     if dontLaunch: # run test against remote cluster
@@ -61,7 +61,7 @@ try:
         walletMgr.cleanup()
         print("Stand up walletd")
         if walletMgr.launch() is False:
-            errorExit("Failed to stand up keosd.")
+            errorExit("Failed to stand up kalad.")
         else:
             cluster.killall(allInstances=killAll)
             cluster.cleanup()
@@ -73,9 +73,9 @@ try:
 
     Print("Stand up cluster")
     if cluster.launch(pnodes=pnodes, totalNodes=total_nodes, topo=topo, delay=delay,
-                      extraNodeosArgs=" --http-max-response-time-ms 990000 --disable-subjective-api-billing false ",
-                      specificExtraNodeosArgs=specificArgs ) is False:
-       errorExit("Failed to stand up eos cluster.")
+                      extraAlanodeArgs=" --http-max-response-time-ms 990000 --disable-subjective-api-billing false ",
+                      specificExtraAlanodeArgs=specificArgs ) is False:
+       errorExit("Failed to stand up ala cluster.")
 
     Print ("Wait for Cluster stabilization")
     # wait for cluster to start producing blocks
@@ -84,15 +84,15 @@ try:
 
     Print("Creating account1")
     account1 = Account('account1')
-    account1.ownerPublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    account1.activePublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    cluster.createAccountAndVerify(account1, cluster.eosioAccount, stakedDeposit=1000)
+    account1.ownerPublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    account1.activePublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    cluster.createAccountAndVerify(account1, cluster.alaioAccount, stakedDeposit=1000)
 
     Print("Creating account2")
     account2 = Account('account2')
-    account2.ownerPublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    account2.activePublicKey = EOSIO_ACCT_PUBLIC_DEFAULT_KEY
-    cluster.createAccountAndVerify(account2, cluster.eosioAccount, stakedDeposit=1000, stakeCPU=1)
+    account2.ownerPublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    account2.activePublicKey = ALAIO_ACCT_PUBLIC_DEFAULT_KEY
+    cluster.createAccountAndVerify(account2, cluster.alaioAccount, stakedDeposit=1000, stakeCPU=1)
 
     Print("Validating accounts after bootstrap")
     cluster.validateAccounts([account1, account2])
@@ -105,7 +105,7 @@ try:
     # api node configured with decay of 30 min
     fdnode = cluster.nodes[3]
 
-    preBalances = node.getEosBalances([account1, account2])
+    preBalances = node.getAlaBalances([account1, account2])
     Print("Starting balances:")
     Print(preBalances)
 
@@ -114,7 +114,7 @@ try:
         memo = 'tx-{}'.format(x)
         txn = {
 
-            "actions": [{"account": "eosio.token","name": "transfer",
+            "actions": [{"account": "alaio.token","name": "transfer",
                          "authorization": [{"actor": "account1","permission": "active"}],
                          "data": {"from": "account1","to": "account2","quantity": "100000.0001 SYS","memo": memo},
                          "compression": "none"}]
@@ -137,7 +137,7 @@ try:
         memo = 'tx-{}'.format(x)
         txn = {
 
-            "actions": [{"account": "eosio.token","name": "transfer",
+            "actions": [{"account": "alaio.token","name": "transfer",
                          "authorization": [{"actor": "account2","permission": "active"}],
                          "data": {"from": "account2","to": "account1","quantity": "100000.0001 SYS","memo": memo},
                          "compression": "none"}]
@@ -160,7 +160,7 @@ try:
         memo = 'tx-{}'.format(x)
         txn = {
 
-            "actions": [{"account": "eosio.token","name": "transfer",
+            "actions": [{"account": "alaio.token","name": "transfer",
                          "authorization": [{"actor": "account1","permission": "active"}],
                          "data": {"from": "account1","to": "account2","quantity": "100000.0001 SYS","memo": memo},
                          "compression": "none"}]
@@ -189,7 +189,7 @@ try:
 
     testSuccessful = True
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killEosInstances, killWallet, keepLogs, killAll, dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful, killAlaInstances, killWallet, keepLogs, killAll, dumpErrorDetails)
 
 errorCode = 0 if testSuccessful else 1
 exit(errorCode)

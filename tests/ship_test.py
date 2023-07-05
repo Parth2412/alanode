@@ -48,10 +48,10 @@ walletPort=TestHelper.DEFAULT_WALLET_PORT
 
 walletMgr=WalletMgr(True, port=walletPort)
 testSuccessful=False
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 killWallet=not dontKill
 
-WalletdName=Utils.EosWalletName
+WalletdName=Utils.AlaWalletName
 shipTempDir=None
 
 try:
@@ -61,19 +61,19 @@ try:
     cluster.killall(allInstances=killAll)
     cluster.cleanup()
     Print("Stand up cluster")
-    specificExtraNodeosArgs={}
+    specificExtraAlanodeArgs={}
     # non-producing nodes are at the end of the cluster's nodes, so reserving the last one for state_history_plugin
     shipNodeNum = totalNodes - 1
-    specificExtraNodeosArgs[shipNodeNum]="--plugin eosio::state_history_plugin --disable-replay-opts --sync-fetch-span 200 --plugin eosio::net_api_plugin "
+    specificExtraAlanodeArgs[shipNodeNum]="--plugin alaio::state_history_plugin --disable-replay-opts --sync-fetch-span 200 --plugin alaio::net_api_plugin "
 
     if args.unix_socket:
-        specificExtraNodeosArgs[shipNodeNum] += "--state-history-unix-socket-path ship.sock"
+        specificExtraAlanodeArgs[shipNodeNum] += "--state-history-unix-socket-path ship.sock"
 
     if cluster.launch(pnodes=totalProducerNodes,
                       totalNodes=totalNodes, totalProducers=totalProducers,
-                      useBiosBootFile=False, specificExtraNodeosArgs=specificExtraNodeosArgs) is False:
+                      useBiosBootFile=False, specificExtraAlanodeArgs=specificExtraAlanodeArgs) is False:
         Utils.cmdError("launcher")
-        Utils.errorExit("Failed to stand up eos cluster.")
+        Utils.errorExit("Failed to stand up ala cluster.")
 
     # ***   identify each node (producers and non-producing node)   ***
 
@@ -115,7 +115,7 @@ try:
         out.close()
         err.close()
 
-    Print("Shutdown state_history_plugin nodeos")
+    Print("Shutdown state_history_plugin alanode")
     shipNode.kill(signal.SIGTERM)
 
     files = None
@@ -196,7 +196,7 @@ try:
 
     testSuccessful = True
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killEosInstances=killEosInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killAlaInstances=killAlaInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
     if shipTempDir is not None:
         if testSuccessful and not keepLogs:
             shutil.rmtree(shipTempDir, ignore_errors=True)

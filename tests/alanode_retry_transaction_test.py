@@ -10,7 +10,7 @@ from TestHarness.TestHelper import AppArgs
 from core_symbol import CORE_SYMBOL
 
 ###############################################################
-# nodeos_retry_transaction_test
+# alanode_retry_transaction_test
 # 
 # This test sets up 3 producing nodes and 4 non-producing
 #   nodes; 2 API nodes and 2 relay nodes. The API nodes will be
@@ -62,11 +62,11 @@ assert numRounds > 3, Print("ERROR: Need more than three rounds: %d" % numRounds
 
 walletMgr=WalletMgr(True, port=walletPort)
 testSuccessful=False
-killEosInstances=not dontKill
+killAlaInstances=not dontKill
 killWallet=not dontKill
 
-WalletdName=Utils.EosWalletName
-ClientName="cleos"
+WalletdName=Utils.AlaWalletName
+ClientName="alacli"
 
 try:
     TestHelper.printSystemInfo("BEGIN")
@@ -76,7 +76,7 @@ try:
     cluster.cleanup()
     Print("Stand up cluster")
 
-    specificExtraNodeosArgs={
+    specificExtraAlanodeArgs={
         3:"--transaction-retry-max-storage-size-gb 5 --disable-api-persisted-trx", # api node
         4:"--disable-api-persisted-trx",                                           # relay only, will be killed
         5:"--transaction-retry-max-storage-size-gb 5",                             # api node, will be isolated
@@ -86,10 +86,10 @@ try:
     # topo=ring all nodes are connected in a ring but also to the bios node
     if cluster.launch(pnodes=totalProducerNodes, totalNodes=totalNodes, totalProducers=totalProducers,
                       topo="ring",
-                      specificExtraNodeosArgs=specificExtraNodeosArgs,
+                      specificExtraAlanodeArgs=specificExtraAlanodeArgs,
                       useBiosBootFile=False) is False:
         Utils.cmdError("launcher")
-        Utils.errorExit("Failed to stand up eos cluster.")
+        Utils.errorExit("Failed to stand up ala cluster.")
 
     cluster.waitOnClusterSync(blockAdvancing=5)
     Utils.Print("Cluster in Sync")
@@ -105,7 +105,7 @@ try:
     namedAccounts=NamedAccounts(cluster,args.total_accounts)
     accounts=namedAccounts.accounts
 
-    accountsToCreate = [cluster.eosioAccount]
+    accountsToCreate = [cluster.alaioAccount]
     for account in accounts:
         accountsToCreate.append(account)
 
@@ -140,20 +140,20 @@ try:
     node=apiNodes[0]
     checkTransIds = []
     startTime = time.perf_counter()
-    Print("Create new accounts via %s" % (cluster.eosioAccount.name))
+    Print("Create new accounts via %s" % (cluster.alaioAccount.name))
     for account in accounts:
-        trans = node.createInitializeAccount(account, cluster.eosioAccount, stakedDeposit=0, waitForTransBlock=(account == accounts[-1]), stakeNet=1000, stakeCPU=1000, buyRAM=1000, exitOnError=True)
+        trans = node.createInitializeAccount(account, cluster.alaioAccount, stakedDeposit=0, waitForTransBlock=(account == accounts[-1]), stakeNet=1000, stakeCPU=1000, buyRAM=1000, exitOnError=True)
         checkTransIds.append(Node.getTransId(trans))
 
     nextTime = time.perf_counter()
     Print("Create new accounts took %s sec" % (nextTime - startTime))
     startTime = nextTime
 
-    Print("Transfer funds to new accounts via %s" % (cluster.eosioAccount.name))
+    Print("Transfer funds to new accounts via %s" % (cluster.alaioAccount.name))
     for account in accounts:
         transferAmount="1000.0000 {0}".format(CORE_SYMBOL)
-        Print("Transfer funds %s from account %s to %s" % (transferAmount, cluster.eosioAccount.name, account.name))
-        trans = node.transferFunds(cluster.eosioAccount, account, transferAmount, "test transfer", waitForTransBlock=(account == accounts[-1]), reportStatus=False)
+        Print("Transfer funds %s from account %s to %s" % (transferAmount, cluster.alaioAccount.name, account.name))
+        trans = node.transferFunds(cluster.alaioAccount, account, transferAmount, "test transfer", waitForTransBlock=(account == accounts[-1]), reportStatus=False)
         checkTransIds.append(Node.getTransId(trans))
 
     nextTime = time.perf_counter()
@@ -173,8 +173,8 @@ try:
     overdrawAccount = accounts[0]
     Print(f"Attempt to transfer more funds than available from {overdrawAccount.name} to test transaction fails with overdrawn balance, not expiration in retry.")
     overdrawTransferAmount = "1001.0000 {0}".format(CORE_SYMBOL)
-    Print("Transfer funds %s from account %s to %s" % (overdrawTransferAmount, overdrawAccount.name, cluster.eosioAccount.name))
-    overdrawtrans = node.transferFunds(overdrawAccount, cluster.eosioAccount, overdrawTransferAmount, "test overdraw transfer", exitOnError=False, reportStatus=False, retry=1)
+    Print("Transfer funds %s from account %s to %s" % (overdrawTransferAmount, overdrawAccount.name, cluster.alaioAccount.name))
+    overdrawtrans = node.transferFunds(overdrawAccount, cluster.alaioAccount, overdrawTransferAmount, "test overdraw transfer", exitOnError=False, reportStatus=False, retry=1)
     assert overdrawtrans is None, f"ERROR: Overdraw transaction attempt should have failed with overdrawn balance: {overdrawtrans}"
 
     def cacheTransIdInBlock(transId, transToBlock, node):
@@ -381,7 +381,7 @@ try:
 
     testSuccessful = not missingReportError and not delayedReportError
 finally:
-    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killEosInstances=killEosInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
+    TestHelper.shutdown(cluster, walletMgr, testSuccessful=testSuccessful, killAlaInstances=killAlaInstances, killWallet=killWallet, keepLogs=keepLogs, cleanRun=killAll, dumpErrorDetails=dumpErrorDetails)
 
 errorCode = 0 if testSuccessful else 1
 exit(errorCode)
