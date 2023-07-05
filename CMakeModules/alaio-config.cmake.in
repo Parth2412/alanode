@@ -1,0 +1,9 @@
+if(NOT ALAIO_ROOT)
+   list(APPEND CMAKE_MODULE_PATH @ALA_ROOT_DIR@/cmake/alaio)
+else()
+   # legacy behavior for anyone configuring with -DALAIO_ROOT=/foo or such
+   list(APPEND CMAKE_MODULE_PATH ${ALAIO_ROOT}/lib/cmake/alaio)
+   list(APPEND CMAKE_MODULE_PATH ${ALAIO_ROOT}/lib64/cmake/alaio)
+endif()
+include(AlaioTester)
+include(AlaioCheckVersion)

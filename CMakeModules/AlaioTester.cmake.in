@@ -1,12 +1,12 @@
 cmake_minimum_required( VERSION 3.5 )
-message(STATUS "Setting up Eosio Tester @VERSION_FULL@ at @EOS_ROOT_DIR@")
+message(STATUS "Setting up Alaio Tester @VERSION_FULL@ at @ALA_ROOT_DIR@")
 
 SET(CMAKE_INSTALL_RPATH "${HOME}/lib;${HOME}/lib64")
 
 set(CMAKE_CXX_COMPILER @CMAKE_CXX_COMPILER@)
 set(CMAKE_C_COMPILER   @CMAKE_C_COMPILER@)
 
-set(EOSIO_VERSION "@VERSION_FULL@")
+set(ALAIO_VERSION "@VERSION_FULL@")
 
 enable_testing()
 
@@ -30,7 +30,7 @@ set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_EXTENSIONS ON )
 set( CXX_STANDARD_REQUIRED ON )
 
-#adds -pthread. Ubuntu eosio.contracts build breaks without this flag specified
+#adds -pthread. Ubuntu alaio.contracts build breaks without this flag specified
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads)
@@ -52,8 +52,8 @@ find_package(Boost @Boost_MAJOR_VERSION@.@Boost_MINOR_VERSION@ EXACT REQUIRED CO
    iostreams
    unit_test_framework)
 
-find_library(libtester eosio_testing @CMAKE_INSTALL_FULL_LIBDIR@ NO_DEFAULT_PATH)
-find_library(libchain eosio_chain @CMAKE_INSTALL_FULL_LIBDIR@ NO_DEFAULT_PATH)
+find_library(libtester alaio_testing @CMAKE_INSTALL_FULL_LIBDIR@ NO_DEFAULT_PATH)
+find_library(libchain alaio_chain @CMAKE_INSTALL_FULL_LIBDIR@ NO_DEFAULT_PATH)
 find_library(libfc fc @CMAKE_INSTALL_FULL_LIBDIR@ NO_DEFAULT_PATH)
 find_library(libsecp256k1 secp256k1 @CMAKE_INSTALL_FULL_LIBDIR@ NO_DEFAULT_PATH)
 
@@ -76,12 +76,12 @@ if(UNIX AND NOT APPLE)
   find_library(LIBRT rt)
 endif()
 
-set(EOSIO_WASM_RUNTIMES @EOSIO_WASM_RUNTIMES@)
-if("eos-vm-oc" IN_LIST EOSIO_WASM_RUNTIMES)
+set(ALAIO_WASM_RUNTIMES @ALAIO_WASM_RUNTIMES@)
+if("ala-vm-oc" IN_LIST ALAIO_WASM_RUNTIMES)
    set(WRAP_MAIN "-Wl,-wrap=main")
 endif()
 
-macro(add_eosio_test_executable test_name)
+macro(add_alaio_test_executable test_name)
    add_executable( ${test_name} ${ARGN} )
    target_link_libraries( ${test_name}
        ${libtester}
@@ -116,7 +116,7 @@ macro(add_eosio_test_executable test_name)
        Threads::Threads
       )
    
-   #adds -ltr. Ubuntu eosio.contracts build breaks without this
+   #adds -ltr. Ubuntu alaio.contracts build breaks without this
    if(UNIX AND NOT APPLE)
       target_link_libraries(${test_name} ${LIBRT})
    endif()
@@ -131,8 +131,8 @@ macro(add_eosio_test_executable test_name)
 
 endmacro()
 
-macro(add_eosio_test test_name)
-   add_eosio_test_executable( ${test_name} ${ARGN} )
+macro(add_alaio_test test_name)
+   add_alaio_test_executable( ${test_name} ${ARGN} )
    #This will generate a test with the default runtime
    add_test(NAME ${test_name} COMMAND ${test_name} --report_level=detailed --color_output)
 
