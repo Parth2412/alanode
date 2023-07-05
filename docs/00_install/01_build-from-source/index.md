@@ -1,12 +1,12 @@
 ---
-content_title: Build Antelope from Source
+content_title: Build Alacrityio from Source
 ---
 
 The shell scripts previously recommended for building the software have been removed in favor of a build process entirely driven by CMake. Those wishing to build from source are now responsible for installing the necessary dependencies. The list of dependencies and the recommended build procedure are in the [`README.md`](https://github.com/alacrityio/alanode/blob/release/3.2/README.md) file. Instructions are also included for efficiently running the tests.
 
 ### Building From Source
 
-You can also build and install Leap from source. Instructions for that currently live [here](https://github.com/alacrityio/alanode/blob/release/3.2/README.md#build-and-install-from-source).
+You can also build and install Alanode from source. Instructions for that currently live [here](https://github.com/alacrityio/alanode/blob/release/3.2/README.md#build-and-install-from-source).
 
 #### Building Pinned Build Binary Packages
 
