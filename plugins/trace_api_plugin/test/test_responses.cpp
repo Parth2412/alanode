@@ -3,12 +3,12 @@
 
 #include <fc/variant_object.hpp>
 
-#include <eosio/trace_api/request_handler.hpp>
-#include <eosio/trace_api/test_common.hpp>
+#include <alaio/trace_api/request_handler.hpp>
+#include <alaio/trace_api/test_common.hpp>
 
-using namespace eosio;
-using namespace eosio::trace_api;
-using namespace eosio::trace_api::test_common;
+using namespace alaio;
+using namespace alaio::trace_api;
+using namespace alaio::trace_api::test_common;
 
 struct response_test_fixture {
    /**

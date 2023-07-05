@@ -1,15 +1,15 @@
 openapi: 3.0.0
 info:
   title: DB Size API
-  description: Nodeos DB Size API Specification. See developer documentation at https://docs.eosnetwork.com for information on enabling this plugin.
+  description: Alanode DB Size API Specification. See developer documentation at https://docs.alacritys.net for information on enabling this plugin.
   version: 1.0.0
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
   contact:
-    url: https://eosnetwork.com
+    url: https://alacritys.net
 servers:
-  - url: '{protocol}://{host}:{port}/v1/'
+  - url: "{protocol}://{host}:{port}/v1/"
     variables:
       protocol:
         enum:
@@ -36,7 +36,7 @@ paths:
               type: object
               properties: {}
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:

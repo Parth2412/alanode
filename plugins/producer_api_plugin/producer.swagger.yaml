@@ -1,16 +1,16 @@
 openapi: 3.0.0
 info:
   title: Producer API
-  description: Nodeos Producer API Specification. See developer documentation at https://docs.eosnetwork.com for information on enabling this plugin.
+  description: Alanode Producer API Specification. See developer documentation at https://docs.alacritys.net for information on enabling this plugin.
   version: 1.0.0
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
   contact:
-    url: https://antelope.io
+    url: https://alacritys.net
 tags:
   - name: Protocol Version 3.2
-    description: The release tag for Leap binaries is also the protocol version
+    description: The release tag for alanode binaries is also the protocol version
 servers:
   - url: "{protocol}://{host}:{port}/v1"
     variables:
@@ -37,13 +37,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OK'
+                $ref: "#/components/schemas/OK"
         "400":
           description: client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/resume:
     post:
@@ -56,13 +56,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OK'
+                $ref: "#/components/schemas/OK"
         "400":
           description: client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/paused:
     post:
@@ -83,7 +83,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/get_runtime_options:
     post:
@@ -96,13 +96,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Runtime_Options'
+                $ref: "#/components/schemas/Runtime_Options"
         "400":
           description: client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/update_runtime_options:
     post:
@@ -113,20 +113,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Runtime_Options'
+              $ref: "#/components/schemas/Runtime_Options"
       responses:
         "201":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OK'
+                $ref: "#/components/schemas/OK"
         "400":
           description: client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/get_greylist:
     post:
@@ -145,13 +145,13 @@ paths:
                     type: array
                     description: Array of account names stored in the greylist
                     items:
-                      $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
+                      $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
         "400":
           description: client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/add_greylist_accounts:
     post:
@@ -164,24 +164,24 @@ paths:
             schema:
               type: object
               properties:
-                  accounts:
-                    type: array
-                    description: List of account names to add
-                    items:
-                      $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
+                accounts:
+                  type: array
+                  description: List of account names to add
+                  items:
+                    $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
       responses:
         "201":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OK'
+                $ref: "#/components/schemas/OK"
         "400":
           description: client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/remove_greylist_accounts:
     post:
@@ -198,20 +198,20 @@ paths:
                   type: array
                   description: List of account names to remove
                   items:
-                    $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
+                    $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
       responses:
         "201":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OK'
+                $ref: "#/components/schemas/OK"
         "400":
           description: client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/get_whitelist_blacklist:
     post:
@@ -229,19 +229,19 @@ paths:
                   actor_whitelist:
                     type: array
                     items:
-                      $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
+                      $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
                   actor_blacklist:
                     type: array
                     items:
-                      $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
+                      $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
                   contract_whitelist:
                     type: array
                     items:
-                      $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
+                      $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
                   contract_blacklist:
                     type: array
                     items:
-                      $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
+                      $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
                   action_blacklist:
                     type: array
                     items:
@@ -249,18 +249,18 @@ paths:
                       description: Array of two string values, the account name as the first and action name as the second
                       items:
                         allOf:
-                          - $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
-                          - $ref: "https://docs.eosnetwork.com/openapi/v2.0/CppSignature.yaml"
+                          - $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
+                          - $ref: "https://docs.alacritys.net/openapi/v2.0/CppSignature.yaml"
                   key_blacklist:
                     type: array
                     items:
-                      - $ref: "https://docs.eosnetwork.com/openapi/v2.0/KeyType.yaml"
+                      - $ref: "https://docs.alacritys.net/openapi/v2.0/KeyType.yaml"
         "400":
           description: client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/set_whitelist_blacklist:
     post:
@@ -276,19 +276,19 @@ paths:
                 actor_whitelist:
                   type: array
                   items:
-                    $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
+                    $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
                 actor_blacklist:
                   type: array
                   items:
-                    $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
+                    $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
                 contract_whitelist:
                   type: array
                   items:
-                    $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
+                    $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
                 contract_blacklist:
                   type: array
                   items:
-                    $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
+                    $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
                 action_blacklist:
                   type: array
                   items:
@@ -296,25 +296,25 @@ paths:
                     description: Array of two string values, the account name as the first and action name as the second
                     items:
                       anyOf:
-                        - $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
-                        - $ref: "https://docs.eosnetwork.com/openapi/v2.0/CppSignature.yaml"
+                        - $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
+                        - $ref: "https://docs.alacritys.net/openapi/v2.0/CppSignature.yaml"
                 key_blacklist:
                   type: array
                   items:
-                    $ref: "https://docs.eosnetwork.com/openapi/v2.0/KeyType.yaml"
+                    $ref: "https://docs.alacritys.net/openapi/v2.0/KeyType.yaml"
       responses:
         "201":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OK'
+                $ref: "#/components/schemas/OK"
         "400":
           description: client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/create_snapshot:
     post:
@@ -330,7 +330,7 @@ paths:
                 type: object
                 properties:
                   head_block_id:
-                    $ref: "https://docs.eosnetwork.com/openapi/v2.0/Sha256.yaml"
+                    $ref: "https://docs.alacritys.net/openapi/v2.0/Sha256.yaml"
                   head_block_num:
                     type: integer
                     description: Highest block number on the chain
@@ -352,7 +352,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/get_integrity_hash:
     post:
@@ -369,15 +369,15 @@ paths:
                 description: Defines the integrity hash information details
                 properties:
                   head_block_id:
-                    $ref: "https://docs.eosnetwork.com/openapi/v2.0/Sha256.yaml"
+                    $ref: "https://docs.alacritys.net/openapi/v2.0/Sha256.yaml"
                   integrity_hash:
-                    $ref: "https://docs.eosnetwork.com/openapi/v2.0/Sha256.yaml"
+                    $ref: "https://docs.alacritys.net/openapi/v2.0/Sha256.yaml"
         "400":
           description: client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/schedule_protocol_feature_activations:
     post:
@@ -394,20 +394,20 @@ paths:
                   type: array
                   description: List of protocol features to activate
                   items:
-                    $ref: "https://docs.eosnetwork.com/openapi/v2.0/Sha256.yaml"
+                    $ref: "https://docs.alacritys.net/openapi/v2.0/Sha256.yaml"
       responses:
         "201":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OK'
+                $ref: "#/components/schemas/OK"
         "400":
           description: client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/get_supported_protocol_features:
     post:
@@ -440,7 +440,7 @@ paths:
                   type: object
                   properties:
                     feature_digest:
-                      $ref: "https://docs.eosnetwork.com/openapi/v2.0/Sha256.yaml"
+                      $ref: "https://docs.alacritys.net/openapi/v2.0/Sha256.yaml"
                     subjective_restrictions:
                       type: object
                       properties:
@@ -454,11 +454,11 @@ paths:
                           type: string
                           example: "1970-01-01T00:00:00.000"
                         description_digest:
-                          $ref: "https://docs.eosnetwork.com/openapi/v2.0/Sha256.yaml"
+                          $ref: "https://docs.alacritys.net/openapi/v2.0/Sha256.yaml"
                         dependencies:
                           type: array
                           items:
-                            $ref: "https://docs.eosnetwork.com/openapi/v2.0/Sha256.yaml"
+                            $ref: "https://docs.alacritys.net/openapi/v2.0/Sha256.yaml"
                         protocol_feature_type:
                           type: string
                           example: "builtin"
@@ -476,8 +476,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-
+                $ref: "#/components/schemas/Error"
 
   /producer/get_account_ram_corrections:
     post:
@@ -521,13 +520,13 @@ paths:
                   more:
                     type: array
                     items:
-                      - $ref: "https://docs.eosnetwork.com/openapi/v2.0/Name.yaml"
+                      - $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
         "400":
           description: client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /producer/get_unapplied_transactions:
     post:
@@ -545,7 +544,7 @@ paths:
                   description: limit number of transactions to return
                   example: 2
                 lower_bound:
-                  $ref: "https://docs.eosnetwork.com/openapi/v2.0/Sha256.yaml"
+                  $ref: "https://docs.alacritys.net/openapi/v2.0/Sha256.yaml"
                 time_limit_ms:
                   type: integer
                   description: defaults to 10ms
@@ -570,7 +569,7 @@ paths:
                       type: object
                       properties:
                         trx_id:
-                          $ref: "https://docs.eosnetwork.com/openapi/v2.0/Sha256.yaml"
+                          $ref: "https://docs.alacritys.net/openapi/v2.0/Sha256.yaml"
                         expiration:
                           type: string
                           example: "2022-09-17T16:30:16"
@@ -596,13 +595,13 @@ paths:
                           type: integer
                           example: 934
                   more:
-                    $ref: "https://docs.eosnetwork.com/openapi/v2.0/Sha256.yaml"
+                    $ref: "https://docs.alacritys.net/openapi/v2.0/Sha256.yaml"
         "400":
           description: client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
 components:
   securitySchemes: {}

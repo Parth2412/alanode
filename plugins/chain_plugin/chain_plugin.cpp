@@ -1,24 +1,24 @@
-#include <eosio/chain_plugin/chain_plugin.hpp>
-#include <eosio/chain_plugin/trx_retry_db.hpp>
-#include <eosio/producer_plugin/producer_plugin.hpp>
-#include <eosio/chain/fork_database.hpp>
-#include <eosio/chain/block_log.hpp>
-#include <eosio/chain/exceptions.hpp>
-#include <eosio/chain/authorization_manager.hpp>
-#include <eosio/chain/code_object.hpp>
-#include <eosio/chain/config.hpp>
-#include <eosio/chain/wasm_interface.hpp>
-#include <eosio/chain/resource_limits.hpp>
-#include <eosio/chain/controller.hpp>
-#include <eosio/chain/generated_transaction_object.hpp>
-#include <eosio/chain/snapshot.hpp>
-#include <eosio/chain/deep_mind.hpp>
-#include <eosio/chain_plugin/trx_finality_status_processing.hpp>
-#include <eosio/chain/permission_link_object.hpp>
-#include <eosio/chain/global_property_object.hpp>
-#include <eosio/chain/eosio_contract.hpp>
+#include <alaio/chain_plugin/chain_plugin.hpp>
+#include <alaio/chain_plugin/trx_retry_db.hpp>
+#include <alaio/producer_plugin/producer_plugin.hpp>
+#include <alaio/chain/fork_database.hpp>
+#include <alaio/chain/block_log.hpp>
+#include <alaio/chain/exceptions.hpp>
+#include <alaio/chain/authorization_manager.hpp>
+#include <alaio/chain/code_object.hpp>
+#include <alaio/chain/config.hpp>
+#include <alaio/chain/wasm_interface.hpp>
+#include <alaio/chain/resource_limits.hpp>
+#include <alaio/chain/controller.hpp>
+#include <alaio/chain/generated_transaction_object.hpp>
+#include <alaio/chain/snapshot.hpp>
+#include <alaio/chain/deep_mind.hpp>
+#include <alaio/chain_plugin/trx_finality_status_processing.hpp>
+#include <alaio/chain/permission_link_object.hpp>
+#include <alaio/chain/global_property_object.hpp>
+#include <alaio/chain/alaio_contract.hpp>
 
-#include <eosio/resource_monitor_plugin/resource_monitor_plugin.hpp>
+#include <alaio/resource_monitor_plugin/resource_monitor_plugin.hpp>
 
 #include <chainbase/environment.hpp>
 
@@ -41,21 +41,21 @@ FC_REFLECT_ENUM( chainbase::environment::arch_t,
 FC_REFLECT(chainbase::environment, (debug)(os)(arch)(boost_version)(compiler) )
 
 const fc::string deep_mind_logger_name("deep-mind");
-eosio::chain::deep_mind_handler _deep_mind_log;
+alaio::chain::deep_mind_handler _deep_mind_log;
 
-namespace eosio {
+namespace alaio {
 
 //declare operator<< and validate funciton for read_mode in the same namespace as read_mode itself
 namespace chain {
 
-std::ostream& operator<<(std::ostream& osm, eosio::chain::db_read_mode m) {
-   if ( m == eosio::chain::db_read_mode::SPECULATIVE ) {
+std::ostream& operator<<(std::ostream& osm, alaio::chain::db_read_mode m) {
+   if ( m == alaio::chain::db_read_mode::SPECULATIVE ) {
       osm << "speculative";
-   } else if ( m == eosio::chain::db_read_mode::HEAD ) {
+   } else if ( m == alaio::chain::db_read_mode::HEAD ) {
       osm << "head";
-   } else if ( m == eosio::chain::db_read_mode::READ_ONLY ) { // deprecated
+   } else if ( m == alaio::chain::db_read_mode::READ_ONLY ) { // deprecated
       osm << "read-only";
-   } else if ( m == eosio::chain::db_read_mode::IRREVERSIBLE ) {
+   } else if ( m == alaio::chain::db_read_mode::IRREVERSIBLE ) {
       osm << "irreversible";
    }
 
@@ -64,7 +64,7 @@ std::ostream& operator<<(std::ostream& osm, eosio::chain::db_read_mode m) {
 
 void validate(boost::any& v,
               const std::vector<std::string>& values,
-              eosio::chain::db_read_mode* /* target_type */,
+              alaio::chain::db_read_mode* /* target_type */,
               int)
 {
   using namespace boost::program_options;
@@ -77,22 +77,22 @@ void validate(boost::any& v,
   std::string const& s = validators::get_single_string(values);
 
   if ( s == "speculative" ) {
-     v = boost::any(eosio::chain::db_read_mode::SPECULATIVE);
+     v = boost::any(alaio::chain::db_read_mode::SPECULATIVE);
   } else if ( s == "head" ) {
-     v = boost::any(eosio::chain::db_read_mode::HEAD);
+     v = boost::any(alaio::chain::db_read_mode::HEAD);
   } else if ( s == "read-only" ) {
-     v = boost::any(eosio::chain::db_read_mode::READ_ONLY);
+     v = boost::any(alaio::chain::db_read_mode::READ_ONLY);
   } else if ( s == "irreversible" ) {
-     v = boost::any(eosio::chain::db_read_mode::IRREVERSIBLE);
+     v = boost::any(alaio::chain::db_read_mode::IRREVERSIBLE);
   } else {
      throw validation_error(validation_error::invalid_option_value);
   }
 }
 
-std::ostream& operator<<(std::ostream& osm, eosio::chain::validation_mode m) {
-   if ( m == eosio::chain::validation_mode::FULL ) {
+std::ostream& operator<<(std::ostream& osm, alaio::chain::validation_mode m) {
+   if ( m == alaio::chain::validation_mode::FULL ) {
       osm << "full";
-   } else if ( m == eosio::chain::validation_mode::LIGHT ) {
+   } else if ( m == alaio::chain::validation_mode::LIGHT ) {
       osm << "light";
    }
 
@@ -101,7 +101,7 @@ std::ostream& operator<<(std::ostream& osm, eosio::chain::validation_mode m) {
 
 void validate(boost::any& v,
               const std::vector<std::string>& values,
-              eosio::chain::validation_mode* /* target_type */,
+              alaio::chain::validation_mode* /* target_type */,
               int)
 {
   using namespace boost::program_options;
@@ -114,9 +114,9 @@ void validate(boost::any& v,
   std::string const& s = validators::get_single_string(values);
 
   if ( s == "full" ) {
-     v = boost::any(eosio::chain::validation_mode::FULL);
+     v = boost::any(alaio::chain::validation_mode::FULL);
   } else if ( s == "light" ) {
-     v = boost::any(eosio::chain::validation_mode::LIGHT);
+     v = boost::any(alaio::chain::validation_mode::LIGHT);
   } else {
      throw validation_error(validation_error::invalid_option_value);
   }
@@ -124,10 +124,10 @@ void validate(boost::any& v,
 
 }
 
-using namespace eosio;
-using namespace eosio::chain;
-using namespace eosio::chain::config;
-using namespace eosio::chain::plugin_interface;
+using namespace alaio;
+using namespace alaio::chain;
+using namespace alaio::chain::config;
+using namespace alaio::chain::plugin_interface;
 using vm_type = wasm_interface::vm_type;
 using fc::flat_map;
 
@@ -198,10 +198,10 @@ public:
 
 chain_plugin::chain_plugin()
 :my(new chain_plugin_impl()) {
-   app().register_config_type<eosio::chain::db_read_mode>();
-   app().register_config_type<eosio::chain::validation_mode>();
+   app().register_config_type<alaio::chain::db_read_mode>();
+   app().register_config_type<alaio::chain::validation_mode>();
    app().register_config_type<chainbase::pinnable_mapped_file::map_mode>();
-   app().register_config_type<eosio::chain::wasm_interface::vm_type>();
+   app().register_config_type<alaio::chain::wasm_interface::vm_type>();
 }
 
 chain_plugin::~chain_plugin(){}
@@ -212,25 +212,25 @@ void chain_plugin::set_program_options(options_description& cli, options_descrip
    std::string wasm_runtime_opt = "Override default WASM runtime (";
    std::string wasm_runtime_desc;
    std::string delim;
-#ifdef EOSIO_EOS_VM_JIT_RUNTIME_ENABLED
-   wasm_runtime_opt += " \"eos-vm-jit\"";
-   wasm_runtime_desc += "\"eos-vm-jit\" : A WebAssembly runtime that compiles WebAssembly code to native x86 code prior to execution.\n";
+#ifdef ALAIO_ALA_VM_JIT_RUNTIME_ENABLED
+   wasm_runtime_opt += " \"ala-vm-jit\"";
+   wasm_runtime_desc += "\"ala-vm-jit\" : A WebAssembly runtime that compiles WebAssembly code to native x86 code prior to execution.\n";
    delim = ", ";
 #endif
 
-#ifdef EOSIO_EOS_VM_RUNTIME_ENABLED
-   wasm_runtime_opt += delim + "\"eos-vm\"";
-   wasm_runtime_desc += "\"eos-vm\" : A WebAssembly interpreter.\n";
+#ifdef ALAIO_ALA_VM_RUNTIME_ENABLED
+   wasm_runtime_opt += delim + "\"ala-vm\"";
+   wasm_runtime_desc += "\"ala-vm\" : A WebAssembly interpreter.\n";
    delim = ", ";
 #endif
 
-#ifdef EOSIO_EOS_VM_OC_DEVELOPER
-   wasm_runtime_opt += delim + "\"eos-vm-oc\"";
-   wasm_runtime_desc += "\"eos-vm-oc\" : Unsupported. Instead, use one of the other runtimes along with the option enable-eos-vm-oc.\n";
+#ifdef ALAIO_ALA_VM_OC_DEVELOPER
+   wasm_runtime_opt += delim + "\"ala-vm-oc\"";
+   wasm_runtime_desc += "\"ala-vm-oc\" : Unsupported. Instead, use one of the other runtimes along with the option enable-ala-vm-oc.\n";
 #endif
    wasm_runtime_opt += ")\n" + wasm_runtime_desc;
 
-   std::string default_wasm_runtime_str= eosio::chain::wasm_interface::vm_type_string(eosio::chain::config::default_wasm_runtime);
+   std::string default_wasm_runtime_str= alaio::chain::wasm_interface::vm_type_string(alaio::chain::config::default_wasm_runtime);
 
    cfg.add_options()
          ("blocks-dir", bpo::value<bfs::path>()->default_value("blocks"),
@@ -238,15 +238,15 @@ void chain_plugin::set_program_options(options_description& cli, options_descrip
          ("protocol-features-dir", bpo::value<bfs::path>()->default_value("protocol_features"),
           "the location of the protocol_features directory (absolute path or relative to application config dir)")
          ("checkpoint", bpo::value<vector<string>>()->composing(), "Pairs of [BLOCK_NUM,BLOCK_ID] that should be enforced as checkpoints.")
-         ("wasm-runtime", bpo::value<eosio::chain::wasm_interface::vm_type>()->value_name("runtime")->notifier([](const auto& vm){
-#ifndef EOSIO_EOS_VM_OC_DEVELOPER
-            //throwing an exception here (like EOS_ASSERT) is just gobbled up with a "Failed to initialize" error :(
-            if(vm == wasm_interface::vm_type::eos_vm_oc) {
-               elog("EOS VM OC is a tier-up compiler and works in conjunction with the configured base WASM runtime. Enable EOS VM OC via 'eos-vm-oc-enable' option");
-               EOS_ASSERT(false, plugin_exception, "");
+         ("wasm-runtime", bpo::value<alaio::chain::wasm_interface::vm_type>()->value_name("runtime")->notifier([](const auto& vm){
+#ifndef ALAIO_ALA_VM_OC_DEVELOPER
+            //throwing an exception here (like ALA_ASSERT) is just gobbled up with a "Failed to initialize" error :(
+            if(vm == wasm_interface::vm_type::ala_vm_oc) {
+               elog("ALA VM OC is a tier-up compiler and works in conjunction with the configured base WASM runtime. Enable ALA VM OC via 'ala-vm-oc-enable' option");
+               ALA_ASSERT(false, plugin_exception, "");
             }
 #endif
-         })->default_value(eosio::chain::config::default_wasm_runtime, default_wasm_runtime_str), wasm_runtime_opt.c_str()
+         })->default_value(alaio::chain::config::default_wasm_runtime, default_wasm_runtime_str), wasm_runtime_opt.c_str()
          )
          ("profile-account", boost::program_options::value<vector<string>>()->composing(),
           "The name of an account whose code will be profiled")
@@ -276,7 +276,7 @@ void chain_plugin::set_program_options(options_description& cli, options_descrip
           "Public key added to blacklist of keys that should not be included in authorities (may specify multiple times)")
          ("sender-bypass-whiteblacklist", boost::program_options::value<vector<string>>()->composing()->multitoken(),
           "Deferred transactions sent by accounts in this list do not have any of the subjective whitelist/blacklist checks applied to them (may specify multiple times)")
-         ("read-mode", boost::program_options::value<eosio::chain::db_read_mode>()->default_value(eosio::chain::db_read_mode::SPECULATIVE),
+         ("read-mode", boost::program_options::value<alaio::chain::db_read_mode>()->default_value(alaio::chain::db_read_mode::SPECULATIVE),
           "Database read mode (\"speculative\", \"head\", \"read-only\", \"irreversible\").\n"
           "In \"speculative\" mode: database contains state changes by transactions in the blockchain up to the head block as well as some transactions not yet included in the blockchain.\n"
           "In \"head\" mode: database contains state changes by only transactions in the blockchain up to the head block; transactions received by the node are relayed if valid.\n"
@@ -284,13 +284,13 @@ void chain_plugin::set_program_options(options_description& cli, options_descrip
           "In \"irreversible\" mode: database contains state changes by only transactions in the blockchain up to the last irreversible block; transactions received via the P2P network are not relayed and transactions cannot be pushed via the chain API.\n"
           )
          ( "api-accept-transactions", bpo::value<bool>()->default_value(true), "Allow API transactions to be evaluated and relayed if valid.")
-         ("validation-mode", boost::program_options::value<eosio::chain::validation_mode>()->default_value(eosio::chain::validation_mode::FULL),
+         ("validation-mode", boost::program_options::value<alaio::chain::validation_mode>()->default_value(alaio::chain::validation_mode::FULL),
           "Chain validation mode (\"full\" or \"light\").\n"
           "In \"full\" mode all incoming blocks will be fully validated.\n"
           "In \"light\" mode all incoming blocks headers will be fully validated; transactions in those validated blocks will be trusted \n")
          ("disable-ram-billing-notify-checks", bpo::bool_switch()->default_value(false),
           "Disable the check which subjectively fails a transaction if a contract bills more RAM to another account within the context of a notification handler (i.e. when the receiver is not the code of the action).")
-#ifdef EOSIO_DEVELOPER
+#ifdef ALAIO_DEVELOPER
          ("disable-all-subjective-mitigations", bpo::bool_switch()->default_value(false),
           "Disable all subjective mitigations checks in the entire codebase.")
 #endif
@@ -306,15 +306,15 @@ void chain_plugin::set_program_options(options_description& cli, options_descrip
 #endif
          )
 
-#ifdef EOSIO_EOS_VM_OC_RUNTIME_ENABLED
-         ("eos-vm-oc-cache-size-mb", bpo::value<uint64_t>()->default_value(eosvmoc::config().cache_size / (1024u*1024u)), "Maximum size (in MiB) of the EOS VM OC code cache")
-         ("eos-vm-oc-compile-threads", bpo::value<uint64_t>()->default_value(1u)->notifier([](const auto t) {
+#ifdef ALAIO_ALA_VM_OC_RUNTIME_ENABLED
+         ("ala-vm-oc-cache-size-mb", bpo::value<uint64_t>()->default_value(alavmoc::config().cache_size / (1024u*1024u)), "Maximum size (in MiB) of the ALA VM OC code cache")
+         ("ala-vm-oc-compile-threads", bpo::value<uint64_t>()->default_value(1u)->notifier([](const auto t) {
                if(t == 0) {
-                  elog("eos-vm-oc-compile-threads must be set to a non-zero value");
-                  EOS_ASSERT(false, plugin_exception, "");
+                  elog("ala-vm-oc-compile-threads must be set to a non-zero value");
+                  ALA_ASSERT(false, plugin_exception, "");
                }
-         }), "Number of threads to use for EOS VM OC tier-up")
-         ("eos-vm-oc-enable", bpo::bool_switch(), "Enable EOS VM OC tier-up runtime")
+         }), "Number of threads to use for ALA VM OC tier-up")
+         ("ala-vm-oc-enable", bpo::bool_switch(), "Enable ALA VM OC tier-up runtime")
 #endif
          ("enable-account-queries", bpo::value<bool>()->default_value(false), "enable queries to find accounts by various metadata.")
          ("max-nonprivileged-inline-action-size", bpo::value<uint32_t>()->default_value(config::default_max_nonprivileged_inline_action_size), "maximum allowed size (in bytes) of an inline action for a nonprivileged account")
@@ -381,7 +381,7 @@ void chain_plugin::set_program_options(options_description& cli, options_descrip
 if( options.count(op_name) ) { \
    const std::vector<std::string>& ops = options[op_name].as<std::vector<std::string>>(); \
    for( const auto& v : ops ) { \
-      container.emplace( eosio::chain::name( v ) ); \
+      container.emplace( alaio::chain::name( v ) ); \
    } \
 }
 
@@ -445,7 +445,7 @@ protocol_feature_set initialize_protocol_features( const fc::path& p, bool popul
    bool directory_exists = true;
 
    if( fc::exists( p ) ) {
-      EOS_ASSERT( fc::is_directory( p ), plugin_exception,
+      ALA_ASSERT( fc::is_directory( p ), plugin_exception,
                   "Path to protocol-features is not a directory: ${path}",
                   ("path", p.generic_string())
       );
@@ -511,7 +511,7 @@ protocol_feature_set initialize_protocol_features( const fc::path& p, bool popul
 
          auto res = found_builtin_protocol_features.emplace( f->get_codename(), file_path );
 
-         EOS_ASSERT( res.second, plugin_exception,
+         ALA_ASSERT( res.second, plugin_exception,
                      "Builtin protocol feature '${codename}' was already included from a previous_file",
                      ("codename", builtin_protocol_feature_codename(f->get_codename()))
                      ("current_file", file_path.generic_string())
@@ -560,7 +560,7 @@ protocol_feature_set initialize_protocol_features( const fc::path& p, bool popul
 
       auto file_path = p / filename;
 
-      EOS_ASSERT( !fc::exists( file_path ), plugin_exception,
+      ALA_ASSERT( !fc::exists( file_path ), plugin_exception,
                   "Could not save builtin protocol feature with codename '${codename}' because a file at the following path already exists: ${path}",
                   ("codename", builtin_protocol_feature_codename( f.get_codename() ))
                   ("path", file_path.generic_string())
@@ -586,7 +586,7 @@ protocol_feature_set initialize_protocol_features( const fc::path& p, bool popul
    ( builtin_protocol_feature_t codename ) -> digest_type {
       auto res = visited_builtins.emplace( codename, std::optional<digest_type>() );
       if( !res.second ) {
-         EOS_ASSERT( res.first->second, protocol_feature_exception,
+         ALA_ASSERT( res.first->second, protocol_feature_exception,
                      "invariant failure: cycle found in builtin protocol feature dependencies"
          );
          return *res.first->second;
@@ -622,7 +622,7 @@ protocol_feature_set initialize_protocol_features( const fc::path& p, bool popul
 }
 
 namespace {
-  // This can be removed when versions of eosio that support reversible chainbase state file no longer supported.
+  // This can be removed when versions of alaio that support reversible chainbase state file no longer supported.
   void upgrade_from_reversible_to_fork_db(chain_plugin_impl* my) {
      namespace bfs = boost::filesystem;
      bfs::path old_fork_db = my->chain_config->state_dir / config::forkdb_filename;
@@ -658,10 +658,10 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
 
    try {
       try {
-         genesis_state gs; // Check if EOSIO_ROOT_KEY is bad
+         genesis_state gs; // Check if ALAIO_ROOT_KEY is bad
       } catch ( const std::exception& ) {
-         elog( "EOSIO_ROOT_KEY ('${root_key}') is invalid. Recompile with a valid public key.",
-               ("root_key", genesis_state::eosio_root_key));
+         elog( "ALAIO_ROOT_KEY ('${root_key}') is invalid. Recompile with a valid public key.",
+               ("root_key", genesis_state::alaio_root_key));
          throw;
       }
 
@@ -678,7 +678,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
                p = bfs::current_path() / p;
             }
 
-            EOS_ASSERT( fc::json::save_to_file( chainbase::environment(), p, true ), misc_exception,
+            ALA_ASSERT( fc::json::save_to_file( chainbase::environment(), p, true ), misc_exception,
                         "Error occurred while writing build info JSON to '${path}'",
                         ("path", p.generic_string())
             );
@@ -686,7 +686,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
             ilog( "Saved build info JSON to '${path}'", ("path", p.generic_string()) );
          }
 
-         EOS_THROW( node_management_success, "reported build environment information" );
+         ALA_THROW( node_management_success, "reported build environment information" );
       }
 
       LOAD_VALUE_SET( options, "sender-bypass-whiteblacklist", my->chain_config->sender_bypass_whiteblacklist );
@@ -702,7 +702,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
          auto& list = my->chain_config->action_blacklist;
          for( const auto& a : acts ) {
             auto pos = a.find( "::" );
-            EOS_ASSERT( pos != std::string::npos, plugin_config_exception, "Invalid entry in action-blacklist: '${a}'", ("a", a));
+            ALA_ASSERT( pos != std::string::npos, plugin_config_exception, "Invalid entry in action-blacklist: '${a}'", ("a", a));
             account_name code( a.substr( 0, pos ));
             action_name act( a.substr( pos + 2 ));
             list.emplace( code, act );
@@ -744,7 +744,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
             auto item = fc::json::from_string(cp).as<std::pair<uint32_t,block_id_type>>();
             auto itr = my->loaded_checkpoints.find(item.first);
             if( itr != my->loaded_checkpoints.end() ) {
-               EOS_ASSERT( itr->second == item.second,
+               ALA_ASSERT( itr->second == item.second,
                            plugin_config_exception,
                           "redefining existing checkpoint at block number ${num}: original: ${orig} new: ${new}",
                           ("num", item.first)("orig", itr->second)("new", item.second)
@@ -792,12 +792,12 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
 
       if( options.count( "chain-threads" )) {
          my->chain_config->thread_pool_size = options.at( "chain-threads" ).as<uint16_t>();
-         EOS_ASSERT( my->chain_config->thread_pool_size > 0, plugin_config_exception,
+         ALA_ASSERT( my->chain_config->thread_pool_size > 0, plugin_config_exception,
                      "chain-threads ${num} must be greater than 0", ("num", my->chain_config->thread_pool_size) );
       }
 
       my->chain_config->sig_cpu_bill_pct = options.at("signature-cpu-billable-pct").as<uint32_t>();
-      EOS_ASSERT( my->chain_config->sig_cpu_bill_pct >= 0 && my->chain_config->sig_cpu_bill_pct <= 100, plugin_config_exception,
+      ALA_ASSERT( my->chain_config->sig_cpu_bill_pct >= 0 && my->chain_config->sig_cpu_bill_pct <= 100, plugin_config_exception,
                   "signature-cpu-billable-pct must be 0 - 100, ${pct}", ("pct", my->chain_config->sig_cpu_bill_pct) );
       my->chain_config->sig_cpu_bill_pct *= config::percent_1;
 
@@ -809,7 +809,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
       my->chain_config->contracts_console = options.at( "contracts-console" ).as<bool>();
       my->chain_config->allow_ram_billing_in_notify = options.at( "disable-ram-billing-notify-checks" ).as<bool>();
 
-#ifdef EOSIO_DEVELOPER
+#ifdef ALAIO_DEVELOPER
       my->chain_config->disable_all_subjective_mitigations = options.at( "disable-all-subjective-mitigations" ).as<bool>();
 #endif
 
@@ -823,7 +823,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
 
          if( fc::exists( my->blocks_dir / "blocks.log" )) {
             gs = block_log::extract_genesis_state( my->blocks_dir );
-            EOS_ASSERT( gs,
+            ALA_ASSERT( gs,
                         plugin_config_exception,
                         "Block log at '${path}' does not contain a genesis state, it only has the chain-id.",
                         ("path", (my->blocks_dir / "blocks.log").generic_string())
@@ -845,7 +845,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
                p = bfs::current_path() / p;
             }
 
-            EOS_ASSERT( fc::json::save_to_file( *gs, p, true ),
+            ALA_ASSERT( fc::json::save_to_file( *gs, p, true ),
                         misc_exception,
                         "Error occurred while writing genesis JSON to '${path}'",
                         ("path", p.generic_string())
@@ -854,7 +854,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
             ilog( "Saved genesis JSON to '${path}'", ("path", p.generic_string()) );
          }
 
-         EOS_THROW( extract_genesis_state_exception, "extracted genesis state from blocks.log" );
+         ALA_THROW( extract_genesis_state_exception, "extracted genesis state from blocks.log" );
       }
 
       // move fork_db to new location
@@ -872,7 +872,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
                fc::remove( my->blocks_dir / "blocks.index" );
             }
          } else {
-            EOS_ASSERT(cfile::supports_hole_punching(), plugin_config_exception, "block-log-retain-blocks cannot be greater than 0 because the file system does not support hole punching");
+            ALA_ASSERT(cfile::supports_hole_punching(), plugin_config_exception, "block-log-retain-blocks cannot be greater than 0 because the file system does not support hole punching");
          }
       }
 
@@ -896,7 +896,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
       std::optional<chain_id_type> chain_id;
       if (options.count( "snapshot" )) {
          my->snapshot_path = options.at( "snapshot" ).as<bfs::path>();
-         EOS_ASSERT( fc::exists(*my->snapshot_path), plugin_config_exception,
+         ALA_ASSERT( fc::exists(*my->snapshot_path), plugin_config_exception,
                      "Cannot load snapshot, ${name} does not exist", ("name", my->snapshot_path->generic_string()) );
 
          // recover genesis information from the snapshot
@@ -907,15 +907,15 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
          chain_id = controller::extract_chain_id(reader);
          infile.close();
 
-         EOS_ASSERT( options.count( "genesis-timestamp" ) == 0,
+         ALA_ASSERT( options.count( "genesis-timestamp" ) == 0,
                  plugin_config_exception,
                  "--snapshot is incompatible with --genesis-timestamp as the snapshot contains genesis information");
-         EOS_ASSERT( options.count( "genesis-json" ) == 0,
+         ALA_ASSERT( options.count( "genesis-json" ) == 0,
                      plugin_config_exception,
                      "--snapshot is incompatible with --genesis-json as the snapshot contains genesis information");
 
          auto shared_mem_path = my->chain_config->state_dir / "shared_memory.bin";
-         EOS_ASSERT( !fc::is_regular_file(shared_mem_path),
+         ALA_ASSERT( !fc::is_regular_file(shared_mem_path),
                  plugin_config_exception,
                  "Snapshot can only be used to initialize an empty database." );
 
@@ -923,7 +923,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
             auto block_log_genesis = block_log::extract_genesis_state(my->blocks_dir);
             if( block_log_genesis ) {
                const auto& block_log_chain_id = block_log_genesis->compute_chain_id();
-               EOS_ASSERT( *chain_id == block_log_chain_id,
+               ALA_ASSERT( *chain_id == block_log_chain_id,
                            plugin_config_exception,
                            "snapshot chain ID (${snapshot_chain_id}) does not match the chain ID from the genesis state in the block log (${block_log_chain_id})",
                            ("snapshot_chain_id",  *chain_id)
@@ -931,7 +931,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
                );
             } else {
                const auto& block_log_chain_id = block_log::extract_chain_id(my->blocks_dir);
-               EOS_ASSERT( *chain_id == block_log_chain_id,
+               ALA_ASSERT( *chain_id == block_log_chain_id,
                            plugin_config_exception,
                            "snapshot chain ID (${snapshot_chain_id}) does not match the chain ID (${block_log_chain_id}) in the block log",
                            ("snapshot_chain_id",  *chain_id)
@@ -956,7 +956,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
             }
 
             if( chain_id ) {
-               EOS_ASSERT( *block_log_chain_id == *chain_id, block_log_exception,
+               ALA_ASSERT( *block_log_chain_id == *chain_id, block_log_exception,
                            "Chain ID in blocks.log (${block_log_chain_id}) does not match the existing "
                            " chain ID in state (${state_chain_id}).",
                            ("block_log_chain_id", *block_log_chain_id)
@@ -976,7 +976,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
                genesis_file = bfs::current_path() / genesis_file;
             }
 
-            EOS_ASSERT( fc::is_regular_file( genesis_file ),
+            ALA_ASSERT( fc::is_regular_file( genesis_file ),
                         plugin_config_exception,
                        "Specified genesis file '${genesis}' does not exist.",
                        ("genesis", genesis_file.generic_string()));
@@ -993,7 +993,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
             }
 
             if( block_log_genesis ) {
-               EOS_ASSERT( *block_log_genesis == provided_genesis, plugin_config_exception,
+               ALA_ASSERT( *block_log_genesis == provided_genesis, plugin_config_exception,
                            "Genesis state, provided via command line arguments, does not match the existing genesis state"
                            " in blocks.log. It is not necessary to provide genesis state arguments when a full blocks.log "
                            "file already exists."
@@ -1001,7 +1001,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
             } else {
                const auto& provided_genesis_chain_id = provided_genesis.compute_chain_id();
                if( chain_id ) {
-                  EOS_ASSERT( provided_genesis_chain_id == *chain_id, plugin_config_exception,
+                  ALA_ASSERT( provided_genesis_chain_id == *chain_id, plugin_config_exception,
                               "Genesis state, provided via command line arguments, has a chain ID (${provided_genesis_chain_id}) "
                               "that does not match the existing chain ID in the database state (${state_chain_id}). "
                               "It is not necessary to provide genesis state arguments when an initialized database state already exists.",
@@ -1010,7 +1010,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
                   );
                } else {
                   if( block_log_chain_id ) {
-                     EOS_ASSERT( provided_genesis_chain_id == *block_log_chain_id, plugin_config_exception,
+                     ALA_ASSERT( provided_genesis_chain_id == *block_log_chain_id, plugin_config_exception,
                                  "Genesis state, provided via command line arguments, has a chain ID (${provided_genesis_chain_id}) "
                                  "that does not match the existing chain ID in blocks.log (${block_log_chain_id}).",
                                  ("provided_genesis_chain_id", provided_genesis_chain_id)
@@ -1025,7 +1025,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
                }
             }
          } else {
-            EOS_ASSERT( options.count( "genesis-timestamp" ) == 0,
+            ALA_ASSERT( options.count( "genesis-timestamp" ) == 0,
                         plugin_config_exception,
                         "--genesis-timestamp is only valid if also passed in with --genesis-json");
          }
@@ -1037,7 +1037,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
             } else {
                // Uninitialized state database and no genesis state provided
 
-               EOS_ASSERT( !block_log_chain_id, plugin_config_exception,
+               ALA_ASSERT( !block_log_chain_id, plugin_config_exception,
                            "Genesis state is necessary to initialize fresh blockchain state but genesis state could not be "
                            "found in the blocks log. Please either load from snapshot or find a blocks log that starts "
                            "from genesis."
@@ -1075,13 +1075,13 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
 
       my->chain_config->db_map_mode = options.at("database-map-mode").as<pinnable_mapped_file::map_mode>();
 
-#ifdef EOSIO_EOS_VM_OC_RUNTIME_ENABLED
-      if( options.count("eos-vm-oc-cache-size-mb") )
-         my->chain_config->eosvmoc_config.cache_size = options.at( "eos-vm-oc-cache-size-mb" ).as<uint64_t>() * 1024u * 1024u;
-      if( options.count("eos-vm-oc-compile-threads") )
-         my->chain_config->eosvmoc_config.threads = options.at("eos-vm-oc-compile-threads").as<uint64_t>();
-      if( options["eos-vm-oc-enable"].as<bool>() )
-         my->chain_config->eosvmoc_tierup = true;
+#ifdef ALAIO_ALA_VM_OC_RUNTIME_ENABLED
+      if( options.count("ala-vm-oc-cache-size-mb") )
+         my->chain_config->alavmoc_config.cache_size = options.at( "ala-vm-oc-cache-size-mb" ).as<uint64_t>() * 1024u * 1024u;
+      if( options.count("ala-vm-oc-compile-threads") )
+         my->chain_config->alavmoc_config.threads = options.at("ala-vm-oc-compile-threads").as<uint64_t>();
+      if( options["ala-vm-oc-enable"].as<bool>() )
+         my->chain_config->alavmoc_tierup = true;
 #endif
 
       my->account_queries_enabled = options.at("enable-account-queries").as<bool>();
@@ -1092,17 +1092,17 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
       my->chain.emplace( *my->chain_config, std::move(pfs), *chain_id );
 
       if( options.count( "transaction-retry-max-storage-size-gb" )) {
-         EOS_ASSERT( !options.count( "producer-name"), plugin_config_exception,
+         ALA_ASSERT( !options.count( "producer-name"), plugin_config_exception,
                      "Transaction retry not allowed on producer nodes." );
          const uint64_t max_storage_size = options.at( "transaction-retry-max-storage-size-gb" ).as<uint64_t>() * 1024 * 1024 * 1024;
          if( max_storage_size > 0 ) {
             const uint32_t p2p_dedup_time_s = options.at( "p2p-dedup-cache-expire-time-sec" ).as<uint32_t>();
             const uint32_t trx_retry_interval = options.at( "transaction-retry-interval-sec" ).as<uint32_t>();
             const uint32_t trx_retry_max_expire = options.at( "transaction-retry-max-expiration-sec" ).as<uint32_t>();
-            EOS_ASSERT( trx_retry_interval >= 2 * p2p_dedup_time_s, plugin_config_exception,
+            ALA_ASSERT( trx_retry_interval >= 2 * p2p_dedup_time_s, plugin_config_exception,
                         "transaction-retry-interval-sec ${ri} must be greater than 2 times p2p-dedup-cache-expire-time-sec ${dd}",
                         ("ri", trx_retry_interval)("dd", p2p_dedup_time_s) );
-            EOS_ASSERT( trx_retry_max_expire > trx_retry_interval, plugin_config_exception,
+            ALA_ASSERT( trx_retry_max_expire > trx_retry_interval, plugin_config_exception,
                         "transaction-retry-max-expiration-sec ${m} should be configured larger than transaction-retry-interval-sec ${i}",
                         ("m", trx_retry_max_expire)("i", trx_retry_interval) );
             my->_trx_retry_db.emplace( *my->chain, max_storage_size,
@@ -1138,10 +1138,10 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
          setbuf(stdout, NULL);
          
          //verify configuration is correct
-         EOS_ASSERT( options.at("api-accept-transactions").as<bool>() == false, plugin_config_exception,
+         ALA_ASSERT( options.at("api-accept-transactions").as<bool>() == false, plugin_config_exception,
             "api-accept-transactions must be set to false in order to enable deep-mind logging.");
 
-         EOS_ASSERT( options.at("p2p-accept-transactions").as<bool>() == false, plugin_config_exception,
+         ALA_ASSERT( options.at("p2p-accept-transactions").as<bool>() == false, plugin_config_exception,
             "p2p-accept-transactions must be set to false in order to enable deep-mind logging.");
 
          my->chain->enable_deep_mind( &_deep_mind_log );
@@ -1172,7 +1172,7 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
          auto itr = my->loaded_checkpoints.find( blk->block_num() );
          if( itr != my->loaded_checkpoints.end() ) {
             auto id = blk->calculate_id();
-            EOS_ASSERT( itr->second == id, checkpoint_exception,
+            ALA_ASSERT( itr->second == id, checkpoint_exception,
                         "Checkpoint does not match for block number ${num}: expected: ${expected} actual: ${actual}",
                         ("num", blk->block_num())("expected", itr->second)("actual", id)
             );
@@ -1256,11 +1256,11 @@ void chain_plugin::plugin_startup()
 { try {
    handle_sighup(); // Sets loggers
 
-   EOS_ASSERT( my->chain_config->read_mode != db_read_mode::IRREVERSIBLE || !accept_transactions(), plugin_config_exception,
+   ALA_ASSERT( my->chain_config->read_mode != db_read_mode::IRREVERSIBLE || !accept_transactions(), plugin_config_exception,
                "read-mode = irreversible. transactions should not be enabled by enable_accept_transactions" );
    try {
       my->producer_plug = app().find_plugin<producer_plugin>();
-      EOS_ASSERT(my->producer_plug, plugin_exception, "Failed to find producer_plugin");
+      ALA_ASSERT(my->producer_plug, plugin_exception, "Failed to find producer_plugin");
 
       auto shutdown = [](){ return app().quit(); };
       auto check_shutdown = [](){ return app().is_quiting(); };
@@ -1337,7 +1337,7 @@ chain_apis::read_write::read_write(controller& db,
 }
 
 void chain_apis::read_write::validate() const {
-   EOS_ASSERT( api_accept_transactions, missing_chain_api_plugin_exception,
+   ALA_ASSERT( api_accept_transactions, missing_chain_api_plugin_exception,
                "Not allowed, node has api-accept-transactions = false" );
 }
 
@@ -1394,20 +1394,20 @@ void chain_plugin::log_guard_exception(const chain::guard_exception&e ) {
 void chain_plugin::handle_guard_exception(const chain::guard_exception& e) {
    log_guard_exception(e);
 
-   elog("database chain::guard_exception, quitting..."); // log string searched for in: tests/nodeos_under_min_avail_ram.py
+   elog("database chain::guard_exception, quitting..."); // log string searched for in: tests/alanode_under_min_avail_ram.py
    // quit the app
    app().quit();
 }
 
 void chain_plugin::handle_db_exhaustion() {
    elog("database memory exhausted: increase chain-state-db-size-mb");
-   //return 1 -- it's what programs/nodeos/main.cpp considers "BAD_ALLOC"
+   //return 1 -- it's what programs/alanode/main.cpp considers "BAD_ALLOC"
    std::_Exit(1);
 }
 
 void chain_plugin::handle_bad_alloc() {
    elog("std::bad_alloc - memory exhausted");
-   //return -2 -- it's what programs/nodeos/main.cpp reports for std::exception
+   //return -2 -- it's what programs/alanode/main.cpp reports for std::exception
    std::_Exit(-2);
 }
 
@@ -1463,7 +1463,7 @@ read_only::get_info_results read_only::get_info(const read_only::get_info_params
 
 read_only::get_transaction_status_results
 read_only::get_transaction_status(const read_only::get_transaction_status_params& param, const fc::time_point& deadline) const {
-   EOS_ASSERT(trx_finality_status_proc, unsupported_feature, "Transaction Status Interface not enabled.  To enable, configure nodeos with '--transaction-finality-status-max-storage-size-gb <size>'.");
+   ALA_ASSERT(trx_finality_status_proc, unsupported_feature, "Transaction Status Interface not enabled.  To enable, configure alanode with '--transaction-finality-status-max-storage-size-gb <size>'.");
 
    trx_finality_status_processing::chain_state ch_state = trx_finality_status_proc->get_chain_state();
 
@@ -1565,7 +1565,7 @@ uint64_t read_only::get_table_index_name(const read_only::get_table_rows_params&
    // see multi_index packing of index name
    const uint64_t table = p.table.to_uint64_t();
    uint64_t index = table & 0xFFFFFFFFFFFFFFF0ULL;
-   EOS_ASSERT( index == table, chain::contract_table_query_exception, "Unsupported table name: ${n}", ("n", p.table) );
+   ALA_ASSERT( index == table, chain::contract_table_query_exception, "Unsupported table name: ${n}", ("n", p.table) );
 
    primary = false;
    uint64_t pos = 0;
@@ -1592,7 +1592,7 @@ uint64_t read_only::get_table_index_name(const read_only::get_table_rows_params&
       try {
          pos = fc::to_uint64( p.index_position );
       } catch(...) {
-         EOS_ASSERT( false, chain::contract_table_query_exception, "Invalid index_position: ${p}", ("p", p.index_position));
+         ALA_ASSERT( false, chain::contract_table_query_exception, "Invalid index_position: ${p}", ("p", p.index_position));
       }
       if (pos < 2) {
          primary = true;
@@ -1605,7 +1605,7 @@ uint64_t read_only::get_table_index_name(const read_only::get_table_rows_params&
    return index;
 }
 
-uint64_t convert_to_type(const eosio::name &n, const string &desc) {
+uint64_t convert_to_type(const alaio::name &n, const string &desc) {
    return n.to_uint64_t();
 }
 
@@ -1623,17 +1623,17 @@ uint64_t convert_to_type(const string& str, const string& desc) {
       return s.to_uint64_t();
    } catch( ... ) { }
 
-   if (str.find(',') != string::npos) { // fix #6274 only match formats like 4,EOS
+   if (str.find(',') != string::npos) { // fix #6274 only match formats like 4,ALA
       try {
-         auto symb = eosio::chain::symbol::from_string(str);
+         auto symb = alaio::chain::symbol::from_string(str);
          return symb.value();
       } catch( ... ) { }
    }
 
    try {
-      return ( eosio::chain::string_to_symbol( 0, str.c_str() ) >> 8 );
+      return ( alaio::chain::string_to_symbol( 0, str.c_str() ) >> 8 );
    } catch( ... ) {
-      EOS_ASSERT( false, chain_type_exception, "Could not convert ${desc} string '${str}' to any of the following: "
+      ALA_ASSERT( false, chain_type_exception, "Could not convert ${desc} string '${str}' to any of the following: "
                         "uint64_t, valid name, or valid symbol (with or without the precision)",
                   ("desc", desc)("str", str));
    }
@@ -1646,7 +1646,7 @@ double convert_to_type(const string& str, const string& desc) {
       val = fc::variant(str).as<double>();
    } FC_RETHROW_EXCEPTIONS(warn, "Could not convert ${desc} string '${str}' to key type.", ("desc", desc)("str",str) )
 
-   EOS_ASSERT( !std::isnan(val), chain::contract_table_query_exception,
+   ALA_ASSERT( !std::isnan(val), chain::contract_table_query_exception,
                "Converted ${desc} string '${str}' to NaN which is not a permitted value for the key type", ("desc", desc)("str",str) );
 
    return val;
@@ -1676,7 +1676,7 @@ string convert_to_string(const chain::key256_t& source, const string& key_type, 
          memcpy(val._hash, byte_array.data(), byte_array.size() );
          return std::string(val);
       }
-      EOS_ASSERT( false, chain_type_exception, "Incompatible key_type and encode_type for key256_t next_key" );
+      ALA_ASSERT( false, chain_type_exception, "Incompatible key_type and encode_type for key256_t next_key" );
 
    } FC_RETHROW_EXCEPTIONS(warn, "Could not convert ${desc} source '${source}' to string.", ("desc", desc)("source",source) )
 }
@@ -1692,7 +1692,7 @@ string convert_to_string(const float128_t& source, const string& key_type, const
 abi_def get_abi( const controller& db, const name& account ) {
    const auto &d = db.db();
    const account_object *code_accnt = d.find<account_object, by_name>(account);
-   EOS_ASSERT(code_accnt != nullptr, chain::account_query_exception, "Fail to retrieve account for ${account}", ("account", account) );
+   ALA_ASSERT(code_accnt != nullptr, chain::account_query_exception, "Fail to retrieve account for ${account}", ("account", account) );
    abi_def abi;
    abi_serializer::to_abi(code_accnt->abi, abi);
    return abi;
@@ -1704,22 +1704,22 @@ string get_table_type( const abi_def& abi, const name& table_name ) {
          return t.index_type;
       }
    }
-   EOS_ASSERT( false, chain::contract_table_query_exception, "Table ${table} is not specified in the ABI", ("table",table_name) );
+   ALA_ASSERT( false, chain::contract_table_query_exception, "Table ${table} is not specified in the ABI", ("table",table_name) );
 }
 
 read_only::get_table_rows_result read_only::get_table_rows( const read_only::get_table_rows_params& p, const fc::time_point& deadline )const {
-   const abi_def abi = eosio::chain_apis::get_abi( db, p.code );
+   const abi_def abi = alaio::chain_apis::get_abi( db, p.code );
    bool primary = false;
    auto table_with_index = get_table_index_name( p, primary );
    if( primary ) {
-      EOS_ASSERT( p.table == table_with_index, chain::contract_table_query_exception, "Invalid table name ${t}", ( "t", p.table ));
+      ALA_ASSERT( p.table == table_with_index, chain::contract_table_query_exception, "Invalid table name ${t}", ( "t", p.table ));
       auto table_type = get_table_type( abi, p.table );
       if( table_type == KEYi64 || p.key_type == "i64" || p.key_type == "name" ) {
          return get_table_rows_ex<key_value_index>(p,abi,deadline);
       }
-      EOS_ASSERT( false, chain::contract_table_query_exception,  "Invalid table type ${type}", ("type",table_type)("abi",abi));
+      ALA_ASSERT( false, chain::contract_table_query_exception,  "Invalid table type ${type}", ("type",table_type)("abi",abi));
    } else {
-      EOS_ASSERT( !p.key_type.empty(), chain::contract_table_query_exception, "key type required for non-primary index" );
+      ALA_ASSERT( !p.key_type.empty(), chain::contract_table_query_exception, "key type required for non-primary index" );
 
       if (p.key_type == chain_apis::i64 || p.key_type == "name") {
          return get_table_rows_by_seckey<index64_index, uint64_t>(p, abi, deadline, [](uint64_t v)->uint64_t {
@@ -1770,7 +1770,7 @@ read_only::get_table_rows_result read_only::get_table_rows( const read_only::get
          using  conv = keytype_converter<chain_apis::ripemd160,chain_apis::hex>;
          return get_table_rows_by_seckey<conv::index_type, conv::input_type>(p, abi, deadline, conv::function());
       }
-      EOS_ASSERT(false, chain::contract_table_query_exception,  "Unsupported secondary index type: ${t}", ("t", p.key_type));
+      ALA_ASSERT(false, chain::contract_table_query_exception,  "Unsupported secondary index type: ${t}", ("t", p.key_type));
    }
 }
 
@@ -1829,18 +1829,18 @@ read_only::get_table_by_scope_result read_only::get_table_by_scope( const read_o
 
 vector<asset> read_only::get_currency_balance( const read_only::get_currency_balance_params& p, const fc::time_point& deadline )const {
 
-   const abi_def abi = eosio::chain_apis::get_abi( db, p.code );
+   const abi_def abi = alaio::chain_apis::get_abi( db, p.code );
    (void)get_table_type( abi, name("accounts") );
 
    vector<asset> results;
    walk_key_value_table(p.code, p.account, "accounts"_n, [&](const key_value_object& obj){
-      EOS_ASSERT( obj.value.size() >= sizeof(asset), chain::asset_type_exception, "Invalid data on table");
+      ALA_ASSERT( obj.value.size() >= sizeof(asset), chain::asset_type_exception, "Invalid data on table");
 
       asset cursor;
       fc::datastream<const char *> ds(obj.value.data(), obj.value.size());
       fc::raw::unpack(ds, cursor);
 
-      EOS_ASSERT( cursor.get_symbol().valid(), chain::asset_type_exception, "Invalid asset");
+      ALA_ASSERT( cursor.get_symbol().valid(), chain::asset_type_exception, "Invalid asset");
 
       if( !p.symbol || boost::iequals(cursor.symbol_name(), *p.symbol) ) {
         results.emplace_back(cursor);
@@ -1856,13 +1856,13 @@ vector<asset> read_only::get_currency_balance( const read_only::get_currency_bal
 fc::variant read_only::get_currency_stats( const read_only::get_currency_stats_params& p, const fc::time_point& deadline )const {
    fc::mutable_variant_object results;
 
-   const abi_def abi = eosio::chain_apis::get_abi( db, p.code );
+   const abi_def abi = alaio::chain_apis::get_abi( db, p.code );
    (void)get_table_type( abi, name("stat") );
 
-   uint64_t scope = ( eosio::chain::string_to_symbol( 0, boost::algorithm::to_upper_copy(p.symbol).c_str() ) >> 8 );
+   uint64_t scope = ( alaio::chain::string_to_symbol( 0, boost::algorithm::to_upper_copy(p.symbol).c_str() ) >> 8 );
 
    walk_key_value_table(p.code, name(scope), "stat"_n, [&](const key_value_object& obj){
-      EOS_ASSERT( obj.value.size() >= sizeof(read_only::get_currency_stats_result), chain::asset_type_exception, "Invalid data on table");
+      ALA_ASSERT( obj.value.size() >= sizeof(read_only::get_currency_stats_result), chain::asset_type_exception, "Invalid data on table");
 
       fc::datastream<const char *> ds(obj.value.data(), obj.value.size());
       read_only::get_currency_stats_result result;
@@ -1880,14 +1880,14 @@ fc::variant read_only::get_currency_stats( const read_only::get_currency_stats_p
 
 fc::variant get_global_row( const database& db, const abi_def& abi, const abi_serializer& abis, const fc::microseconds& abi_serializer_max_time_us, bool shorten_abi_errors ) {
    const auto table_type = get_table_type(abi, "global"_n);
-   EOS_ASSERT(table_type == read_only::KEYi64, chain::contract_table_query_exception, "Invalid table type ${type} for table global", ("type",table_type));
+   ALA_ASSERT(table_type == read_only::KEYi64, chain::contract_table_query_exception, "Invalid table type ${type} for table global", ("type",table_type));
 
    const auto* const table_id = db.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(config::system_account_name, config::system_account_name, "global"_n));
-   EOS_ASSERT(table_id, chain::contract_table_query_exception, "Missing table global");
+   ALA_ASSERT(table_id, chain::contract_table_query_exception, "Missing table global");
 
    const auto& kv_index = db.get_index<key_value_index, by_scope_primary>();
    const auto it = kv_index.find(boost::make_tuple(table_id->id, "global"_n.to_uint64_t()));
-   EOS_ASSERT(it != kv_index.end(), chain::contract_table_query_exception, "Missing row in table global");
+   ALA_ASSERT(it != kv_index.end(), chain::contract_table_query_exception, "Missing row in table global");
 
    vector<char> data;
    read_only::copy_inline_row(*it, data);
@@ -1896,10 +1896,10 @@ fc::variant get_global_row( const database& db, const abi_def& abi, const abi_se
 
 read_only::get_producers_result
 read_only::get_producers( const read_only::get_producers_params& params, const fc::time_point& deadline ) const try {
-   const abi_def abi = eosio::chain_apis::get_abi(db, config::system_account_name);
+   const abi_def abi = alaio::chain_apis::get_abi(db, config::system_account_name);
    const auto table_type = get_table_type(abi, "producers"_n);
    const abi_serializer abis{ abi, abi_serializer::create_yield_function( abi_serializer_max_time ) };
-   EOS_ASSERT(table_type == KEYi64, chain::contract_table_query_exception, "Invalid table type ${type} for table producers", ("type",table_type));
+   ALA_ASSERT(table_type == KEYi64, chain::contract_table_query_exception, "Invalid table type ${type} for table producers", ("type",table_type));
 
    const auto& d = db.db();
    const auto lower = name{params.lower_bound};
@@ -1909,7 +1909,7 @@ read_only::get_producers( const read_only::get_producers_params& params, const f
            boost::make_tuple(config::system_account_name, config::system_account_name, "producers"_n));
    const auto* const secondary_table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(
            boost::make_tuple(config::system_account_name, config::system_account_name, name("producers"_n.to_uint64_t() | secondary_index_num)));
-   EOS_ASSERT(table_id && secondary_table_id, chain::contract_table_query_exception, "Missing producers table");
+   ALA_ASSERT(table_id && secondary_table_id, chain::contract_table_query_exception, "Missing producers table");
 
    const auto& kv_index = d.get_index<key_value_index, by_scope_primary>();
    const auto& secondary_index = d.get_index<index_double_index>().indices();
@@ -2023,7 +2023,7 @@ read_only::get_scheduled_transactions( const read_only::get_scheduled_transactio
                const auto& by_txid = d.get_index<generated_transaction_multi_index,by_trx_id>();
                auto itr = by_txid.find( txid );
                if (itr == by_txid.end()) {
-                  EOS_THROW(transaction_exception, "Unknown Transaction ID: ${txid}", ("txid", txid));
+                  ALA_THROW(transaction_exception, "Unknown Transaction ID: ${txid}", ("txid", txid));
                }
 
                return d.get_index<generated_transaction_multi_index>().indices().project<by_delay>(itr);
@@ -2084,7 +2084,7 @@ fc::variant read_only::get_block(const read_only::get_block_params& params, cons
    signed_block_ptr block;
    std::optional<uint64_t> block_num;
 
-   EOS_ASSERT( !params.block_num_or_id.empty() && params.block_num_or_id.size() <= 64,
+   ALA_ASSERT( !params.block_num_or_id.empty() && params.block_num_or_id.size() <= 64,
                chain::block_id_type_exception,
                "Invalid Block number or ID, must be greater than 0 and less than 64 characters"
    );
@@ -2098,10 +2098,10 @@ fc::variant read_only::get_block(const read_only::get_block_params& params, cons
    } else {
       try {
          block = db.fetch_block_by_id( fc::variant(params.block_num_or_id).as<block_id_type>() );
-      } EOS_RETHROW_EXCEPTIONS(chain::block_id_type_exception, "Invalid block ID: ${block_num_or_id}", ("block_num_or_id", params.block_num_or_id))
+      } ALA_RETHROW_EXCEPTIONS(chain::block_id_type_exception, "Invalid block ID: ${block_num_or_id}", ("block_num_or_id", params.block_num_or_id))
    }
 
-   EOS_ASSERT( block, unknown_block_exception, "Could not find block: ${block}", ("block", params.block_num_or_id));
+   ALA_ASSERT( block, unknown_block_exception, "Could not find block: ${block}", ("block", params.block_num_or_id));
 
    fc::variant pretty_output;
    abi_serializer::to_variant(*block, pretty_output, make_resolver(db, abi_serializer::create_yield_function( abi_serializer_max_time )),
@@ -2125,7 +2125,7 @@ fc::variant read_only::get_block_info(const read_only::get_block_info_params& pa
       // assert below will handle the invalid block num
    }
 
-   EOS_ASSERT( block, unknown_block_exception, "Could not find block: ${block}", ("block", params.block_num));
+   ALA_ASSERT( block, unknown_block_exception, "Could not find block: ${block}", ("block", params.block_num));
 
    const auto id = block->calculate_id();
    const uint32_t ref_block_prefix = id._hash[1];
@@ -2158,10 +2158,10 @@ fc::variant read_only::get_block_header_state(const get_block_header_state_param
    } else {
       try {
          b = db.fetch_block_state_by_id(fc::variant(params.block_num_or_id).as<block_id_type>());
-      } EOS_RETHROW_EXCEPTIONS(chain::block_id_type_exception, "Invalid block ID: ${block_num_or_id}", ("block_num_or_id", params.block_num_or_id))
+      } ALA_RETHROW_EXCEPTIONS(chain::block_id_type_exception, "Invalid block ID: ${block_num_or_id}", ("block_num_or_id", params.block_num_or_id))
    }
 
-   EOS_ASSERT( b, unknown_block_exception, "Could not find reversible block: ${block}", ("block", params.block_num_or_id));
+   ALA_ASSERT( b, unknown_block_exception, "Could not find reversible block: ${block}", ("block", params.block_num_or_id));
 
    fc::variant vo;
    fc::to_variant( static_cast<const block_header_state&>(*b), vo );
@@ -2185,7 +2185,7 @@ void read_write::push_transaction(const read_write::push_transaction_params& par
       auto resolver = make_resolver(db, abi_serializer::create_yield_function( abi_serializer_max_time ));
       try {
          abi_serializer::from_variant(params, *pretty_input, std::move( resolver ), abi_serializer::create_yield_function( abi_serializer_max_time ));
-      } EOS_RETHROW_EXCEPTIONS(chain::packed_transaction_type_exception, "Invalid packed transaction")
+      } ALA_RETHROW_EXCEPTIONS(chain::packed_transaction_type_exception, "Invalid packed transaction")
 
       app().get_method<incoming::methods::transaction_async>()(pretty_input, true, false, false,
             [this, next](const std::variant<fc::exception_ptr, transaction_trace_ptr>& result) -> void {
@@ -2284,7 +2284,7 @@ static void push_recurse(read_write* rw, int index, const std::shared_ptr<read_w
 
 void read_write::push_transactions(const read_write::push_transactions_params& params, next_function<read_write::push_transactions_results> next) {
    try {
-      EOS_ASSERT( params.size() <= 1000, too_many_tx_at_once, "Attempt to push too many transactions at once" );
+      ALA_ASSERT( params.size() <= 1000, too_many_tx_at_once, "Attempt to push too many transactions at once" );
       auto params_copy = std::make_shared<read_write::push_transactions_params>(params.begin(), params.end());
       auto result = std::make_shared<read_write::push_transactions_results>();
       result->reserve(params.size());
@@ -2304,7 +2304,7 @@ void read_write::send_transaction(const read_write::send_transaction_params& par
       auto resolver = make_resolver(db, abi_serializer::create_yield_function( abi_serializer_max_time ));
       try {
          abi_serializer::from_variant(params, *pretty_input, resolver, abi_serializer::create_yield_function( abi_serializer_max_time ));
-      } EOS_RETHROW_EXCEPTIONS(chain::packed_transaction_type_exception, "Invalid packed transaction")
+      } ALA_RETHROW_EXCEPTIONS(chain::packed_transaction_type_exception, "Invalid packed transaction")
 
       app().get_method<incoming::methods::transaction_async>()(pretty_input, true, false, false,
             [this, next](const std::variant<fc::exception_ptr, transaction_trace_ptr>& result) -> void {
@@ -2339,13 +2339,13 @@ void read_write::send_transaction2(const read_write::send_transaction2_params& p
       auto resolver = make_resolver(db, abi_serializer::create_yield_function( abi_serializer_max_time ));
       try {
          abi_serializer::from_variant(params.transaction, *ptrx, resolver, abi_serializer::create_yield_function( abi_serializer_max_time ));
-      } EOS_RETHROW_EXCEPTIONS(chain::packed_transaction_type_exception, "Invalid packed transaction")
+      } ALA_RETHROW_EXCEPTIONS(chain::packed_transaction_type_exception, "Invalid packed transaction")
 
       bool retry = params.retry_trx;
       std::optional<uint16_t> retry_num_blocks = params.retry_trx_num_blocks;
 
-      EOS_ASSERT( !retry || trx_retry.has_value(), unsupported_feature, "Transaction retry not enabled on node" );
-      EOS_ASSERT( !retry || (ptrx->expiration() <= trx_retry->get_max_expiration_time()), tx_exp_too_far_exception,
+      ALA_ASSERT( !retry || trx_retry.has_value(), unsupported_feature, "Transaction retry not enabled on node" );
+      ALA_ASSERT( !retry || (ptrx->expiration() <= trx_retry->get_max_expiration_time()), tx_exp_too_far_exception,
                   "retry transaction expiration ${e} larger than allowed ${m}",
                   ("e", ptrx->expiration())("m", trx_retry->get_max_expiration_time()) );
 
@@ -2408,7 +2408,7 @@ read_only::get_code_results read_only::get_code( const get_code_params& params, 
    const auto& accnt_obj          = d.get<account_object,by_name>( params.account_name );
    const auto& accnt_metadata_obj = d.get<account_metadata_object,by_name>( params.account_name );
 
-   EOS_ASSERT( params.code_as_wasm, unsupported_feature, "Returning WAST from get_code is no longer supported" );
+   ALA_ASSERT( params.code_as_wasm, unsupported_feature, "Returning WAST from get_code is no longer supported" );
 
    if( accnt_metadata_obj.code_hash != digest_type() ) {
       const auto& code_obj = d.get<code_object, by_code_hash>(accnt_metadata_obj.code_hash);
@@ -2500,7 +2500,7 @@ read_only::get_account_results read_only::get_account( const get_account_params&
    result.ram_usage = rm.get_account_ram_usage( result.account_name );
 
    if ( producer_plug ) {  // producer_plug is null when called from chain_plugin_tests.cpp and get_table_tests.cpp
-      eosio::chain::resource_limits::account_resource_limit subjective_cpu_bill_limit;
+      alaio::chain::resource_limits::account_resource_limit subjective_cpu_bill_limit;
       subjective_cpu_bill_limit.used = producer_plug->get_subjective_bill( result.account_name, fc::time_point::now() );
       result.subjective_cpu_bill_limit = subjective_cpu_bill_limit;
    }
@@ -2539,7 +2539,7 @@ read_only::get_account_results read_only::get_account( const get_account_params&
       if( perm->parent._id ) {
          const auto* p = d.find<permission_object,by_id>( perm->parent );
          if( p ) {
-            EOS_ASSERT(perm->owner == p->owner, invalid_parent_permission, "Invalid parent permission");
+            ALA_ASSERT(perm->owner == p->owner, invalid_parent_permission, "Invalid parent permission");
             parent = p->name;
          }
       }
@@ -2550,8 +2550,8 @@ read_only::get_account_results read_only::get_account( const get_account_params&
       ++perm;
    }
 
-   // add eosio.any linked authorizations
-   result.eosio_any_linked_actions = get_linked_actions(chain::config::eosio_any_name);
+   // add alaio.any linked authorizations
+   result.alaio_any_linked_actions = get_linked_actions(chain::config::alaio_any_name);
 
    const auto& code_account = db.db().get<account_object,by_name>( config::system_account_name );
 
@@ -2559,7 +2559,7 @@ read_only::get_account_results read_only::get_account( const get_account_params&
    if( abi_serializer::to_abi(code_account.abi, abi) ) {
       abi_serializer abis( abi, abi_serializer::create_yield_function( abi_serializer_max_time ) );
 
-      const auto token_code = "eosio.token"_n;
+      const auto token_code = "alaio.token"_n;
 
       auto core_symbol = extract_core_symbol();
 
@@ -2650,20 +2650,20 @@ static fc::variant action_abi_to_variant( const abi_def& abi, type_name action_t
 read_only::abi_json_to_bin_result read_only::abi_json_to_bin( const read_only::abi_json_to_bin_params& params, const fc::time_point& deadline )const try {
    abi_json_to_bin_result result;
    const auto code_account = db.db().find<account_object,by_name>( params.code );
-   EOS_ASSERT(code_account != nullptr, contract_query_exception, "Contract can't be found ${contract}", ("contract", params.code));
+   ALA_ASSERT(code_account != nullptr, contract_query_exception, "Contract can't be found ${contract}", ("contract", params.code));
 
    abi_def abi;
    if( abi_serializer::to_abi(code_account->abi, abi) ) {
       abi_serializer abis( abi, abi_serializer::create_yield_function( abi_serializer_max_time ) );
       auto action_type = abis.get_action_type(params.action);
-      EOS_ASSERT(!action_type.empty(), action_validate_exception, "Unknown action ${action} in contract ${contract}", ("action", params.action)("contract", params.code));
+      ALA_ASSERT(!action_type.empty(), action_validate_exception, "Unknown action ${action} in contract ${contract}", ("action", params.action)("contract", params.code));
       try {
          result.binargs = abis.variant_to_binary( action_type, params.args, abi_serializer::create_yield_function( abi_serializer_max_time ), shorten_abi_errors );
-      } EOS_RETHROW_EXCEPTIONS(chain::invalid_action_args_exception,
+      } ALA_RETHROW_EXCEPTIONS(chain::invalid_action_args_exception,
                                 "'${args}' is invalid args for action '${action}' code '${code}'. expected '${proto}'",
                                 ("args", params.args)("action", params.action)("code", params.code)("proto", action_abi_to_variant(abi, action_type)))
    } else {
-      EOS_ASSERT(false, abi_not_found_exception, "No ABI found for ${contract}", ("contract", params.code));
+      ALA_ASSERT(false, abi_not_found_exception, "No ABI found for ${contract}", ("contract", params.code));
    }
    return result;
 } FC_RETHROW_EXCEPTIONS( warn, "code: ${code}, action: ${action}, args: ${args}",
@@ -2677,7 +2677,7 @@ read_only::abi_bin_to_json_result read_only::abi_bin_to_json( const read_only::a
       abi_serializer abis( abi, abi_serializer::create_yield_function( abi_serializer_max_time ) );
       result.args = abis.binary_to_variant( abis.get_action_type( params.action ), params.binargs, abi_serializer::create_yield_function( abi_serializer_max_time ), shorten_abi_errors );
    } else {
-      EOS_ASSERT(false, abi_not_found_exception, "No ABI found for ${contract}", ("contract", params.code));
+      ALA_ASSERT(false, abi_not_found_exception, "No ABI found for ${contract}", ("contract", params.code));
    }
    return result;
 }
@@ -2687,7 +2687,7 @@ read_only::get_required_keys_result read_only::get_required_keys( const get_requ
    auto resolver = make_resolver(db, abi_serializer::create_yield_function( abi_serializer_max_time ));
    try {
       abi_serializer::from_variant(params.transaction, pretty_input, resolver, abi_serializer::create_yield_function( abi_serializer_max_time ));
-   } EOS_RETHROW_EXCEPTIONS(chain::transaction_type_exception, "Invalid transaction")
+   } ALA_RETHROW_EXCEPTIONS(chain::transaction_type_exception, "Invalid transaction")
 
    auto required_keys_set = db.get_authorization_manager().get_required_keys( pretty_input, params.available_keys, fc::seconds( pretty_input.delay_sec ));
    get_required_keys_result result;
@@ -2701,7 +2701,7 @@ void read_only::compute_transaction(const compute_transaction_params& params, ne
         auto resolver = make_resolver(db, abi_serializer::create_yield_function( abi_serializer_max_time ));
         try {
             abi_serializer::from_variant(params.transaction, *pretty_input, resolver, abi_serializer::create_yield_function( abi_serializer_max_time ));
-        } EOS_RETHROW_EXCEPTIONS(chain::packed_transaction_type_exception, "Invalid packed transaction")
+        } ALA_RETHROW_EXCEPTIONS(chain::packed_transaction_type_exception, "Invalid packed transaction")
 
         app().get_method<incoming::methods::transaction_async>()(pretty_input, false, true, true,
              [this, next](const std::variant<fc::exception_ptr, transaction_trace_ptr>& result) -> void {
@@ -2737,7 +2737,7 @@ read_only::get_transaction_id_result read_only::get_transaction_id( const read_o
 account_query_db::get_accounts_by_authorizers_result
 read_only::get_accounts_by_authorizers( const account_query_db::get_accounts_by_authorizers_params& args, const fc::time_point& deadline) const
 {
-   EOS_ASSERT(aqdb.has_value(), plugin_config_exception, "Account Queries being accessed when not enabled");
+   ALA_ASSERT(aqdb.has_value(), plugin_config_exception, "Account Queries being accessed when not enabled");
    return aqdb->get_accounts_by_authorizers(args);
 }
 
@@ -2754,12 +2754,12 @@ namespace detail {
 chain::symbol read_only::extract_core_symbol()const {
    symbol core_symbol(0);
 
-   // The following code makes assumptions about the contract deployed on eosio account (i.e. the system contract) and how it stores its data.
+   // The following code makes assumptions about the contract deployed on alaio account (i.e. the system contract) and how it stores its data.
    const auto& d = db.db();
-   const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( "eosio"_n, "eosio"_n, "rammarket"_n ));
+   const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( "alaio"_n, "alaio"_n, "rammarket"_n ));
    if( t_id != nullptr ) {
       const auto &idx = d.get_index<key_value_index, by_scope_primary>();
-      auto it = idx.find(boost::make_tuple( t_id->id, eosio::chain::string_to_symbol_c(4,"RAMCORE") ));
+      auto it = idx.find(boost::make_tuple( t_id->id, alaio::chain::string_to_symbol_c(4,"RAMCORE") ));
       if( it != idx.end() ) {
          detail::ram_market_exchange_state_t ram_market_exchange_state;
 
@@ -2815,6 +2815,6 @@ fc::variant chain_plugin::get_log_trx(const transaction& trx) const {
     }
     return pretty_output;
 }
-} // namespace eosio
+} // namespace alaio
 
-FC_REFLECT( eosio::chain_apis::detail::ram_market_exchange_state_t, (ignore1)(ignore2)(ignore3)(core_symbol)(ignore4) )
+FC_REFLECT( alaio::chain_apis::detail::ram_market_exchange_state_t, (ignore1)(ignore2)(ignore3)(core_symbol)(ignore4) )

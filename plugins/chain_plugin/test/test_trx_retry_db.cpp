@@ -1,19 +1,19 @@
 #define BOOST_TEST_MODULE transaction_retry
 #include <boost/test/included/unit_test.hpp>
 
-#include <eosio/chain_plugin/trx_retry_db.hpp>
+#include <alaio/chain_plugin/trx_retry_db.hpp>
 
-#include <eosio/testing/tester.hpp>
+#include <alaio/testing/tester.hpp>
 
-#include <eosio/chain/controller.hpp>
-#include <eosio/chain/genesis_state.hpp>
-#include <eosio/chain/thread_utils.hpp>
-#include <eosio/chain/transaction_metadata.hpp>
-#include <eosio/chain/trace.hpp>
-#include <eosio/chain/name.hpp>
+#include <alaio/chain/controller.hpp>
+#include <alaio/chain/genesis_state.hpp>
+#include <alaio/chain/thread_utils.hpp>
+#include <alaio/chain/transaction_metadata.hpp>
+#include <alaio/chain/trace.hpp>
+#include <alaio/chain/name.hpp>
 
 #include <appbase/application.hpp>
-#include <eosio/chain/plugin_interface.hpp>
+#include <alaio/chain/plugin_interface.hpp>
 #include <fc/mock_time.hpp>
 #include <fc/bitutil.hpp>
 
@@ -25,10 +25,10 @@
 #include <deque>
 #include <memory>
 
-namespace eosio::test::detail {
+namespace alaio::test::detail {
 
-using namespace eosio::chain;
-using namespace eosio::chain::literals;
+using namespace alaio::chain;
+using namespace alaio::chain::literals;
 
 struct testit {
    uint64_t      id;
@@ -43,15 +43,15 @@ struct testit {
    }
 };
 
-} // eosio::test::detail
-FC_REFLECT( eosio::test::detail::testit, (id) )
+} // alaio::test::detail
+FC_REFLECT( alaio::test::detail::testit, (id) )
 
 namespace {
 
-using namespace eosio;
-using namespace eosio::chain;
-using namespace eosio::chain_apis;
-using namespace eosio::test::detail;
+using namespace alaio;
+using namespace alaio::chain;
+using namespace alaio::chain_apis;
+using namespace alaio::test::detail;
 
 // simple thread-safe queue
 template <typename T>
@@ -109,7 +109,7 @@ auto make_unique_trx( const chain_id_type& chain_id, const fc::microseconds& exp
 }
 
 chain::transaction_trace_ptr make_transaction_trace( const packed_transaction_ptr trx, uint32_t block_number,
-                                                     chain::transaction_receipt_header::status_enum status = eosio::chain::transaction_receipt_header::executed ) {
+                                                     chain::transaction_receipt_header::status_enum status = alaio::chain::transaction_receipt_header::executed ) {
    return std::make_shared<chain::transaction_trace>(chain::transaction_trace{
          trx->id(),
          block_number,

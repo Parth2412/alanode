@@ -1,13 +1,13 @@
-#include <eosio/chain_api_plugin/chain_api_plugin.hpp>
-#include <eosio/chain/exceptions.hpp>
+#include <alaio/chain_api_plugin/chain_api_plugin.hpp>
+#include <alaio/chain/exceptions.hpp>
 
 #include <fc/io/json.hpp>
 
-namespace eosio {
+namespace alaio {
 
 static appbase::abstract_plugin& _chain_api_plugin = app().register_plugin<chain_api_plugin>();
 
-using namespace eosio;
+using namespace alaio;
 
 class chain_api_plugin_impl {
 public:
@@ -36,7 +36,7 @@ template<>
 chain_apis::read_only::get_transaction_status_params
 parse_params<chain_apis::read_only::get_transaction_status_params, http_params_types::params_required>(const std::string& body) {
    if (body.empty()) {
-      EOS_THROW(chain::invalid_http_request, "A Request body is required");
+      ALA_THROW(chain::invalid_http_request, "A Request body is required");
    }
 
    try {
@@ -44,7 +44,7 @@ parse_params<chain_apis::read_only::get_transaction_status_params, http_params_t
       if( v.id == transaction_id_type() ) throw false;
       return v;
    } catch( ... ) {
-      EOS_THROW(chain::invalid_http_request, "Invalid transaction id");
+      ALA_THROW(chain::invalid_http_request, "Invalid transaction id");
    }
 }
 

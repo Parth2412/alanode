@@ -1,20 +1,20 @@
 #define BOOST_TEST_MODULE full_producer_trxs
 #include <boost/test/included/unit_test.hpp>
 
-#include <eosio/producer_plugin/producer_plugin.hpp>
+#include <alaio/producer_plugin/producer_plugin.hpp>
 
-#include <eosio/testing/tester.hpp>
+#include <alaio/testing/tester.hpp>
 
-#include <eosio/chain/genesis_state.hpp>
-#include <eosio/chain/thread_utils.hpp>
-#include <eosio/chain/transaction_metadata.hpp>
-#include <eosio/chain/trace.hpp>
-#include <eosio/chain/name.hpp>
+#include <alaio/chain/genesis_state.hpp>
+#include <alaio/chain/thread_utils.hpp>
+#include <alaio/chain/transaction_metadata.hpp>
+#include <alaio/chain/trace.hpp>
+#include <alaio/chain/name.hpp>
 
 #include <appbase/application.hpp>
 
-namespace eosio::test::detail {
-using namespace eosio::chain::literals;
+namespace alaio::test::detail {
+using namespace alaio::chain::literals;
 struct testit {
    uint64_t      id;
 
@@ -30,13 +30,13 @@ struct testit {
    }
 };
 }
-FC_REFLECT( eosio::test::detail::testit, (id) )
+FC_REFLECT( alaio::test::detail::testit, (id) )
 
 namespace {
 
-using namespace eosio;
-using namespace eosio::chain;
-using namespace eosio::test::detail;
+using namespace alaio;
+using namespace alaio::chain;
+using namespace alaio::test::detail;
 
 auto make_unique_trx( const chain_id_type& chain_id ) {
 
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(producer) {
          fc::logger::get(DEFAULT_LOGGER).set_log_level(fc::log_level::debug);
          std::vector<const char*> argv =
                {"test", "--data-dir", temp.c_str(), "--config-dir", temp.c_str(),
-                "-p", "eosio", "-e", "--max-transaction-time", "475", "--disable-subjective-billing=true" };
+                "-p", "alaio", "-e", "--max-transaction-time", "475", "--disable-subjective-billing=true" };
          appbase::app().initialize<chain_plugin, producer_plugin>( argv.size(), (char**) &argv[0] );
          appbase::app().startup();
          plugin_promise.set_value(

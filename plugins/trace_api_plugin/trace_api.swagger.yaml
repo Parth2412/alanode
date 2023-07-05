@@ -1,15 +1,15 @@
 openapi: 3.0.0
 info:
   title: Trace API
-  description: Nodeos Trace API Specification. See developer documentation at https://docs.eosnetwork.com for information on enabling this plugin.
+  description: Alanode Trace API Specification. See developer documentation at https://docs.alacritys.net for information on enabling this plugin.
   version: 1.0.0
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
   contact:
-    url: https://eosnetwork.com
+    url: https://alacritys.net
 servers:
-  - url: '{protocol}://{host}:{port}/v1/'
+  - url: "{protocol}://{host}:{port}/v1/"
     variables:
       protocol:
         enum:
@@ -48,9 +48,9 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: "https://docs.eosnetwork.com/openapi/v2.0/BlockTraceV0.yaml"
-                  - $ref: "https://docs.eosnetwork.com/openapi/v2.0/BlockTraceV1.yaml"
-                  - $ref: "https://docs.eosnetwork.com/openapi/v2.0/BlockTraceV2.yaml"
+                  - $ref: "https://docs.alacritys.net/openapi/v2.0/BlockTraceV0.yaml"
+                  - $ref: "https://docs.alacritys.net/openapi/v2.0/BlockTraceV1.yaml"
+                  - $ref: "https://docs.alacritys.net/openapi/v2.0/BlockTraceV2.yaml"
         "400":
           description: Error - requested block number is invalid (not a number, larger than max int)
           content:
@@ -119,10 +119,10 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: "https://docs.eosnetwork.com/openapi/v2.0/TransactionTraceV0.yaml"
-                  - $ref: "https://docs.eosnetwork.com/openapi/v2.0/TransactionTraceV1.yaml"
-                  - $ref: "https://docs.eosnetwork.com/openapi/v2.0/TransactionTraceV2.yaml"
-                  - $ref: "https://docs.eosnetwork.com/openapi/v2.0/TransactionTraceV3.yaml"
+                  - $ref: "https://docs.alacritys.net/openapi/v2.0/TransactionTraceV0.yaml"
+                  - $ref: "https://docs.alacritys.net/openapi/v2.0/TransactionTraceV1.yaml"
+                  - $ref: "https://docs.alacritys.net/openapi/v2.0/TransactionTraceV2.yaml"
+                  - $ref: "https://docs.alacritys.net/openapi/v2.0/TransactionTraceV3.yaml"
         "400":
           description: Error - requested block number is invalid (not a number, larger than max int)
           content:
@@ -198,7 +198,7 @@ component:
                 example: active
         data:
           type: string
-          $ref: "https://docs.eosnetwork.com/openapi/v2.0/Sha256.yaml"
+          $ref: "https://docs.alacritys.net/openapi/v2.0/Sha256.yaml"
         return_value:
           type: string
           example: ""
@@ -207,7 +207,7 @@ component:
           properties:
             from:
               type: string
-              example: eosio
+              example: alaio
             to:
               type: string
               example: myproducer

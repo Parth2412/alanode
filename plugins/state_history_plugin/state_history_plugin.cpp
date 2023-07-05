@@ -1,12 +1,12 @@
-#include <eosio/chain/config.hpp>
-#include <eosio/resource_monitor_plugin/resource_monitor_plugin.hpp>
-#include <eosio/state_history/compression.hpp>
-#include <eosio/state_history/create_deltas.hpp>
-#include <eosio/state_history/log.hpp>
-#include <eosio/state_history/serialization.hpp>
-#include <eosio/state_history/trace_converter.hpp>
-#include <eosio/state_history_plugin/state_history_plugin.hpp>
-#include <eosio/chain/thread_utils.hpp>
+#include <alaio/chain/config.hpp>
+#include <alaio/resource_monitor_plugin/resource_monitor_plugin.hpp>
+#include <alaio/state_history/compression.hpp>
+#include <alaio/state_history/create_deltas.hpp>
+#include <alaio/state_history/log.hpp>
+#include <alaio/state_history/serialization.hpp>
+#include <alaio/state_history/trace_converter.hpp>
+#include <alaio/state_history_plugin/state_history_plugin.hpp>
+#include <alaio/chain/thread_utils.hpp>
 
 #include <boost/asio/bind_executor.hpp>
 #include <boost/asio/ip/host_name.hpp>
@@ -38,7 +38,7 @@ void async_teardown(role_type, unixs::socket& sock, TeardownHandler&& handler) {
 }
 #endif
 
-namespace eosio {
+namespace alaio {
 using namespace chain;
 using namespace state_history;
 using boost::signals2::scoped_connection;
@@ -296,7 +296,7 @@ struct state_history_plugin_impl : std::enable_shared_from_this<state_history_pl
          auto block_id = plugin->get_block_id(to_send_block_num);
 
          if (block_id && position_it && (*position_it)->block_num == to_send_block_num) {
-            // This branch happens when the head block of nodeos is behind the head block of connecting client.
+            // This branch happens when the head block of alanode is behind the head block of connecting client.
             // In addition, the client told us the corresponding block id for block_num we are going to send.
             // We can send the block when the block_id is different.
             auto& itr = *position_it;
@@ -513,7 +513,7 @@ struct state_history_plugin_impl : std::enable_shared_from_this<state_history_pl
          // the exception would be caught and drop before reaching main(). The exception is
          // to ensure the block won't be commited.
          appbase::app().quit();
-         EOS_THROW(
+         ALA_THROW(
              chain::state_history_write_exception,
              "State history encountered an Error which it cannot recover from.  Please resolve the error and relaunch "
              "the process");
@@ -542,7 +542,7 @@ struct state_history_plugin_impl : std::enable_shared_from_this<state_history_pl
       auto traces_bin = state_history::zlib_compress_bytes(
           trace_converter.pack(chain_plug->chain().db(), trace_debug_mode, block_state));
 
-      EOS_ASSERT(traces_bin.size() == (uint32_t)traces_bin.size(), plugin_exception, "traces is too big");
+      ALA_ASSERT(traces_bin.size() == (uint32_t)traces_bin.size(), plugin_exception, "traces is too big");
 
       state_history_log_header header{.magic        = ship_magic(ship_current_version, 0),
                                       .block_id     = block_state->id,
@@ -622,11 +622,11 @@ void state_history_plugin::set_program_options(options_description& cli, options
 
 void state_history_plugin::plugin_initialize(const variables_map& options) {
    try {
-      EOS_ASSERT(options.at("disable-replay-opts").as<bool>(), plugin_exception,
+      ALA_ASSERT(options.at("disable-replay-opts").as<bool>(), plugin_exception,
                  "state_history_plugin requires --disable-replay-opts");
 
       my->chain_plug = app().find_plugin<chain_plugin>();
-      EOS_ASSERT(my->chain_plug, chain::missing_chain_plugin_exception, "");
+      ALA_ASSERT(my->chain_plug, chain::missing_chain_plugin_exception, "");
       auto& chain = my->chain_plug->chain();
       my->applied_transaction_connection.emplace(chain.applied_transaction.connect(
           [&](std::tuple<const transaction_trace_ptr&, const packed_transaction_ptr&> t) {
@@ -681,7 +681,7 @@ void state_history_plugin::plugin_initialize(const variables_map& options) {
          ship_log_prune_conf->prune_blocks = options.at("state-history-log-retain-blocks").as<uint32_t>();
          //the arbitrary limit of 1000 here is mainly so that there is enough buffer for newly applied forks to be delivered to clients
          // before getting pruned out. ideally pruning would have been smart enough to know not to prune reversible blocks
-         EOS_ASSERT(ship_log_prune_conf->prune_blocks >= 1000, plugin_exception, "state-history-log-retain-blocks must be 1000 blocks or greater");
+         ALA_ASSERT(ship_log_prune_conf->prune_blocks >= 1000, plugin_exception, "state-history-log-retain-blocks must be 1000 blocks or greater");
       }
 
       if (options.at("trace-history").as<bool>())
@@ -718,4 +718,4 @@ void state_history_plugin::plugin_shutdown() {
 
 void state_history_plugin::handle_sighup() { fc::logger::update(logger_name, _log); }
 
-} // namespace eosio
+} // namespace alaio

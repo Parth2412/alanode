@@ -1,7 +1,7 @@
-#include <eosio/http_plugin/http_plugin.hpp>
-#include <eosio/http_plugin/common.hpp>
-#include <eosio/http_plugin/beast_http_listener.hpp>
-#include <eosio/chain/exceptions.hpp>
+#include <alaio/http_plugin/http_plugin.hpp>
+#include <alaio/http_plugin/common.hpp>
+#include <alaio/http_plugin/beast_http_listener.hpp>
+#include <alaio/chain/exceptions.hpp>
 
 #include <fc/log/logger_config.hpp>
 #include <fc/reflect/variant.hpp>
@@ -13,7 +13,7 @@
 #include <memory>
 #include <regex>
 
-namespace eosio {
+namespace alaio {
 
    namespace {
       inline fc::logger& logger() {
@@ -151,14 +151,14 @@ class http_plugin_impl : public std::enable_shared_from_this<http_plugin_impl> {
 
                   fc::ec_key ecdh = EC_KEY_new_by_curve_name(https_ecdh_curve == SECP384R1 ? NID_secp384r1 : NID_X9_62_prime256v1);
                   if (!ecdh)
-                     EOS_THROW(chain::http_exception, "Failed to set NID_secp384r1");
+                     ALA_THROW(chain::http_exception, "Failed to set NID_secp384r1");
                   if(SSL_CTX_set_tmp_ecdh(plugin_state->ctx->native_handle(), (EC_KEY*)ecdh) != 1)
-                     EOS_THROW(chain::http_exception, "Failed to set ECDH PFS");
+                     ALA_THROW(chain::http_exception, "Failed to set ECDH PFS");
 
                   if(SSL_CTX_set_cipher_list(plugin_state->ctx->native_handle(), \
                      "EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:AES256:" \
                      "!DHE:!RSA:!AES128:!RC4:!DES:!3DES:!DSS:!SRP:!PSK:!EXP:!MD5:!LOW:!aNULL:!eNULL") != 1)
-                     EOS_THROW(chain::http_exception, "Failed to set HTTPS cipher list");
+                     ALA_THROW(chain::http_exception, "Failed to set HTTPS cipher list");
                } catch (const fc::exception& e) {
                   fc_elog( logger(), "https server initialization error: ${w}", ("w", e.to_detail_string()) );
                } catch(std::exception& e) {
@@ -274,11 +274,11 @@ class http_plugin_impl : public std::enable_shared_from_this<http_plugin_impl> {
          verbose_http_errors = options.at( "verbose-http-errors" ).as<bool>();
 
          my->plugin_state->thread_pool_size = options.at( "http-threads" ).as<uint16_t>();
-         EOS_ASSERT( my->plugin_state->thread_pool_size > 0, chain::plugin_config_exception,
+         ALA_ASSERT( my->plugin_state->thread_pool_size > 0, chain::plugin_config_exception,
                      "http-threads ${num} must be greater than 0", ("num", my->plugin_state->thread_pool_size));
 
          auto max_bytes_mb = options.at( "http-max-bytes-in-flight-mb" ).as<int64_t>();
-         EOS_ASSERT( (max_bytes_mb >= -1 && max_bytes_mb < std::numeric_limits<int64_t>::max() / (1024 * 1024)), chain::plugin_config_exception,
+         ALA_ASSERT( (max_bytes_mb >= -1 && max_bytes_mb < std::numeric_limits<int64_t>::max() / (1024 * 1024)), chain::plugin_config_exception,
                      "http-max-bytes-in-flight-mb (${max_bytes_mb}) must be equal to or greater than -1 and less than ${max}", ("max_bytes_mb", max_bytes_mb) ("max", std::numeric_limits<int64_t>::max() / (1024 * 1024)) );
          if ( max_bytes_mb == -1 ) {
             my->plugin_state->max_bytes_in_flight = std::numeric_limits<size_t>::max();
@@ -287,7 +287,7 @@ class http_plugin_impl : public std::enable_shared_from_this<http_plugin_impl> {
          }
          my->plugin_state->max_requests_in_flight = options.at( "http-max-in-flight-requests" ).as<int32_t>();
          int64_t max_reponse_time_ms = options.at("http-max-response-time-ms").as<int64_t>();
-         EOS_ASSERT( max_reponse_time_ms == -1 || max_reponse_time_ms >= 0, chain::plugin_config_exception,
+         ALA_ASSERT( max_reponse_time_ms == -1 || max_reponse_time_ms >= 0, chain::plugin_config_exception,
                      "http-max-response-time-ms must be -1, or non-negative: ${m}", ("m", max_reponse_time_ms) );
          // set to one year for -1, unlimited, since this is added to fc::time_point::now() for a deadline
          my->plugin_state->max_response_time = max_reponse_time_ms == -1 ?
@@ -373,7 +373,7 @@ class http_plugin_impl : public std::enable_shared_from_this<http_plugin_impl> {
       {
          try {
             my->plugin_state->thread_pool =
-                  std::make_unique<eosio::chain::named_thread_pool>( "http", my->plugin_state->thread_pool_size );
+                  std::make_unique<alaio::chain::named_thread_pool>( "http", my->plugin_state->thread_pool_size );
             if(my->listen_endpoint) {
                try {
                   my->create_beast_server(false);

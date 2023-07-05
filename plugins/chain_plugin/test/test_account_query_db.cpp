@@ -1,11 +1,11 @@
 #define BOOST_TEST_MODULE account_query_db
-#include <eosio/chain/permission_object.hpp>
+#include <alaio/chain/permission_object.hpp>
 #include <boost/test/included/unit_test.hpp>
-#include <eosio/testing/tester.hpp>
-#include <eosio/chain/types.hpp>
-#include <eosio/chain/block_state.hpp>
-#include <eosio/chain_plugin/account_query_db.hpp>
-#include <eosio/chain/thread_utils.hpp>
+#include <alaio/testing/tester.hpp>
+#include <alaio/chain/types.hpp>
+#include <alaio/chain/block_state.hpp>
+#include <alaio/chain_plugin/account_query_db.hpp>
+#include <alaio/chain/thread_utils.hpp>
 
 #ifdef NON_VALIDATING_TEST
 #define TESTER tester
@@ -13,10 +13,10 @@
 #define TESTER validating_tester
 #endif
 
-using namespace eosio;
-using namespace eosio::chain;
-using namespace eosio::testing;
-using namespace eosio::chain_apis;
+using namespace alaio;
+using namespace alaio::chain;
+using namespace alaio::testing;
+using namespace alaio::chain_apis;
 
 using params  = account_query_db::get_accounts_by_authorizers_params;
 using results = account_query_db::get_accounts_by_authorizers_result;

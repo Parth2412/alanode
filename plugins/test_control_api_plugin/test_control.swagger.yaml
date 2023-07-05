@@ -1,17 +1,17 @@
 openapi: 3.0.0
 info:
   title: Test Control API
-  description: Nodeos Test Control API Specification. See developer documentation at https://docs.eosnetwork.com for information on enabling this plugin.
+  description: Alanode Test Control API Specification. See developer documentation at https://docs.alacritys.net for information on enabling this plugin.
   version: 1.0.0
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
   contact:
-    url: https://eosnetwork.com
+    url: https://alacritys.net
 tags:
-  - name: eosio
+  - name: alaio
 servers:
-  - url: '{protocol}://{host}:{port}/v1/'
+  - url: "{protocol}://{host}:{port}/v1/"
     variables:
       protocol:
         enum:
@@ -45,13 +45,13 @@ paths:
                   type: object
                   properties:
                     producer:
-                      $ref: 'https://docs.eosnetwork.com/openapi/v2.0/Name.yaml'
+                      $ref: "https://docs.alacritys.net/openapi/v2.0/Name.yaml"
                     where_in_sequence:
                       type: integer
                     based_on_lib:
                       type: integer
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:

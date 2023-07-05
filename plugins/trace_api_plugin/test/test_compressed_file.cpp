@@ -4,11 +4,11 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 
-#include <eosio/trace_api/compressed_file.hpp>
-#include <eosio/trace_api/test_common.hpp>
+#include <alaio/trace_api/compressed_file.hpp>
+#include <alaio/trace_api/test_common.hpp>
 
-using namespace eosio;
-using namespace eosio::trace_api;
+using namespace alaio;
+using namespace alaio::trace_api;
 
 namespace bfs = boost::filesystem;
 
