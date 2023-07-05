@@ -1,6 +1,6 @@
-#include <eosio/chain/protocol_state_object.hpp>
+#include <alaio/chain/protocol_state_object.hpp>
 
-namespace eosio { namespace chain {
+namespace alaio { namespace chain {
 
    namespace detail {
 

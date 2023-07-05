@@ -1,12 +1,12 @@
-#include <eosio/chain/apply_context.hpp>
-#include <eosio/chain/transaction_context.hpp>
-#include <eosio/chain/authorization_manager.hpp>
-#include <eosio/chain/exceptions.hpp>
-#include <eosio/chain/resource_limits.hpp>
-#include <eosio/chain/generated_transaction_object.hpp>
-#include <eosio/chain/transaction_object.hpp>
-#include <eosio/chain/global_property_object.hpp>
-#include <eosio/chain/deep_mind.hpp>
+#include <alaio/chain/apply_context.hpp>
+#include <alaio/chain/transaction_context.hpp>
+#include <alaio/chain/authorization_manager.hpp>
+#include <alaio/chain/exceptions.hpp>
+#include <alaio/chain/resource_limits.hpp>
+#include <alaio/chain/generated_transaction_object.hpp>
+#include <alaio/chain/transaction_object.hpp>
+#include <alaio/chain/global_property_object.hpp>
+#include <alaio/chain/deep_mind.hpp>
 
 #pragma push_macro("N")
 #undef N
@@ -20,7 +20,7 @@
 
 #include <chrono>
 
-namespace eosio { namespace chain {
+namespace alaio { namespace chain {
 
    transaction_checktime_timer::transaction_checktime_timer(platform_timer& timer)
          : expired(timer.expired), _timer(timer) {
@@ -83,15 +83,15 @@ namespace eosio { namespace chain {
 
    void transaction_context::disallow_transaction_extensions( const char* error_msg )const {
       if( control.is_producing_block() ) {
-         EOS_THROW( subjective_block_production_exception, error_msg );
+         ALA_THROW( subjective_block_production_exception, error_msg );
       } else {
-         EOS_THROW( disallowed_transaction_extensions_bad_block_exception, error_msg );
+         ALA_THROW( disallowed_transaction_extensions_bad_block_exception, error_msg );
       }
    }
 
    void transaction_context::init(uint64_t initial_net_usage)
    {
-      EOS_ASSERT( !is_initialized, transaction_exception, "cannot initialize twice" );
+      ALA_ASSERT( !is_initialized, transaction_exception, "cannot initialize twice" );
 
       // set maximum to a semi-valid deadline to allow for pause math and conversion to dates for logging
       if( block_deadline == fc::time_point::maximum() ) block_deadline = start + fc::hours(24*7*52);
@@ -202,7 +202,7 @@ namespace eosio { namespace chain {
          // Fail early if amount of the previous speculative execution is within 10% of remaining account cpu available
          int64_t validate_account_cpu_limit = account_cpu_limit - subjective_cpu_bill_us + leeway.count(); // Add leeway to allow powerup
          if( validate_account_cpu_limit > 0 )
-            validate_account_cpu_limit -= EOS_PERCENT( validate_account_cpu_limit, 10 * config::percent_1 );
+            validate_account_cpu_limit -= ALA_PERCENT( validate_account_cpu_limit, 10 * config::percent_1 );
          if( validate_account_cpu_limit < 0 ) validate_account_cpu_limit = 0;
          validate_account_cpu_usage_estimate( billed_cpu_time_us, validate_account_cpu_limit, subjective_cpu_bill_us );
       }
@@ -292,7 +292,7 @@ namespace eosio { namespace chain {
    }
 
    void transaction_context::exec() {
-      EOS_ASSERT( is_initialized, transaction_exception, "must first initialize" );
+      ALA_ASSERT( is_initialized, transaction_exception, "must first initialize" );
 
       const transaction& trx = packed_trx.get_transaction();
       if( apply_context_free ) {
@@ -319,7 +319,7 @@ namespace eosio { namespace chain {
    }
 
    void transaction_context::finalize() {
-      EOS_ASSERT( is_initialized, transaction_exception, "must first initialize" );
+      ALA_ASSERT( is_initialized, transaction_exception, "must first initialize" );
 
       if( is_input ) {
          const transaction& trx = packed_trx.get_transaction();
@@ -386,15 +386,15 @@ namespace eosio { namespace chain {
       if (!control.skip_trx_checks()) {
          if( BOOST_UNLIKELY(net_usage > eager_net_limit) ) {
             if ( net_limit_due_to_block ) {
-               EOS_THROW( block_net_usage_exceeded,
+               ALA_THROW( block_net_usage_exceeded,
                           "not enough space left in block: ${net_usage} > ${net_limit}",
                           ("net_usage", net_usage)("net_limit", eager_net_limit) );
             }  else if (net_limit_due_to_greylist) {
-               EOS_THROW( greylist_net_usage_exceeded,
+               ALA_THROW( greylist_net_usage_exceeded,
                           "greylisted transaction net usage is too high: ${net_usage} > ${net_limit}",
                           ("net_usage", net_usage)("net_limit", eager_net_limit) );
             } else {
-               EOS_THROW( tx_net_usage_exceeded,
+               ALA_THROW( tx_net_usage_exceeded,
                           "transaction net usage is too high: ${net_usage} > ${net_limit}",
                           ("net_usage", net_usage)("net_limit", eager_net_limit) );
             }
@@ -408,10 +408,10 @@ namespace eosio { namespace chain {
 
       auto now = fc::time_point::now();
       if( explicit_billed_cpu_time || deadline_exception_code == deadline_exception::code_value ) {
-         EOS_THROW( deadline_exception, "deadline exceeded ${billing_timer}us",
+         ALA_THROW( deadline_exception, "deadline exceeded ${billing_timer}us",
                      ("billing_timer", now - pseudo_start)("now", now)("deadline", _deadline)("start", start) );
       } else if( deadline_exception_code == block_cpu_usage_exceeded::code_value ) {
-         EOS_THROW( block_cpu_usage_exceeded,
+         ALA_THROW( block_cpu_usage_exceeded,
                      "not enough time left in block to complete executing transaction ${billing_timer}us",
                      ("now", now)("deadline", _deadline)("start", start)("billing_timer", now - pseudo_start) );
       } else if( deadline_exception_code == tx_cpu_usage_exceeded::code_value ) {
@@ -421,21 +421,21 @@ namespace eosio { namespace chain {
          }
          if (cpu_limit_due_to_greylist) {
             assert_msg = "greylisted " + assert_msg;
-            EOS_THROW( greylist_cpu_usage_exceeded,
+            ALA_THROW( greylist_cpu_usage_exceeded,
                      assert_msg,
                      ("now", now)("deadline", _deadline)("start", start)("billing_timer", now - pseudo_start)( "subjective", subjective_cpu_bill_us) );
          } else {
-            EOS_THROW( tx_cpu_usage_exceeded,
+            ALA_THROW( tx_cpu_usage_exceeded,
                      assert_msg,
                      ("now", now)("deadline", _deadline)("start", start)("billing_timer", now - pseudo_start)("subjective", subjective_cpu_bill_us) );
          }
       } else if( deadline_exception_code == leeway_deadline_exception::code_value ) {
-         EOS_THROW( leeway_deadline_exception,
+         ALA_THROW( leeway_deadline_exception,
                      "the transaction was unable to complete by deadline, "
                      "but it is possible it could have succeeded if it were allowed to run to completion ${billing_timer}",
                      ("now", now)("deadline", _deadline)("start", start)("billing_timer", now - pseudo_start) );
       }
-      EOS_ASSERT( false,  transaction_exception, "unexpected deadline exception code ${code}", ("code", deadline_exception_code) );
+      ALA_ASSERT( false,  transaction_exception, "unexpected deadline exception code ${code}", ("code", deadline_exception_code) );
    }
 
    void transaction_context::pause_billing_timer() {
@@ -469,7 +469,7 @@ namespace eosio { namespace chain {
       if (!control.skip_trx_checks()) {
          if( check_minimum ) {
             const auto& cfg = control.get_global_properties().configuration;
-            EOS_ASSERT( billed_us >= cfg.min_transaction_cpu_usage, transaction_exception,
+            ALA_ASSERT( billed_us >= cfg.min_transaction_cpu_usage, transaction_exception,
                         "cannot bill CPU time less than the minimum of ${min_billable} us",
                         ("min_billable", cfg.min_transaction_cpu_usage)("billed_cpu_time_us", billed_us)
                       );
@@ -484,7 +484,7 @@ namespace eosio { namespace chain {
          const bool cpu_limited_by_account = (account_cpu_limit <= objective_duration_limit.count());
 
          if( !cpu_limited_by_account && (billing_timer_exception_code == block_cpu_usage_exceeded::code_value) ) {
-            EOS_ASSERT( billed_us <= objective_duration_limit.count(),
+            ALA_ASSERT( billed_us <= objective_duration_limit.count(),
                         block_cpu_usage_exceeded,
                         "billed CPU time (${billed} us) is greater than the billable CPU time left in the block (${billable} us)",
                         ("billed", billed_us)( "billable", objective_duration_limit.count() )
@@ -503,12 +503,12 @@ namespace eosio { namespace chain {
             auto limit = graylisted ? account_cpu_limit : (cpu_limited_by_account ? account_cpu_limit : objective_duration_limit.count()); 
            
             if (graylisted)
-               EOS_ASSERT( billed_us <= limit,
+               ALA_ASSERT( billed_us <= limit,
                            greylist_cpu_usage_exceeded, 
                            assert_msg(graylisted, subjective),
                            ("billed", billed_us)("billable", limit)("subjective", subjective_billed_us));
             else
-               EOS_ASSERT( billed_us <= limit,
+               ALA_ASSERT( billed_us <= limit,
                            tx_cpu_usage_exceeded,
                            assert_msg(graylisted, subjective), 
                            ("billed", billed_us)("billable", limit)("subjective", subjective_billed_us));           
@@ -522,7 +522,7 @@ namespace eosio { namespace chain {
          const bool cpu_limited_by_account = (account_cpu_limit <= objective_duration_limit.count());
 
          if( !cpu_limited_by_account && (billing_timer_exception_code == block_cpu_usage_exceeded::code_value) ) {
-            EOS_ASSERT( prev_billed_us < objective_duration_limit.count(),
+            ALA_ASSERT( prev_billed_us < objective_duration_limit.count(),
                         block_cpu_usage_exceeded,
                         "estimated CPU time (${billed} us) is not less than the billable CPU time left in the block (${billable} us)",
                         ("billed", prev_billed_us)( "billable", objective_duration_limit.count() )
@@ -541,12 +541,12 @@ namespace eosio { namespace chain {
             auto limit = graylisted ? account_cpu_limit : (cpu_limited_by_account ? account_cpu_limit : objective_duration_limit.count());
                      
             if (graylisted)
-               EOS_ASSERT( prev_billed_us < limit,
+               ALA_ASSERT( prev_billed_us < limit,
                            greylist_cpu_usage_exceeded, 
                            assert_msg(graylisted, subjective),
                            ("billed", prev_billed_us)("billable", limit)("subjective", subjective_billed_us));
             else
-               EOS_ASSERT( prev_billed_us < limit,
+               ALA_ASSERT( prev_billed_us < limit,
                            tx_cpu_usage_exceeded,
                            assert_msg(graylisted, subjective),
                            ("billed", prev_billed_us)("billable", limit)("subjective", subjective_billed_us));          
@@ -604,14 +604,14 @@ namespace eosio { namespace chain {
          }
       }
 
-      EOS_ASSERT( (!force_elastic_limits && control.is_producing_block()) || (!greylisted_cpu && !greylisted_net),
+      ALA_ASSERT( (!force_elastic_limits && control.is_producing_block()) || (!greylisted_cpu && !greylisted_net),
                   transaction_exception, "greylisted when not producing block" );
 
       return std::make_tuple(account_net_limit, account_cpu_limit, greylisted_net, greylisted_cpu);
    }
 
    action_trace& transaction_context::get_action_trace( uint32_t action_ordinal ) {
-      EOS_ASSERT( 0 < action_ordinal && action_ordinal <= trace->action_traces.size() ,
+      ALA_ASSERT( 0 < action_ordinal && action_ordinal <= trace->action_traces.size() ,
                   transaction_exception,
                   "action_ordinal ${ordinal} is outside allowed range [1,${max}]",
                   ("ordinal", action_ordinal)("max", trace->action_traces.size())
@@ -620,7 +620,7 @@ namespace eosio { namespace chain {
    }
 
    const action_trace& transaction_context::get_action_trace( uint32_t action_ordinal )const {
-      EOS_ASSERT( 0 < action_ordinal && action_ordinal <= trace->action_traces.size() ,
+      ALA_ASSERT( 0 < action_ordinal && action_ordinal <= trace->action_traces.size() ,
                   transaction_exception,
                   "action_ordinal ${ordinal} is outside allowed range [1,${max}]",
                   ("ordinal", action_ordinal)("max", trace->action_traces.size())
@@ -731,7 +731,7 @@ namespace eosio { namespace chain {
       } catch( const boost::interprocess::bad_alloc& ) {
          throw;
       } catch ( ... ) {
-          EOS_ASSERT( false, tx_duplicate,
+          ALA_ASSERT( false, tx_duplicate,
                      "duplicate transaction ${id}", ("id", id ) );
       }
    } /// record_transaction
@@ -743,9 +743,9 @@ namespace eosio { namespace chain {
       if( !trx.context_free_actions.empty() && !control.skip_trx_checks() ) {
          for( const auto& a : trx.context_free_actions ) {
             auto* code = db.find<account_object, by_name>( a.account );
-            EOS_ASSERT( code != nullptr, transaction_exception,
+            ALA_ASSERT( code != nullptr, transaction_exception,
                         "action's code account '${account}' does not exist", ("account", a.account) );
-            EOS_ASSERT( a.authorization.size() == 0, transaction_exception,
+            ALA_ASSERT( a.authorization.size() == 0, transaction_exception,
                         "context-free actions cannot have authorizations" );
          }
       }
@@ -755,21 +755,21 @@ namespace eosio { namespace chain {
       bool one_auth = false;
       for( const auto& a : trx.actions ) {
          auto* code = db.find<account_object, by_name>(a.account);
-         EOS_ASSERT( code != nullptr, transaction_exception,
+         ALA_ASSERT( code != nullptr, transaction_exception,
                      "action's code account '${account}' does not exist", ("account", a.account) );
          for( const auto& auth : a.authorization ) {
             one_auth = true;
             auto* actor = db.find<account_object, by_name>(auth.actor);
-            EOS_ASSERT( actor  != nullptr, transaction_exception,
+            ALA_ASSERT( actor  != nullptr, transaction_exception,
                         "action's authorizing actor '${account}' does not exist", ("account", auth.actor) );
-            EOS_ASSERT( auth_manager.find_permission(auth) != nullptr, transaction_exception,
+            ALA_ASSERT( auth_manager.find_permission(auth) != nullptr, transaction_exception,
                         "action's authorizations include a non-existent permission: ${permission}",
                         ("permission", auth) );
             if( enforce_actor_whitelist_blacklist )
                actors.insert( auth.actor );
          }
       }
-      EOS_ASSERT( one_auth || is_read_only, tx_no_auths, "transaction must have at least one authorization" );
+      ALA_ASSERT( one_auth || is_read_only, tx_no_auths, "transaction must have at least one authorization" );
 
       if( enforce_actor_whitelist_blacklist ) {
          control.check_actor_list( actors );
@@ -777,4 +777,4 @@ namespace eosio { namespace chain {
    }
 
 
-} } /// eosio::chain
+} } /// alaio::chain

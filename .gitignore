@@ -13,6 +13,7 @@
 !package.cmake
 !CMakeModules/*.cmake
 !scripts/pinned_toolchain.cmake
+!libraries/chain/webassembly/runtimes/ala-vm-oc/switch_stack_linux.s
 *.ninja
 \#*
 \.#*

@@ -1,8 +1,8 @@
-#include <eosio/chain/thread_utils.hpp>
+#include <alaio/chain/thread_utils.hpp>
 #include <fc/log/logger_config.hpp>
 #include <fc/exception/exception.hpp>
 
-namespace eosio { namespace chain {
+namespace alaio { namespace chain {
 
 named_thread_pool::named_thread_pool( std::string name_prefix, size_t num_threads, bool delay_start )
 : _name_prefix( std::move(name_prefix) )
@@ -41,4 +41,4 @@ void named_thread_pool::stop() {
 }
 
 
-} } // eosio::chain
+} } // alaio::chain
