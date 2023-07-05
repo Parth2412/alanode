@@ -1,11 +1,11 @@
 #include <appbase/application.hpp>
 
-#include <eosio/chain_plugin/chain_plugin.hpp>
-#include <eosio/http_plugin/http_plugin.hpp>
-#include <eosio/net_plugin/net_plugin.hpp>
-#include <eosio/producer_plugin/producer_plugin.hpp>
-#include <eosio/resource_monitor_plugin/resource_monitor_plugin.hpp>
-#include <eosio/version/version.hpp>
+#include <alaio/chain_plugin/chain_plugin.hpp>
+#include <alaio/http_plugin/http_plugin.hpp>
+#include <alaio/net_plugin/net_plugin.hpp>
+#include <alaio/producer_plugin/producer_plugin.hpp>
+#include <alaio/resource_monitor_plugin/resource_monitor_plugin.hpp>
+#include <alaio/version/version.hpp>
 
 #include <fc/log/logger.hpp>
 #include <fc/log/logger_config.hpp>
@@ -18,7 +18,7 @@
 #include "config.hpp"
 
 using namespace appbase;
-using namespace eosio;
+using namespace alaio;
 
 namespace detail {
 
@@ -109,19 +109,19 @@ int main(int argc, char** argv)
 {
    try {
       uint32_t short_hash = 0;
-      fc::from_hex(eosio::version::version_hash(), (char*)&short_hash, sizeof(short_hash));
+      fc::from_hex(alaio::version::version_hash(), (char*)&short_hash, sizeof(short_hash));
 
       app().set_version(htonl(short_hash));
-      app().set_version_string(eosio::version::version_client());
-      app().set_full_version_string(eosio::version::version_full());
+      app().set_version_string(alaio::version::version_client());
+      app().set_full_version_string(alaio::version::version_full());
 
       auto root = fc::app_path();
-      app().set_default_data_dir(root / "eosio" / nodeos::config::node_executable_name / "data" );
-      app().set_default_config_dir(root / "eosio" / nodeos::config::node_executable_name / "config" );
+      app().set_default_data_dir(root / "alaio" / alanode::config::node_executable_name / "data" );
+      app().set_default_config_dir(root / "alaio" / alanode::config::node_executable_name / "config" );
       http_plugin::set_defaults({
          .default_unix_socket_path = "",
          .default_http_port = 8888,
-         .server_header = nodeos::config::node_executable_name + "/" + app().version_string()
+         .server_header = alanode::config::node_executable_name + "/" + app().version_string()
       });
       if(!app().initialize<chain_plugin, net_plugin, producer_plugin, resource_monitor_plugin>(argc, argv)) {
          const auto& opts = app().get_options();
@@ -138,10 +138,10 @@ int main(int argc, char** argv)
       }
       initialize_logging();
       ilog( "${name} version ${ver} ${fv}",
-            ("name", nodeos::config::node_executable_name)("ver", app().version_string())
+            ("name", alanode::config::node_executable_name)("ver", app().version_string())
             ("fv", app().version_string() == app().full_version_string() ? "" : app().full_version_string()) );
-      ilog("${name} using configuration file ${c}", ("name", nodeos::config::node_executable_name)("c", app().full_config_file_path().string()));
-      ilog("${name} data directory is ${d}", ("name", nodeos::config::node_executable_name)("d", app().data_dir().string()));
+      ilog("${name} using configuration file ${c}", ("name", alanode::config::node_executable_name)("c", app().full_config_file_path().string()));
+      ilog("${name} data directory is ${d}", ("name", alanode::config::node_executable_name)("d", app().data_dir().string()));
       app().startup();
       app().set_thread_priority_max();
       app().exec();
@@ -182,6 +182,6 @@ int main(int argc, char** argv)
       return OTHER_FAIL;
    }
 
-   ilog("${name} successfully exiting", ("name", nodeos::config::node_executable_name));
+   ilog("${name} successfully exiting", ("name", alanode::config::node_executable_name));
    return SUCCESS;
 }

@@ -1,8 +1,8 @@
 #include <memory>
-#include <eosio/chain/abi_serializer.hpp>
-#include <eosio/chain/block_log.hpp>
-#include <eosio/chain/fork_database.hpp>
-#include <eosio/chain/config.hpp>
+#include <alaio/chain/abi_serializer.hpp>
+#include <alaio/chain/block_log.hpp>
+#include <alaio/chain/fork_database.hpp>
+#include <alaio/chain/config.hpp>
 
 #include <fc/io/json.hpp>
 #include <fc/filesystem.hpp>
@@ -24,7 +24,7 @@
 #define FOPEN(p, m) _wfopen(p, PREL(m))
 #endif
 
-using namespace eosio::chain;
+using namespace alaio::chain;
 namespace bfs = boost::filesystem;
 namespace bpo = boost::program_options;
 using bpo::options_description;
@@ -63,7 +63,7 @@ struct report_time {
 
     void report() {
         const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - _start).count() / 1000;
-        ilog("eosio-blocklog - ${desc} took ${t} msec", ("desc", _desc)("t", duration));
+        ilog("alaio-blocklog - ${desc} took ${t} msec", ("desc", _desc)("t", duration));
     }
 
     const std::chrono::high_resolution_clock::time_point _start;
@@ -71,7 +71,7 @@ struct report_time {
 };
 
 void blocklog::do_vacuum() {
-   EOS_ASSERT( blog_keep_prune_conf, block_log_exception, "blocks.log is not a pruned log; nothing to vacuum" );
+   ALA_ASSERT( blog_keep_prune_conf, block_log_exception, "blocks.log is not a pruned log; nothing to vacuum" );
    block_log blocks(blocks_dir, std::optional<block_log_prune_config>()); //passing an unset block_log_prune_config turns off pruning this performs a vacuum
    ilog("Successfully vacuumed block log");
 }
@@ -80,8 +80,8 @@ void blocklog::read_log() {
    report_time rt("reading log");
    block_log block_logger(blocks_dir, blog_keep_prune_conf);
    const auto end = block_logger.read_head();
-   EOS_ASSERT( end, block_log_exception, "No blocks found in block log" );
-   EOS_ASSERT( end->block_num() > 1, block_log_exception, "Only one block found in block log" );
+   ALA_ASSERT( end, block_log_exception, "No blocks found in block log" );
+   ALA_ASSERT( end->block_num() > 1, block_log_exception, "Only one block found in block log" );
 
    //fix message below, first block might not be 1, first_block_num is not set yet
    ilog( "existing block log contains block num ${first} through block num ${n}",
@@ -90,7 +90,7 @@ void blocklog::read_log() {
       first_block = block_logger.first_block_num();
    }
 
-   eosio::chain::branch_type fork_db_branch;
+   alaio::chain::branch_type fork_db_branch;
    if( fc::exists( blocks_dir / config::reversible_blocks_dir_name / config::forkdb_filename ) ) {
       ilog( "opening fork_db" );
       fork_database fork_db( blocks_dir / config::reversible_blocks_dir_name );
@@ -108,7 +108,7 @@ void blocklog::read_log() {
          auto last = fork_db_branch.rend() - 1;
          ilog( "existing reversible fork_db block num ${first} through block num ${last} ",
                ("first", (*first)->block_num)( "last", (*last)->block_num ) );
-         EOS_ASSERT( end->block_num() + 1 == (*first)->block_num, block_log_exception,
+         ALA_ASSERT( end->block_num() + 1 == (*first)->block_num, block_log_exception,
                      "fork_db does not start at end of block log" );
       }
    }
@@ -266,7 +266,7 @@ bool trim_blocklog_front(bfs::path block_dir, uint32_t n) {        //n is first 
 
 bool extract_block_range(bfs::path block_dir, bfs::path output_dir, uint32_t start, uint32_t end) {
    report_time rt("extracting block range");
-   EOS_ASSERT( end > start, block_log_exception, "extract range end must be greater than start");
+   ALA_ASSERT( end > start, block_log_exception, "extract range end must be greater than start");
    const bool status = block_log::extract_block_range(block_dir, output_dir, start, end, false);
    rt.report();
    return status;
@@ -278,17 +278,17 @@ void smoke_test(bfs::path block_dir) {
    cout << "\nSmoke test of blocks.log and blocks.index in directory " << block_dir << '\n';
    trim_data td(block_dir);
    auto status = fseek(td.blk_in, -sizeof(uint64_t), SEEK_END);             //get last_block from blocks.log, compare to from blocks.index
-   EOS_ASSERT( status == 0, block_log_exception, "cannot seek to ${file} ${pos} from beginning of file", ("file", td.block_file_name.string())("pos", sizeof(uint64_t)) );
+   ALA_ASSERT( status == 0, block_log_exception, "cannot seek to ${file} ${pos} from beginning of file", ("file", td.block_file_name.string())("pos", sizeof(uint64_t)) );
    uint64_t file_pos;
    auto size = fread((void*)&file_pos, sizeof(uint64_t), 1, td.blk_in);
-   EOS_ASSERT( size == 1, block_log_exception, "${file} read fails", ("file", td.block_file_name.string()) );
+   ALA_ASSERT( size == 1, block_log_exception, "${file} read fails", ("file", td.block_file_name.string()) );
    status = fseek(td.blk_in, file_pos + trim_data::blknum_offset, SEEK_SET);
-   EOS_ASSERT( status == 0, block_log_exception, "cannot seek to ${file} ${pos} from beginning of file", ("file", td.block_file_name.string())("pos", file_pos + trim_data::blknum_offset) );
+   ALA_ASSERT( status == 0, block_log_exception, "cannot seek to ${file} ${pos} from beginning of file", ("file", td.block_file_name.string())("pos", file_pos + trim_data::blknum_offset) );
    uint32_t bnum;
    size = fread((void*)&bnum, sizeof(uint32_t), 1, td.blk_in);
-   EOS_ASSERT( size == 1, block_log_exception, "${file} read fails", ("file", td.block_file_name.string()) );
+   ALA_ASSERT( size == 1, block_log_exception, "${file} read fails", ("file", td.block_file_name.string()) );
    bnum = endian_reverse_u32(bnum) + 1;                       //convert from big endian to little endian and add 1
-   EOS_ASSERT( td.last_block == bnum, block_log_exception, "blocks.log says last block is ${lb} which disagrees with blocks.index", ("lb", bnum) );
+   ALA_ASSERT( td.last_block == bnum, block_log_exception, "blocks.log says last block is ${lb} which disagrees with blocks.index", ("lb", bnum) );
    cout << "blocks.log and blocks.index agree on number of blocks\n";
    uint32_t delta = (td.last_block + 8 - td.first_block) >> 3;
    if (delta < 1)
@@ -305,7 +305,7 @@ void smoke_test(bfs::path block_dir) {
 
 int main(int argc, char** argv) {
    std::ios::sync_with_stdio(false); // for potential performance boost for large block log files
-   options_description cli ("eosio-blocklog command line options");
+   options_description cli ("alaio-blocklog command line options");
    try {
       blocklog blog;
       blog.set_program_options(cli);

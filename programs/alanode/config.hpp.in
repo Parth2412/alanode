@@ -6,8 +6,8 @@
 #ifndef CONFIG_HPP_IN
 #define CONFIG_HPP_IN
 
-namespace eosio { namespace launcher { namespace config {
-  constexpr char node_executable_name[] = "${NODE_EXECUTABLE_NAME}";
+namespace alaio { namespace alanode { namespace config {
+  const string node_executable_name = "${NODE_EXECUTABLE_NAME}";
 }}}
 
 #endif // CONFIG_HPP_IN

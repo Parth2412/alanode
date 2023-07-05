@@ -29,8 +29,8 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <net/if.h>
-#include <eosio/chain/genesis_state.hpp>
-#include <eosio/version/version.hpp>
+#include <alaio/chain/genesis_state.hpp>
+#include <alaio/version/version.hpp>
 
 #include "config.hpp"
 
@@ -44,7 +44,7 @@ using bpo::options_description;
 using bpo::variables_map;
 using public_key_type = fc::crypto::public_key;
 using private_key_type = fc::crypto::private_key;
-using namespace eosio::launcher::config;
+using namespace alaio::launcher::config;
 
 const string block_dir = "blocks";
 const string shared_mem_dir = "state";
@@ -112,7 +112,7 @@ struct local_identity {
 
 } local_id;
 
-class eosd_def;
+class alad_def;
 
 class host_def {
 public:
@@ -120,7 +120,7 @@ public:
     : genesis("genesis.json"),
       ssh_identity (""),
       ssh_args (""),
-      eosio_home(),
+      alaio_home(),
       host_name("127.0.0.1"),
       public_name("localhost"),
       listen_addr("0.0.0.0"),
@@ -136,14 +136,14 @@ public:
   string           genesis;
   string           ssh_identity;
   string           ssh_args;
-  string           eosio_home;
+  string           alaio_home;
   string           host_name;
   string           public_name;
   string           listen_addr;
   uint16_t         base_p2p_port;
   uint16_t         base_http_port;
   uint16_t         def_file_size;
-  vector<eosd_def> instances;
+  vector<alad_def> instances;
 
   uint16_t p2p_port() {
     return base_p2p_port + p2p_count++;
@@ -193,9 +193,9 @@ protected:
 
 class tn_node_def;
 
-class eosd_def {
+class alad_def {
 public:
-  eosd_def()
+  alad_def()
     : config_dir_name (),
       data_dir_name (),
       p2p_port(),
@@ -240,13 +240,13 @@ public:
   vector<private_key_type> keys;
   vector<string>  peers;
   vector<string>  producers;
-  eosd_def*       instance;
+  alad_def*       instance;
   string          gelf_endpoint;
   bool            dont_start = false;
 };
 
 void
-eosd_def::mk_dot_label () {
+alad_def::mk_dot_label () {
   dot_label_str = name + "\\nprod=";
   if (node == 0 || node->producers.empty()) {
     dot_label_str += "<none>";
@@ -264,7 +264,7 @@ eosd_def::mk_dot_label () {
 }
 
 void
-eosd_def::set_host( host_def* h, bool is_bios ) {
+alad_def::set_host( host_def* h, bool is_bios ) {
   host = h->host_name;
   p2p_port = is_bios ? h->p2p_bios_port() : h->p2p_port();
   http_port = is_bios ? h->http_bios_port() : h->http_port();
@@ -299,16 +299,16 @@ struct server_name_def {
   string ipaddr;
   string name;
   bool has_bios;
-  string eosio_home;
+  string alaio_home;
   uint16_t instances;
-  server_name_def () : ipaddr(), name(), has_bios(false), eosio_home(), instances(1) {}
+  server_name_def () : ipaddr(), name(), has_bios(false), alaio_home(), instances(1) {}
 };
 
 struct server_identities {
   vector<server_name_def> producer;
   vector<server_name_def> nonprod;
   vector<string> db;
-  string default_eosio_home;
+  string default_alaio_home;
   remote_deploy ssh;
 };
 
@@ -403,9 +403,9 @@ struct launcher_def {
    bfs::path config_dir_base;
    bfs::path data_dir_base;
    bool skip_transaction_signatures = false;
-   string eosd_extra_args;
-   std::map<uint,string> specific_nodeos_args;
-   std::map<uint,string> specific_nodeos_installation_paths;
+   string alad_extra_args;
+   std::map<uint,string> specific_alanode_args;
+   std::map<uint,string> specific_alanode_installation_paths;
    testnet_def network;
    string gelf_endpoint;
    vector <string> aliases;
@@ -425,9 +425,9 @@ struct launcher_def {
    string start_script;
    std::optional<uint32_t> max_block_cpu_usage;
    std::optional<uint32_t> max_transaction_cpu_usage;
-   eosio::chain::genesis_state genesis_from_file;
+   alaio::chain::genesis_state genesis_from_file;
 
-   void assign_name (eosd_def &node, bool is_bios);
+   void assign_name (alad_def &node, bool is_bios);
 
    void set_options (bpo::options_description &cli);
    void initialize (const variables_map &vmap);
@@ -460,12 +460,12 @@ struct launcher_def {
    void format_ssh (const string &cmd, const string &host_name, string &ssh_cmd_line);
    void do_command(const host_def& host, const string& name, vector<pair<string, string>> env_pairs, const string& cmd);
    bool do_ssh (const string &cmd, const string &host_name);
-   void prep_remote_config_dir (eosd_def &node, host_def *host);
-   void launch (eosd_def &node, string &gts);
+   void prep_remote_config_dir (alad_def &node, host_def *host);
+   void launch (alad_def &node, string &gts);
    void kill (launch_modes mode, string sig_opt);
    static string get_node_num(uint16_t node_num);
-   pair<host_def, eosd_def> find_node(uint16_t node_num);
-   vector<pair<host_def, eosd_def>> get_nodes(const string& node_number_list);
+   pair<host_def, alad_def> find_node(uint16_t node_num);
+   vector<pair<host_def, alad_def>> get_nodes(const string& node_number_list);
    void bounce (const string& node_numbers);
    void down (const string& node_numbers);
    void roll (const string& host_names);
@@ -487,7 +487,7 @@ launcher_def::set_options (bpo::options_description &cfg) {
     ("shape,s",bpo::value<string>(&shape)->default_value("star"),"network topology, use \"star\", \"mesh\", \"ring\", \"line\" or give a filename for custom")
     ("genesis,g",bpo::value<string>()->default_value("./genesis.json"),"set the path to genesis.json")
     ("skip-signature", bpo::bool_switch(&skip_transaction_signatures)->default_value(false), (string(node_executable_name) + " does not require transaction signatures.").c_str())
-    (node_executable_name, bpo::value<string>(&eosd_extra_args), ("forward " + string(node_executable_name) + " command line argument(s) to each instance of " + string(node_executable_name) + ", enclose arg(s) in quotes").c_str())
+    (node_executable_name, bpo::value<string>(&alad_extra_args), ("forward " + string(node_executable_name) + " command line argument(s) to each instance of " + string(node_executable_name) + ", enclose arg(s) in quotes").c_str())
     ("specific-num", bpo::value<vector<uint>>()->composing(), ("forward " + string(node_executable_name) + " command line argument(s) (using \"--specific-" + string(node_executable_name) + "\" flag) to this specific instance of " + string(node_executable_name) + ". This parameter can be entered multiple times and requires a paired \"--specific-" + string(node_executable_name) +"\" flag each time it is used").c_str())
     (("specific-" + string(node_executable_name)).c_str(), bpo::value<vector<string>>()->composing(), ("forward " + string(node_executable_name) + " command line argument(s) to its paired specific instance of " + string(node_executable_name) + "(using \"--specific-num\"), enclose arg(s) in quotes").c_str())
     ("spcfc-inst-num", bpo::value<vector<uint>>()->composing(), ("Specify a specific version installation path (using \"--spcfc-inst-"+ string(node_executable_name) + "\" flag) for launching this specific instance of " + string(node_executable_name) + ". This parameter can be entered multiple times and requires a paired \"--spcfc-inst-" + string(node_executable_name) + "\" flag each time it is used").c_str())
@@ -574,8 +574,8 @@ launcher_def::initialize (const variables_map &vmap) {
      server_ident_file = vmap["servers"].as<string>();
   }
 
-  retrieve_paired_array_parameters(vmap, "specific-num", "specific-" + string(node_executable_name), specific_nodeos_args);
-  retrieve_paired_array_parameters(vmap, "spcfc-inst-num", "spcfc-inst-" + string(node_executable_name), specific_nodeos_installation_paths);
+  retrieve_paired_array_parameters(vmap, "specific-num", "specific-" + string(node_executable_name), specific_alanode_args);
+  retrieve_paired_array_parameters(vmap, "spcfc-inst-num", "spcfc-inst-" + string(node_executable_name), specific_alanode_installation_paths);
 
   using namespace std::chrono;
   system_clock::time_point now = system_clock::now();
@@ -598,18 +598,18 @@ launcher_def::initialize (const variables_map &vmap) {
     try {
       fc::json::from_file(host_map_file).as<vector<host_def>>(bindings);
       for (auto &binding : bindings) {
-        for (auto &eosd : binding.instances) {
-          eosd.host = binding.host_name;
-          eosd.p2p_endpoint = binding.public_name + ":" + boost::lexical_cast<string,uint16_t>(eosd.p2p_port);
+        for (auto &alad : binding.instances) {
+          alad.host = binding.host_name;
+          alad.p2p_endpoint = binding.public_name + ":" + boost::lexical_cast<string,uint16_t>(alad.p2p_port);
 
-          aliases.push_back (eosd.name);
+          aliases.push_back (alad.name);
         }
       }
     } catch (...) { // this is an optional feature, so an exception is OK
     }
   }
 
-  config_dir_base = "etc/eosio";
+  config_dir_base = "etc/alaio";
   data_dir_base = "var/lib";
   next_node = 0;
   ++prod_nodes; // add one for the bios node
@@ -642,11 +642,11 @@ launcher_def::initialize (const variables_map &vmap) {
         cerr << "\"--specific-num\" provided value= " << num << " is higher than \"--nodes\" provided value=" << total_nodes << endl;
         exit (-1);
       }
-      specific_nodeos_args[num] = specific_args[i];
+      specific_alanode_args[num] = specific_args[i];
     }
   }
 
-  char* erd_env_var = getenv ("EOSIO_HOME");
+  char* erd_env_var = getenv ("ALAIO_HOME");
   if (erd_env_var == nullptr || std::string(erd_env_var).empty()) {
      erd_env_var = getenv ("PWD");
   }
@@ -659,7 +659,7 @@ launcher_def::initialize (const variables_map &vmap) {
 
   stage = bfs::path(erd);
   if (!bfs::exists(stage)) {
-    cerr << "\"" << erd << "\" is not a valid path. Please ensure environment variable EOSIO_HOME is set to the build path." << endl;
+    cerr << "\"" << erd << "\" is not a valid path. Please ensure environment variable ALAIO_HOME is set to the build path." << endl;
     exit (-1);
   }
   stage /= bfs::path("staging");
@@ -697,7 +697,7 @@ launcher_def::load_servers () {
 
 
 void
-launcher_def::assign_name (eosd_def &node, bool is_bios) {
+launcher_def::assign_name (alad_def &node, bool is_bios) {
    string node_cfg_name;
 
    if (is_bios) {
@@ -791,14 +791,14 @@ launcher_def::define_network () {
 
   if (per_host == 0) {
     host_def local_host;
-    local_host.eosio_home = erd;
+    local_host.alaio_home = erd;
     local_host.genesis = genesis.string();
     for (size_t i = 0; i < (total_nodes); i++) {
-      eosd_def eosd;
-      assign_name(eosd, i == 0);
-      aliases.push_back(eosd.name);
-      eosd.set_host (&local_host, i == 0);
-      local_host.instances.emplace_back(move(eosd));
+      alad_def alad;
+      assign_name(alad, i == 0);
+      aliases.push_back(alad.name);
+      alad.set_host (&local_host, i == 0);
+      local_host.instances.emplace_back(move(alad));
     }
     bindings.emplace_back(move(local_host));
   }
@@ -837,19 +837,19 @@ launcher_def::define_network () {
           lhost->public_name = lhost->host_name;
           ph_count = 1;
         }
-        lhost->eosio_home =
-          (local_id.contains (lhost->host_name) || servers.default_eosio_home.empty()) ?
-          erd : servers.default_eosio_home;
+        lhost->alaio_home =
+          (local_id.contains (lhost->host_name) || servers.default_alaio_home.empty()) ?
+          erd : servers.default_alaio_home;
         host_ndx++;
       } // ph_count == 0
 
-      eosd_def eosd;
-      assign_name(eosd, do_bios);
+      alad_def alad;
+      assign_name(alad, do_bios);
 
-      aliases.push_back(eosd.name);
-      eosd.set_host (lhost, do_bios);
+      aliases.push_back(alad.name);
+      alad.set_host (lhost, do_bios);
       do_bios = false;
-      lhost->instances.emplace_back(move(eosd));
+      lhost->instances.emplace_back(move(alad));
       --ph_count;
     } // for i
     bindings.emplace_back( move(*lhost) );
@@ -882,7 +882,7 @@ launcher_def::bind_nodes () {
          auto pubkey = kp.get_public_key();
          node.keys.emplace_back (move(kp));
          if (is_bios) {
-            string prodname = "eosio";
+            string prodname = "alaio";
             node.producers.push_back(prodname);
             producer_set.schedule.push_back({prodname,pubkey});
          }
@@ -952,7 +952,7 @@ launcher_def::find_host_by_name_or_address (const string &host_id)
 host_def *
 launcher_def::deploy_config_files (tn_node_def &node) {
   boost::system::error_code ec;
-  eosd_def &instance = *node.instance;
+  alad_def &instance = *node.instance;
   host_def *host = find_host (instance.host);
 
   bfs::path source = stage / instance.config_dir_name / "config.ini";
@@ -960,8 +960,8 @@ launcher_def::deploy_config_files (tn_node_def &node) {
   bfs::path genesis_source = stage / instance.config_dir_name / "genesis.json";
 
   if (host->is_local()) {
-    bfs::path cfgdir = bfs::path(host->eosio_home) / instance.config_dir_name;
-    bfs::path dd = bfs::path(host->eosio_home) / instance.data_dir_name;
+    bfs::path cfgdir = bfs::path(host->alaio_home) / instance.config_dir_name;
+    bfs::path dd = bfs::path(host->alaio_home) / instance.data_dir_name;
 
     if (!bfs::exists (cfgdir)) {
        if (!bfs::create_directories (cfgdir, ec) && ec.value()) {
@@ -1009,7 +1009,7 @@ launcher_def::deploy_config_files (tn_node_def &node) {
   else {
     prep_remote_config_dir (instance, host);
 
-    bfs::path rfile = bfs::path (host->eosio_home) / instance.config_dir_name / "config.ini";
+    bfs::path rfile = bfs::path (host->alaio_home) / instance.config_dir_name / "config.ini";
     auto scp_cmd_line = compose_scp_command(*host, source, rfile);
 
     cerr << "cmdline = " << scp_cmd_line << endl;
@@ -1019,7 +1019,7 @@ launcher_def::deploy_config_files (tn_node_def &node) {
       exit(-1);
     }
 
-    rfile = bfs::path (host->eosio_home) / instance.config_dir_name / "logging.json";
+    rfile = bfs::path (host->alaio_home) / instance.config_dir_name / "logging.json";
 
     scp_cmd_line = compose_scp_command(*host, logging_source, rfile);
 
@@ -1029,7 +1029,7 @@ launcher_def::deploy_config_files (tn_node_def &node) {
       exit(-1);
     }
 
-    rfile = bfs::path (host->eosio_home) / instance.config_dir_name / "genesis.json";
+    rfile = bfs::path (host->alaio_home) / instance.config_dir_name / "genesis.json";
 
     scp_cmd_line = compose_scp_command(*host, genesis_source, rfile);
 
@@ -1065,7 +1065,7 @@ void
 launcher_def::write_config_file (tn_node_def &node) {
    bool is_bios = (node.name == "bios");
    bfs::path filename;
-   eosd_def &instance = *node.instance;
+   alad_def &instance = *node.instance;
    host_def *host = find_host (instance.host);
 
    bfs::path dd = stage / instance.config_dir_name;
@@ -1130,17 +1130,17 @@ launcher_def::write_config_file (tn_node_def &node) {
     for (auto &p : node.producers) {
       cfg << "producer-name = " << p << "\n";
     }
-    cfg << "plugin = eosio::producer_plugin\n";
+    cfg << "plugin = alaio::producer_plugin\n";
   }
-  cfg << "plugin = eosio::net_plugin\n";
-  cfg << "plugin = eosio::chain_api_plugin\n";
+  cfg << "plugin = alaio::net_plugin\n";
+  cfg << "plugin = alaio::chain_api_plugin\n";
   cfg.close();
 }
 
 void
 launcher_def::write_logging_config_file(tn_node_def &node) {
   bfs::path filename;
-  eosd_def &instance = *node.instance;
+  alad_def &instance = *node.instance;
 
   bfs::path dd = stage / instance.config_dir_name;
   if (!bfs::exists(dd)) {
@@ -1224,12 +1224,12 @@ launcher_def::init_genesis () {
    const bfs::path genesis_path = genesis.is_complete() ? genesis : bfs::current_path() / genesis;
    if (!bfs::exists(genesis_path)) {
       cout << "generating default genesis file " << genesis_path << endl;
-      eosio::chain::genesis_state default_genesis;
+      alaio::chain::genesis_state default_genesis;
       fc::json::save_to_file( default_genesis, genesis_path, true );
    }
    string bioskey = network.nodes["bios"].keys[0].get_public_key().to_string();
 
-   fc::json::from_file(genesis_path).as<eosio::chain::genesis_state>(genesis_from_file);
+   fc::json::from_file(genesis_path).as<alaio::chain::genesis_state>(genesis_from_file);
    genesis_from_file.initial_key = public_key_type(bioskey);
    if (max_block_cpu_usage)
       genesis_from_file.initial_configuration.max_block_cpu_usage = *max_block_cpu_usage;
@@ -1240,7 +1240,7 @@ launcher_def::init_genesis () {
 void
 launcher_def::write_genesis_file(tn_node_def &node) {
   bfs::path filename;
-  eosd_def &instance = *node.instance;
+  alad_def &instance = *node.instance;
 
   bfs::path dd = stage / instance.config_dir_name;
   if (!bfs::exists(dd)) {
@@ -1261,7 +1261,7 @@ launcher_def::write_setprods_file() {
   }
    producer_set_def no_bios;
    for (auto &p : producer_set.schedule) {
-      if (p.producer_name != "eosio")
+      if (p.producer_name != "alaio")
          no_bios.schedule.push_back(p);
    }
   auto str = fc::json::to_pretty_string( no_bios, fc::time_point::maximum(), fc::json::output_formatting::stringify_large_ints_and_doubles );
@@ -1302,7 +1302,7 @@ launcher_def::write_bios_boot () {
          }
          else if (key == "cacmd") {
             for (auto &p : producer_set.schedule) {
-               if (p.producer_name == "eosio") {
+               if (p.producer_name == "alaio") {
                   continue;
                }
                brb << "cacmd " << p.producer_name
@@ -1494,17 +1494,17 @@ launcher_def::do_ssh (const string &cmd, const string &host_name) {
 }
 
 void
-launcher_def::prep_remote_config_dir (eosd_def &node, host_def *host) {
-  bfs::path abs_config_dir = bfs::path(host->eosio_home) / node.config_dir_name;
-  bfs::path abs_data_dir = bfs::path(host->eosio_home) / node.data_dir_name;
+launcher_def::prep_remote_config_dir (alad_def &node, host_def *host) {
+  bfs::path abs_config_dir = bfs::path(host->alaio_home) / node.config_dir_name;
+  bfs::path abs_data_dir = bfs::path(host->alaio_home) / node.data_dir_name;
 
   string acd = abs_config_dir.string();
   string add = abs_data_dir.string();
-  string cmd = "cd " + host->eosio_home;
+  string cmd = "cd " + host->alaio_home;
 
-  cmd = "cd " + host->eosio_home;
+  cmd = "cd " + host->alaio_home;
   if (!do_ssh(cmd, host->host_name)) {
-    cerr << "Unable to switch to path " << host->eosio_home
+    cerr << "Unable to switch to path " << host->alaio_home
          << " on host " <<  host->host_name << endl;
     exit (-1);
   }
@@ -1564,7 +1564,7 @@ launcher_def::find_and_remove_arg(string args, string arg ){
 }
 
 void
-launcher_def::launch (eosd_def &instance, string &gts) {
+launcher_def::launch (alad_def &instance, string &gts) {
   bfs::path dd = instance.data_dir_name;
   bfs::path reout = dd / "stdout.txt";
   bfs::path reerr_sl = dd / "stderr.txt";
@@ -1583,42 +1583,42 @@ launcher_def::launch (eosd_def &instance, string &gts) {
   info.remote = !host->is_local();
 
   string install_path;
-  if (instance.name != "bios" && !specific_nodeos_installation_paths.empty()) {
+  if (instance.name != "bios" && !specific_alanode_installation_paths.empty()) {
      const auto node_num = boost::lexical_cast<uint16_t,string>(instance.get_node_num());
-     if (specific_nodeos_installation_paths.count(node_num)) {
-        install_path = specific_nodeos_installation_paths[node_num] + "/";
+     if (specific_alanode_installation_paths.count(node_num)) {
+        install_path = specific_alanode_installation_paths[node_num] + "/";
      }
   }
-  string eosdcmd = install_path + "programs/nodeos/" + string(node_executable_name) + " ";
+  string aladcmd = install_path + "programs/alanode/" + string(node_executable_name) + " ";
   if (skip_transaction_signatures) {
-    eosdcmd += "--skip-transaction-signatures ";
+    aladcmd += "--skip-transaction-signatures ";
   }
-  if (!eosd_extra_args.empty()) {
-    eosdcmd += eosd_extra_args + " ";
+  if (!alad_extra_args.empty()) {
+    aladcmd += alad_extra_args + " ";
   }
-  if (instance.name != "bios" && !specific_nodeos_args.empty()) {
+  if (instance.name != "bios" && !specific_alanode_args.empty()) {
      const auto node_num = boost::lexical_cast<uint16_t,string>(instance.get_node_num());
-     if (specific_nodeos_args.count(node_num)) {
-        eosdcmd += specific_nodeos_args[node_num] + " ";
+     if (specific_alanode_args.count(node_num)) {
+        aladcmd += specific_alanode_args[node_num] + " ";
      }
   }
 
   if( add_enable_stale_production ) {
-    eosdcmd += "--enable-stale-production true ";
+    aladcmd += "--enable-stale-production true ";
     add_enable_stale_production = false;
   }
 
-  eosdcmd += " --config-dir " + instance.config_dir_name + " --data-dir " + instance.data_dir_name;
-  eosdcmd += " --genesis-json " + instance.config_dir_name + "/genesis.json";
+  aladcmd += " --config-dir " + instance.config_dir_name + " --data-dir " + instance.data_dir_name;
+  aladcmd += " --genesis-json " + instance.config_dir_name + "/genesis.json";
   if (gts.length()) {
-    eosdcmd += " --genesis-timestamp " + gts;
+    aladcmd += " --genesis-timestamp " + gts;
   }
 
-  if (eosdcmd.find("eosio::history_api_plugin") != string::npos && eosdcmd.find("eosio::trace_api_plugin") != string::npos){
+  if (aladcmd.find("alaio::history_api_plugin") != string::npos && aladcmd.find("alaio::trace_api_plugin") != string::npos){
     // remove trace_api_plugin from old version nodes in multiversion test
-    eosdcmd = find_and_remove_arg(eosdcmd, "--plugin eosio::trace_api_plugin");
-    eosdcmd = find_and_remove_arg(eosdcmd, "--trace-no-abis");
-    eosdcmd = find_and_remove_arg(eosdcmd, "--trace-rpc-abi");
+    aladcmd = find_and_remove_arg(aladcmd, "--plugin alaio::trace_api_plugin");
+    aladcmd = find_and_remove_arg(aladcmd, "--trace-no-abis");
+    aladcmd = find_and_remove_arg(aladcmd, "--trace-rpc-abi");
   }
 
   if (!host->is_local()) {
@@ -1627,7 +1627,7 @@ launcher_def::launch (eosd_def &instance, string &gts) {
       exit (-1);
     }
     string cmdl ("cd ");
-    cmdl += host->eosio_home + "; nohup " + eosdcmd + " > "
+    cmdl += host->alaio_home + "; nohup " + aladcmd + " > "
       + reout.string() + " 2> " + reerr.string() + "& echo $! > " + pidf.string()
       + "; rm -f " + reerr_sl.string()
       + "; ln -s " + reerr_base.string() + " " + reerr_sl.string();
@@ -1637,13 +1637,13 @@ launcher_def::launch (eosd_def &instance, string &gts) {
       exit (-1);
     }
 
-    string cmd = "cd " + host->eosio_home + "; kill -15 $(cat " + pidf.string() + ")";
+    string cmd = "cd " + host->alaio_home + "; kill -15 $(cat " + pidf.string() + ")";
     format_ssh (cmd, host->host_name, info.kill_cmd);
   }
   else if (!instance.node->dont_start) {
-    cerr << "spawning child, " << eosdcmd << endl;
+    cerr << "spawning child, " << aladcmd << endl;
 
-    bp::child c(eosdcmd, bp::std_out > reout, bp::std_err > reerr );
+    bp::child c(aladcmd, bp::std_out > reout, bp::std_err > reerr );
     bfs::remove(reerr_sl);
     bfs::create_symlink (reerr_base, reerr_sl);
 
@@ -1655,7 +1655,7 @@ launcher_def::launch (eosd_def &instance, string &gts) {
     info.kill_cmd = "";
 
     if(!c.running()) {
-      cerr << "child not running after spawn " << eosdcmd << endl;
+      cerr << "child not running after spawn " << aladcmd << endl;
       for (int i = 0; i > 0; i++) {
         if (c.running () ) break;
       }
@@ -1663,13 +1663,13 @@ launcher_def::launch (eosd_def &instance, string &gts) {
     c.detach();
   }
   else {
-    cerr << "not spawning child, " << eosdcmd << endl;
+    cerr << "not spawning child, " << aladcmd << endl;
 
     const bfs::path dd = instance.data_dir_name;
     const bfs::path start_file  = dd / "start.cmd";
     bfs::ofstream sf (start_file);
 
-    sf << eosdcmd << endl;
+    sf << aladcmd << endl;
     sf.close();
   }
   last_run.running_nodes.emplace_back (move(info));
@@ -1677,7 +1677,7 @@ launcher_def::launch (eosd_def &instance, string &gts) {
 
 #if 0
 void
-launcher_def::kill_instance(eosd_def, string sig_opt) {
+launcher_def::kill_instance(alad_def, string sig_opt) {
 }
 #endif
 
@@ -1742,7 +1742,7 @@ launcher_def::get_node_num(uint16_t node_num) {
    return node_num_str;
 }
 
-pair<host_def, eosd_def>
+pair<host_def, alad_def>
 launcher_def::find_node(uint16_t node_num) {
    const string node_name = network.name + get_node_num(node_num);
    for (const auto& host: bindings) {
@@ -1756,9 +1756,9 @@ launcher_def::find_node(uint16_t node_num) {
    exit (-1);
 }
 
-vector<pair<host_def, eosd_def>>
+vector<pair<host_def, alad_def>>
 launcher_def::get_nodes(const string& node_number_list) {
-   vector<pair<host_def, eosd_def>> node_list;
+   vector<pair<host_def, alad_def>> node_list;
    if (fc::to_lower(node_number_list) == "all") {
       for (auto host: bindings) {
          for (auto node: host.instances) {
@@ -1792,7 +1792,7 @@ void
 launcher_def::do_command(const host_def& host, const string& name,
                          vector<pair<string, string>> env_pairs, const string& cmd) {
    if (!host.is_local()) {
-      string rcmd = "cd " + host.eosio_home + "; ";
+      string rcmd = "cd " + host.alaio_home + "; ";
       for (auto& env_pair : env_pairs) {
          rcmd += "export " + env_pair.first + "=" + env_pair.second + "; ";
       }
@@ -1817,18 +1817,18 @@ launcher_def::bounce (const string& node_numbers) {
    auto node_list = get_nodes(node_numbers);
    for (auto node_pair: node_list) {
       const host_def& host = node_pair.first;
-      const eosd_def& node = node_pair.second;
+      const alad_def& node = node_pair.second;
       const string node_num = node.get_node_num();
       cout << "Bouncing " << node.name << endl;
-      string cmd = "./scripts/eosio-tn_bounce.sh " + eosd_extra_args;
-      if (node_num != "bios" && !specific_nodeos_args.empty()) {
+      string cmd = "./scripts/alaio-tn_bounce.sh " + alad_extra_args;
+      if (node_num != "bios" && !specific_alanode_args.empty()) {
          const auto node_num_i = boost::lexical_cast<uint16_t,string>(node_num);
-         if (specific_nodeos_args.count(node_num_i)) {
-            cmd += " " + specific_nodeos_args[node_num_i];
+         if (specific_alanode_args.count(node_num_i)) {
+            cmd += " " + specific_alanode_args[node_num_i];
          }
       }
 
-      do_command(host, node.name, { { "EOSIO_HOME", host.eosio_home }, { "EOSIO_NODE", node_num } }, cmd);
+      do_command(host, node.name, { { "ALAIO_HOME", host.alaio_home }, { "ALAIO_NODE", node_num } }, cmd);
    }
 }
 
@@ -1837,12 +1837,12 @@ launcher_def::down (const string& node_numbers) {
    auto node_list = get_nodes(node_numbers);
    for (auto node_pair: node_list) {
       const host_def& host = node_pair.first;
-      const eosd_def& node = node_pair.second;
+      const alad_def& node = node_pair.second;
       const string node_num = node.get_node_num();
       cout << "Taking down " << node.name << endl;
-      string cmd = "./scripts/eosio-tn_down.sh ";
+      string cmd = "./scripts/alaio-tn_down.sh ";
       do_command(host, node.name,
-                 { { "EOSIO_HOME", host.eosio_home }, { "EOSIO_NODE", node_num }, { "EOSIO_TN_RESTART_CONFIG_DIR", node.config_dir_name } },
+                 { { "ALAIO_HOME", host.alaio_home }, { "ALAIO_NODE", node_num }, { "ALAIO_TN_RESTART_CONFIG_DIR", node.config_dir_name } },
                  cmd);
    }
 }
@@ -1854,8 +1854,8 @@ launcher_def::roll (const string& host_names) {
    for (string host_name: hosts) {
       cout << "Rolling " << host_name << endl;
       auto host = find_host_by_name_or_address(host_name);
-      string cmd = "./scripts/eosio-tn_roll.sh ";
-      do_command(*host, host_name, { { "EOSIO_HOME", host->eosio_home } }, cmd);
+      string cmd = "./scripts/alaio-tn_roll.sh ";
+      do_command(*host, host_name, { { "ALAIO_HOME", host->alaio_home } }, cmd);
    }
 }
 
@@ -2004,9 +2004,9 @@ int main (int argc, char *argv[]) {
     ("launch,l",bpo::value<string>(), "select a subset of nodes to launch. Currently may be \"all\", \"none\", or \"local\". If not set, the default is to launch all unless an output file is named, in which case it starts none.")
     ("output,o",bpo::value<bfs::path>(&top.output),"save a copy of the generated topology in this file")
     ("kill,k", bpo::value<string>(&kill_arg),"The launcher retrieves the previously started process ids and issues a kill to each.")
-    ("down", bpo::value<string>(&down_nodes),"comma-separated list of node numbers that will be taken down using the eosio-tn_down.sh script")
-    ("bounce", bpo::value<string>(&bounce_nodes),"comma-separated list of node numbers that will be restarted using the eosio-tn_bounce.sh script")
-    ("roll", bpo::value<string>(&roll_nodes),"comma-separated list of host names where the nodes should be rolled to a new version using the eosio-tn_roll.sh script")
+    ("down", bpo::value<string>(&down_nodes),"comma-separated list of node numbers that will be taken down using the alaio-tn_down.sh script")
+    ("bounce", bpo::value<string>(&bounce_nodes),"comma-separated list of node numbers that will be restarted using the alaio-tn_bounce.sh script")
+    ("roll", bpo::value<string>(&roll_nodes),"comma-separated list of host names where the nodes should be rolled to a new version using the alaio-tn_roll.sh script")
     ("version,v", "print version information")
     ("help,h","print this list")
     ("config-dir", bpo::value<bfs::path>(), "Directory containing configuration files such as config.ini")
@@ -2025,7 +2025,7 @@ int main (int argc, char *argv[]) {
       return 0;
     }
     if (vmap.count("version") > 0) {
-      cout << eosio::version::version_full() << endl;
+      cout << alaio::version::version_full() << endl;
       return 0;
     }
 
@@ -2120,13 +2120,13 @@ FC_REFLECT( producer_set_def,
 
 // @ignore listen_addr, p2p_count, http_count, dot_label_str
 FC_REFLECT( host_def,
-            (genesis)(ssh_identity)(ssh_args)(eosio_home)
+            (genesis)(ssh_identity)(ssh_args)(alaio_home)
             (host_name)(public_name)
             (base_p2p_port)(base_http_port)(def_file_size)
             (instances) )
 
 // @ignore node, dot_label_str
-FC_REFLECT( eosd_def,
+FC_REFLECT( alad_def,
             (config_dir_name)(data_dir_name)(p2p_port)
             (http_port)(file_size)(name)(host)
             (p2p_endpoint) )
@@ -2136,9 +2136,9 @@ FC_REFLECT( tn_node_def, (name)(keys)(peers)(producers)(dont_start) )
 
 FC_REFLECT( testnet_def, (name)(ssh_helper)(nodes) )
 
-FC_REFLECT( server_name_def, (ipaddr) (name) (has_bios) (eosio_home) (instances) )
+FC_REFLECT( server_name_def, (ipaddr) (name) (has_bios) (alaio_home) (instances) )
 
-FC_REFLECT( server_identities, (producer) (nonprod) (db) (default_eosio_home) (ssh) )
+FC_REFLECT( server_identities, (producer) (nonprod) (db) (default_alaio_home) (ssh) )
 
 FC_REFLECT( node_rt_info, (remote)(pid_file)(kill_cmd) )
 

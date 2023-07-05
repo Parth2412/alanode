@@ -1,5 +1,5 @@
 #include "generic.hpp"
-#include <eosio/version/version.hpp>
+#include <alaio/version/version.hpp>
 #include <iostream>
 
 void generic_actions::setup(CLI::App& app) {
@@ -10,5 +10,5 @@ void generic_actions::setup(CLI::App& app) {
 }
 
 void generic_actions::cb_version(bool full) {
-   std::cout << (full ? eosio::version::version_full() : eosio::version::version_client()) << '\n';
+   std::cout << (full ? alaio::version::version_full() : alaio::version::version_client()) << '\n';
 }

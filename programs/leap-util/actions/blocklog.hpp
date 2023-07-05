@@ -1,11 +1,11 @@
 #include "subcommand.hpp"
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/path.hpp>
-#include <eosio/chain/block_log.hpp>
-#include <eosio/chain/config.hpp>
+#include <alaio/chain/block_log.hpp>
+#include <alaio/chain/config.hpp>
 
 namespace bfs = boost::filesystem;
-using namespace eosio::chain;
+using namespace alaio::chain;
 
 struct blocklog_options {
    std::string blocks_dir = "blocks";

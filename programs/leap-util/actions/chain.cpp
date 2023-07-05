@@ -10,8 +10,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/path.hpp>
 
-#include <eosio/chain/block_log.hpp>
-#include <eosio/chain/exceptions.hpp>
+#include <alaio/chain/block_log.hpp>
+#include <alaio/chain/exceptions.hpp>
 #include <chainbase/environment.hpp>
 
 #include <boost/algorithm/string.hpp>
@@ -20,8 +20,8 @@
 #include <boost/lexical_cast.hpp>
 
 namespace bfs = boost::filesystem;
-using namespace eosio;
-using namespace eosio::chain;
+using namespace alaio;
+using namespace alaio::chain;
 
 
 // reflect chainbase::environment for --print-build-info option

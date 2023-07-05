@@ -2,7 +2,7 @@
 
 #include "config.hpp"
 
-namespace eosio { namespace client { namespace http {
+namespace alaio { namespace client { namespace http {
 
    namespace detail {
       class http_context_impl;
@@ -134,7 +134,7 @@ namespace eosio { namespace client { namespace http {
    const string wallet_remove_key = wallet_func_base + "/remove_key";
    const string wallet_create_key = wallet_func_base + "/create_key";
    const string wallet_sign_trx = wallet_func_base + "/sign_transaction";
-   const string keosd_stop = "/v1/" + string(client::config::key_store_executable_name) + "/stop";
+   const string kalad_stop = "/v1/" + string(client::config::key_store_executable_name) + "/stop";
 
    const string producer_func_base = "/v1/producer";
    const string producer_get_supported_protocol_features_func = producer_func_base + "/get_supported_protocol_features";
