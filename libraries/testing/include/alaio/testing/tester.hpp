@@ -1,10 +1,10 @@
 #pragma once
-#include <eosio/chain/controller.hpp>
-#include <eosio/chain/asset.hpp>
-#include <eosio/chain/contract_table_objects.hpp>
-#include <eosio/chain/account_object.hpp>
-#include <eosio/chain/abi_serializer.hpp>
-#include <eosio/chain/unapplied_transaction_queue.hpp>
+#include <alaio/chain/controller.hpp>
+#include <alaio/chain/asset.hpp>
+#include <alaio/chain/contract_table_objects.hpp>
+#include <alaio/chain/account_object.hpp>
+#include <alaio/chain/abi_serializer.hpp>
+#include <alaio/chain/unapplied_transaction_queue.hpp>
 #include <fc/io/json.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/tuple/tuple_io.hpp>
@@ -18,7 +18,7 @@
 
 #define REQUIRE_MATCHING_OBJECT(left, right) { auto a = fc::variant( left ); auto b = fc::variant( right ); BOOST_REQUIRE_EQUAL( true, a.is_object() ); \
    BOOST_REQUIRE_EQUAL( true, b.is_object() ); \
-   auto filtered = ::eosio::testing::filter_fields( a.get_object(), b.get_object() ); \
+   auto filtered = ::alaio::testing::filter_fields( a.get_object(), b.get_object() ); \
    BOOST_REQUIRE_EQUAL_COLLECTIONS( a.get_object().begin(), a.get_object().end(), filtered.begin(), filtered.end() ); }
 
 std::ostream& operator<<( std::ostream& osm, const fc::variant& v );
@@ -27,7 +27,7 @@ std::ostream& operator<<( std::ostream& osm, const fc::variant_object& v );
 
 std::ostream& operator<<( std::ostream& osm, const fc::variant_object::entry& e );
 
-eosio::chain::asset core_from_string(const std::string& s);
+alaio::chain::asset core_from_string(const std::string& s);
 
 namespace boost { namespace test_tools { namespace tt_detail {
 
@@ -57,7 +57,7 @@ namespace boost { namespace test_tools { namespace tt_detail {
 
 } } }
 
-namespace eosio { namespace testing {
+namespace alaio { namespace testing {
    enum class setup_policy {
       none,
       old_bios_only,
@@ -74,7 +74,7 @@ namespace eosio { namespace testing {
    std::string          read_binary_snapshot( const char* fn );
    fc::variant          read_json_snapshot( const char* fn );
 
-   using namespace eosio::chain;
+   using namespace alaio::chain;
 
    fc::variant_object filter_fields(const fc::variant_object& filter, const fc::variant_object& value);
 
@@ -399,15 +399,15 @@ namespace eosio { namespace testing {
             cfg.state_size = 1024*1024*16;
             cfg.state_guard_size = 0;
             cfg.contracts_console = true;
-            cfg.eosvmoc_config.cache_size = 1024*1024*8;
+            cfg.alavmoc_config.cache_size = 1024*1024*8;
 
             for(int i = 0; i < boost::unit_test::framework::master_test_suite().argc; ++i) {
-               if(boost::unit_test::framework::master_test_suite().argv[i] == std::string("--eos-vm"))
-                  cfg.wasm_runtime = chain::wasm_interface::vm_type::eos_vm;
-               else if(boost::unit_test::framework::master_test_suite().argv[i] == std::string("--eos-vm-jit"))
-                  cfg.wasm_runtime = chain::wasm_interface::vm_type::eos_vm_jit;
-               else if(boost::unit_test::framework::master_test_suite().argv[i] == std::string("--eos-vm-oc"))
-                  cfg.wasm_runtime = chain::wasm_interface::vm_type::eos_vm_oc;
+               if(boost::unit_test::framework::master_test_suite().argv[i] == std::string("--ala-vm"))
+                  cfg.wasm_runtime = chain::wasm_interface::vm_type::ala_vm;
+               else if(boost::unit_test::framework::master_test_suite().argv[i] == std::string("--ala-vm-jit"))
+                  cfg.wasm_runtime = chain::wasm_interface::vm_type::ala_vm_jit;
+               else if(boost::unit_test::framework::master_test_suite().argv[i] == std::string("--ala-vm-oc"))
+                  cfg.wasm_runtime = chain::wasm_interface::vm_type::ala_vm_oc;
             }
             auto gen = default_genesis();
             if (genesis_max_inline_action_size) {
@@ -700,45 +700,45 @@ namespace eosio { namespace testing {
   };
 
   /**
-   * Utility predicate to check whether an eosio_assert message is equivalent to a given string
+   * Utility predicate to check whether an alaio_assert message is equivalent to a given string
    */
-  struct eosio_assert_message_is {
-     eosio_assert_message_is( const string& msg )
+  struct alaio_assert_message_is {
+     alaio_assert_message_is( const string& msg )
            : expected( "assertion failure with message: " ) {
         expected.append( msg );
      }
 
-     bool operator()( const eosio_assert_message_exception& ex );
+     bool operator()( const alaio_assert_message_exception& ex );
 
      string expected;
   };
 
   /**
-   * Utility predicate to check whether an eosio_assert message starts with a given string
+   * Utility predicate to check whether an alaio_assert message starts with a given string
    */
-  struct eosio_assert_message_starts_with {
-     eosio_assert_message_starts_with( const string& msg )
+  struct alaio_assert_message_starts_with {
+     alaio_assert_message_starts_with( const string& msg )
            : expected( "assertion failure with message: " ) {
         expected.append( msg );
      }
 
-     bool operator()( const eosio_assert_message_exception& ex );
+     bool operator()( const alaio_assert_message_exception& ex );
 
      string expected;
   };
 
   /**
-   * Utility predicate to check whether an eosio_assert_code error code is equivalent to a given number
+   * Utility predicate to check whether an alaio_assert_code error code is equivalent to a given number
    */
-  struct eosio_assert_code_is {
-     eosio_assert_code_is( uint64_t error_code )
+  struct alaio_assert_code_is {
+     alaio_assert_code_is( uint64_t error_code )
            : expected( "assertion failure with error code: " ) {
         expected.append( std::to_string(error_code) );
      }
 
-     bool operator()( const eosio_assert_code_exception& ex );
+     bool operator()( const alaio_assert_code_exception& ex );
 
      string expected;
   };
 
-} } /// eosio::testing
+} } /// alaio::testing

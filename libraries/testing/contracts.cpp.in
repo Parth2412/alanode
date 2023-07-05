@@ -7,18 +7,18 @@
 #include <fc/io/incbin.h>
 
 #define MAKE_EMBEDDED_WASM_ABI(CN,C, D)                                                                                                                                       \
-INCBIN(eosio_testing_contract_ ## CN ## _wasm, "${CMAKE_BINARY_DIR}/unittests/" #D "/" #C "/" #C ".wasm");                                                                    \
-INCBIN(eosio_testing_contract_ ## CN ## _abi,  "${CMAKE_BINARY_DIR}/unittests/" #D "/" #C "/" #C ".abi");                                                                     \
+INCBIN(alaio_testing_contract_ ## CN ## _wasm, "${CMAKE_BINARY_DIR}/unittests/" #D "/" #C "/" #C ".wasm");                                                                    \
+INCBIN(alaio_testing_contract_ ## CN ## _abi,  "${CMAKE_BINARY_DIR}/unittests/" #D "/" #C "/" #C ".abi");                                                                     \
                                                                                                                                                                               \
-namespace eosio::testing {                                                                                                                                                    \
+namespace alaio::testing {                                                                                                                                                    \
    std::vector<uint8_t> contracts:: CN ## _wasm() {                                                                                                                           \
-      return std::vector<uint8_t>(geosio_testing_contract_ ## CN ## _wasm_data, geosio_testing_contract_ ## CN ## _wasm_data + geosio_testing_contract_ ## CN ## _wasm_size); \
+      return std::vector<uint8_t>(galaio_testing_contract_ ## CN ## _wasm_data, galaio_testing_contract_ ## CN ## _wasm_data + galaio_testing_contract_ ## CN ## _wasm_size); \
    }                                                                                                                                                                          \
    std::vector<char> contracts:: CN ## _abi() {                                                                                                                               \
-      return std::vector<char>(geosio_testing_contract_ ## CN ## _abi_data, geosio_testing_contract_ ## CN ## _abi_data + geosio_testing_contract_ ## CN ## _abi_size);       \
+      return std::vector<char>(galaio_testing_contract_ ## CN ## _abi_data, galaio_testing_contract_ ## CN ## _abi_data + galaio_testing_contract_ ## CN ## _abi_size);       \
    }                                                                                                                                                                          \
 }
 
-MAKE_EMBEDDED_WASM_ABI(eosio_bios,                             eosio.bios, contracts)
-MAKE_EMBEDDED_WASM_ABI(before_producer_authority_eosio_bios,   eosio.bios, contracts/old_versions/v1.7.0-develop-preactivate_feature)
-MAKE_EMBEDDED_WASM_ABI(before_preactivate_eosio_bios,          eosio.bios, contracts/old_versions/v1.6.0-rc3)
+MAKE_EMBEDDED_WASM_ABI(alaio_bios,                             alaio.bios, contracts)
+MAKE_EMBEDDED_WASM_ABI(before_producer_authority_alaio_bios,   alaio.bios, contracts/old_versions/v1.7.0-develop-preactivate_feature)
+MAKE_EMBEDDED_WASM_ABI(before_preactivate_alaio_bios,          alaio.bios, contracts/old_versions/v1.6.0-rc3)

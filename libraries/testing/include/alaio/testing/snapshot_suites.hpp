@@ -3,8 +3,8 @@
 #include <fc/variant_object.hpp>
 #include <snapshots.hpp>
 
-using namespace eosio::chain;
-using namespace eosio::testing;
+using namespace alaio::chain;
+using namespace alaio::testing;
 
 struct variant_snapshot_suite {
    using writer_t = variant_snapshot_writer;
