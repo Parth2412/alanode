@@ -67,7 +67,7 @@ tests/plugin_test
 unittests/unit_test
 
 doxygen
-eos.doxygen
+ala.doxygen
 
 wallet.json
 witness_node_data_dir
