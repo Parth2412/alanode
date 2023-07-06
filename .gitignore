@@ -52,11 +52,11 @@ libraries/wasm-jit/Source/Programs/wavm
 programs/cleos/cleos
 programs/js_operation_serializer/js_operation_serializer
 programs/data-dir
-programs/eosio-abigen/eosio-abigen
+programs/alaio-abigen/alaio-abigen
 programs/cleos/config.hpp
-programs/eosio-applesedemo/eosio-applesedemo
-programs/eosio-launcher/config.hpp
-programs/eosio-launcher/eosio-launcher
+programs/alaio-applesedemo/alaio-applesedemo
+programs/alaio-launcher/config.hpp
+programs/alaio-launcher/alaio-launcher
 programs/keosd/keosd
 programs/nodeos/config.hpp
 programs/nodeos/nodeos
@@ -84,7 +84,7 @@ build-debug/*
 deps/*
 dependencies/*
 
-etc/eosio/node_*
+etc/alaio/node_*
 var/lib/node_*
 .vscode
 .idea/
