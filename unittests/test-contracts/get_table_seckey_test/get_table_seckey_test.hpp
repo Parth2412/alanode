@@ -4,17 +4,17 @@
  */
 #pragma once
 
-#include <eosio/eosio.hpp>
-#include <eosio/crypto.hpp>
+#include <alaio/alaio.hpp>
+#include <alaio/crypto.hpp>
 
-using namespace eosio;
+using namespace alaio;
 
-class [[eosio::contract]] get_table_seckey_test : public eosio::contract {
+class [[alaio::contract]] get_table_seckey_test : public alaio::contract {
     public:
-    using eosio::contract::contract;
+    using alaio::contract::contract;
 
     // Number object
-    struct [[eosio::table]] numobj {
+    struct [[alaio::table]] numobj {
         uint64_t        key;
         uint64_t        sec64;
         uint128_t       sec128;
@@ -30,7 +30,7 @@ class [[eosio::contract]] get_table_seckey_test : public eosio::contract {
         uint64_t name_key() const { return nm.value; }
     };
 
-    typedef eosio::multi_index< "numobjs"_n, numobj,
+    typedef alaio::multi_index< "numobjs"_n, numobj,
                                 indexed_by<"bysec1"_n, const_mem_fun<numobj, uint64_t, &numobj::sec64_key>>,
                                 indexed_by<"bysec2"_n, const_mem_fun<numobj, uint128_t, &numobj::sec128_key>>,
                                 indexed_by<"bysec3"_n, const_mem_fun<numobj, double, &numobj::secdouble_key>>,
@@ -38,6 +38,6 @@ class [[eosio::contract]] get_table_seckey_test : public eosio::contract {
                                 indexed_by<"byname"_n, const_mem_fun<numobj, uint64_t, &numobj::name_key>>
                                 > numobjs;
 
-   [[eosio::action]]
+   [[alaio::action]]
    void addnumobj(uint64_t input, std::string nm);
 };

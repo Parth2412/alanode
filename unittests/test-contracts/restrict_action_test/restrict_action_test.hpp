@@ -1,30 +1,30 @@
 #pragma once
 
-#include <eosio/eosio.hpp>
+#include <alaio/alaio.hpp>
 
-class [[eosio::contract]] restrict_action_test : public eosio::contract {
+class [[alaio::contract]] restrict_action_test : public alaio::contract {
 public:
-   using eosio::contract::contract;
+   using alaio::contract::contract;
 
-   [[eosio::action]]
+   [[alaio::action]]
    void noop( );
 
-   [[eosio::action]]
-   void sendinline( eosio::name authorizer );
+   [[alaio::action]]
+   void sendinline( alaio::name authorizer );
 
-   [[eosio::action]]
-   void senddefer( eosio::name authorizer, uint32_t senderid );
+   [[alaio::action]]
+   void senddefer( alaio::name authorizer, uint32_t senderid );
 
 
-   [[eosio::action]]
-   void notifyinline( eosio::name acctonotify, eosio::name authorizer );
+   [[alaio::action]]
+   void notifyinline( alaio::name acctonotify, alaio::name authorizer );
 
-   [[eosio::action]]
-   void notifydefer( eosio::name acctonotify, eosio::name authorizer, uint32_t senderid );
+   [[alaio::action]]
+   void notifydefer( alaio::name acctonotify, alaio::name authorizer, uint32_t senderid );
 
-   [[eosio::on_notify("testacc::notifyinline")]]
-   void on_notify_inline( eosio::name acctonotify, eosio::name authorizer );
+   [[alaio::on_notify("testacc::notifyinline")]]
+   void on_notify_inline( alaio::name acctonotify, alaio::name authorizer );
 
-   [[eosio::on_notify("testacc::notifydefer")]]
-   void on_notify_defer( eosio::name acctonotify, eosio::name authorizer, uint32_t senderid );
+   [[alaio::on_notify("testacc::notifydefer")]]
+   void on_notify_defer( alaio::name acctonotify, alaio::name authorizer, uint32_t senderid );
 };

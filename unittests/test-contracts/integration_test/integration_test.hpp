@@ -1,23 +1,23 @@
 #pragma once
 
-#include <eosio/eosio.hpp>
+#include <alaio/alaio.hpp>
 
-class [[eosio::contract]] integration_test : public eosio::contract {
+class [[alaio::contract]] integration_test : public alaio::contract {
 public:
-   using eosio::contract::contract;
+   using alaio::contract::contract;
 
-   [[eosio::action]]
-   void store( eosio::name from, eosio::name to, uint64_t num );
+   [[alaio::action]]
+   void store( alaio::name from, alaio::name to, uint64_t num );
 
-   struct [[eosio::table("payloads")]] payload {
+   struct [[alaio::table("payloads")]] payload {
       uint64_t              key;
       std::vector<uint64_t> data;
 
       uint64_t primary_key()const { return key; }
 
-      EOSLIB_SERIALIZE( payload, (key)(data) )
+      ALALIB_SERIALIZE( payload, (key)(data) )
    };
 
-   using payloads_table = eosio::multi_index< "payloads"_n,  payload >;
+   using payloads_table = alaio::multi_index< "payloads"_n,  payload >;
 
 };

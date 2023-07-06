@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
-#include <eosio/testing/tester.hpp>
+#include <alaio/testing/tester.hpp>
 
-using namespace eosio;
+using namespace alaio;
 using namespace testing;
 using namespace chain;
 

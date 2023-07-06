@@ -1,12 +1,12 @@
-#include <eosio/testing/tester.hpp>
+#include <alaio/testing/tester.hpp>
 #include <fc/log/logger_config.hpp>
-#include <eosio/chain/deep_mind.hpp>
+#include <alaio/chain/deep_mind.hpp>
 
 #include <boost/test/unit_test.hpp>
 
 #include <deep-mind.hpp>
 
-using namespace eosio::testing;
+using namespace alaio::testing;
 
 extern void setup_test_logging();
 
@@ -90,7 +90,7 @@ BOOST_FIXTURE_TEST_CASE(deep_mind, deep_mind_tester)
                ("account", "alice")
                ("permission", "test1")
                ("parent", "active")
-               ("auth", authority{{"eosio"_n, "active"_n}}));
+               ("auth", authority{{"alaio"_n, "active"_n}}));
 
    produce_block();
 

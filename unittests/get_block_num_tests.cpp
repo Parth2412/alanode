@@ -1,7 +1,7 @@
-#include <eosio/chain/abi_serializer.hpp>
-#include <eosio/chain/resource_limits.hpp>
-#include <eosio/chain/generated_transaction_object.hpp>
-#include <eosio/testing/tester.hpp>
+#include <alaio/chain/abi_serializer.hpp>
+#include <alaio/chain/resource_limits.hpp>
+#include <alaio/chain/generated_transaction_object.hpp>
+#include <alaio/testing/tester.hpp>
 
 #include <Runtime/Runtime.h>
 
@@ -13,8 +13,8 @@
 
 #include "fork_test_utilities.hpp"
 
-using namespace eosio::chain;
-using namespace eosio::testing;
+using namespace alaio::chain;
+using namespace alaio::testing;
 using namespace std::literals;
 
 BOOST_AUTO_TEST_SUITE(get_block_num_tests)

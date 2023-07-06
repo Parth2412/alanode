@@ -1,11 +1,11 @@
 #pragma once
 
-#include <eosio/eosio.hpp>
+#include <alaio/alaio.hpp>
 
-class [[eosio::contract]] payloadless : public eosio::contract {
+class [[alaio::contract]] payloadless : public alaio::contract {
 public:
-   using eosio::contract::contract;
+   using alaio::contract::contract;
 
-   [[eosio::action]]
+   [[alaio::action]]
    void doit();
 };

@@ -1,10 +1,10 @@
 #include <sstream>
 
-#include <eosio/chain/block_log.hpp>
-#include <eosio/chain/global_property_object.hpp>
-#include <eosio/chain/snapshot.hpp>
-#include <eosio/testing/tester.hpp>
-#include <eosio/testing/snapshot_suites.hpp>
+#include <alaio/chain/block_log.hpp>
+#include <alaio/chain/global_property_object.hpp>
+#include <alaio/chain/snapshot.hpp>
+#include <alaio/testing/tester.hpp>
+#include <alaio/testing/snapshot_suites.hpp>
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
@@ -12,7 +12,7 @@
 #include <contracts.hpp>
 #include <snapshots.hpp>
 
-using namespace eosio;
+using namespace alaio;
 using namespace testing;
 using namespace chain;
 namespace bfs = boost::filesystem;
@@ -412,7 +412,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_compatible_versions, SNAPSHOT_SUITE, snapshot
    }
 
    auto config = tester::default_config(fc::temp_directory(), legacy_default_max_inline_action_size).first;
-   auto genesis = eosio::chain::block_log::extract_genesis_state(source_log_dir);
+   auto genesis = alaio::chain::block_log::extract_genesis_state(source_log_dir);
    bfs::create_directories(config.blocks_dir);
    bfs::copy(source_log_dir / "blocks.log", config.blocks_dir / "blocks.log");
    tester base_chain(config, *genesis);
@@ -475,7 +475,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_pending_schedule_snapshot, SNAPSHOT_SUITE, sn
    const auto source_log_dir = bfs::path(source_log_dir_str.c_str());
    const uint32_t legacy_default_max_inline_action_size = 4 * 1024;
    auto config = tester::default_config(fc::temp_directory(), legacy_default_max_inline_action_size).first;
-   auto genesis = eosio::chain::block_log::extract_genesis_state(source_log_dir);
+   auto genesis = alaio::chain::block_log::extract_genesis_state(source_log_dir);
    bfs::create_directories(config.blocks_dir);
    bfs::copy(source_log_dir / "blocks.log", config.blocks_dir / "blocks.log");
    tester blockslog_chain(config, *genesis);

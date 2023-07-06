@@ -1,8 +1,8 @@
-#include <eosio/chain/abi_serializer.hpp>
-#include <eosio/chain/resource_limits.hpp>
-#include <eosio/chain/generated_transaction_object.hpp>
-#include <eosio/testing/tester.hpp>
-#include <eosio/chain/webassembly/return_codes.hpp>
+#include <alaio/chain/abi_serializer.hpp>
+#include <alaio/chain/resource_limits.hpp>
+#include <alaio/chain/generated_transaction_object.hpp>
+#include <alaio/testing/tester.hpp>
+#include <alaio/chain/webassembly/return_codes.hpp>
 
 #include <Runtime/Runtime.h>
 
@@ -14,9 +14,9 @@
 
 #include "fork_test_utilities.hpp"
 
-using namespace eosio::chain;
-using namespace eosio::testing;
-using namespace eosio::chain::webassembly;
+using namespace alaio::chain;
+using namespace alaio::testing;
+using namespace alaio::chain::webassembly;
 using namespace std::literals;
 
 using bytes = std::vector<char>;
@@ -450,7 +450,7 @@ BOOST_AUTO_TEST_CASE( modexp_subjective_limit_test ) { try {
                                        ("modulo", h2bin("0F"))
                                        ("expected_error", static_cast<int32_t>(return_code::success))
                                        ("expected_result", h2bin("01"))),
-                         eosio::chain::subjective_block_production_exception,
+                         alaio::chain::subjective_block_production_exception,
                          fc_exception_message_is("mod_exp restriction: exponent bit size cannot exceed bit size of either base or modulus")
    );
 
@@ -492,7 +492,7 @@ BOOST_AUTO_TEST_CASE( modexp_subjective_limit_test ) { try {
                                        ("modulo", modulus)
                                        ("expected_error", static_cast<int32_t>(return_code::success))
                                        ("expected_result", expected_result)),
-                         eosio::chain::subjective_block_production_exception,
+                         alaio::chain::subjective_block_production_exception,
                          fc_exception_message_is("mod_exp restriction: bit size too large for input arguments")
    );
 

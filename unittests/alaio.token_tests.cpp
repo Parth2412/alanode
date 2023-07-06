@@ -1,5 +1,5 @@
-#include <eosio/chain/abi_serializer.hpp>
-#include <eosio/testing/tester.hpp>
+#include <alaio/chain/abi_serializer.hpp>
+#include <alaio/testing/tester.hpp>
 
 #include <Runtime/Runtime.h>
 
@@ -9,30 +9,30 @@
 
 #include <contracts.hpp>
 
-using namespace eosio::testing;
-using namespace eosio;
-using namespace eosio::chain;
-using namespace eosio::testing;
+using namespace alaio::testing;
+using namespace alaio;
+using namespace alaio::chain;
+using namespace alaio::testing;
 using namespace fc;
 using namespace std;
 
 using mvo = fc::mutable_variant_object;
 
-class eosio_token_tester : public tester {
+class alaio_token_tester : public tester {
 public:
 
-   eosio_token_tester() {
+   alaio_token_tester() {
       produce_blocks( 2 );
 
-      create_accounts( { "alice"_n, "bob"_n, "carol"_n, "eosio.token"_n } );
+      create_accounts( { "alice"_n, "bob"_n, "carol"_n, "alaio.token"_n } );
       produce_blocks( 2 );
 
-      set_code( "eosio.token"_n, contracts::eosio_token_wasm() );
-      set_abi( "eosio.token"_n, contracts::eosio_token_abi().data() );
+      set_code( "alaio.token"_n, contracts::alaio_token_wasm() );
+      set_abi( "alaio.token"_n, contracts::alaio_token_abi().data() );
 
       produce_blocks();
 
-      const auto& accnt = control->db().get<account_object,by_name>( "eosio.token"_n );
+      const auto& accnt = control->db().get<account_object,by_name>( "alaio.token"_n );
       abi_def abi;
       BOOST_REQUIRE_EQUAL(abi_serializer::to_abi(accnt.abi, abi), true);
       abi_ser.set_abi(abi, abi_serializer::create_yield_function( abi_serializer_max_time ));
@@ -42,7 +42,7 @@ public:
       string action_type_name = abi_ser.get_action_type(name);
 
       action act;
-      act.account = "eosio.token"_n;
+      act.account = "alaio.token"_n;
       act.name    = name;
       act.data    = abi_ser.variant_to_binary( action_type_name, data, abi_serializer::create_yield_function( abi_serializer_max_time ) );
 
@@ -51,24 +51,24 @@ public:
 
    fc::variant get_stats( const string& symbolname )
    {
-      auto symb = eosio::chain::symbol::from_string(symbolname);
+      auto symb = alaio::chain::symbol::from_string(symbolname);
       auto symbol_code = symb.to_symbol_code().value;
-      vector<char> data = get_row_by_account( "eosio.token"_n, name(symbol_code), "stat"_n, name(symbol_code) );
+      vector<char> data = get_row_by_account( "alaio.token"_n, name(symbol_code), "stat"_n, name(symbol_code) );
       return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "currency_stats", data, abi_serializer::create_yield_function( abi_serializer_max_time ) );
    }
 
    fc::variant get_account( account_name acc, const string& symbolname)
    {
-      auto symb = eosio::chain::symbol::from_string(symbolname);
+      auto symb = alaio::chain::symbol::from_string(symbolname);
       auto symbol_code = symb.to_symbol_code().value;
-      vector<char> data = get_row_by_account( "eosio.token"_n, acc, "accounts"_n, name(symbol_code) );
+      vector<char> data = get_row_by_account( "alaio.token"_n, acc, "accounts"_n, name(symbol_code) );
       return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "account", data, abi_serializer::create_yield_function( abi_serializer_max_time ) );
    }
 
    action_result create( account_name issuer,
                 asset        maximum_supply ) {
 
-      return push_action( "eosio.token"_n, "create"_n, mvo()
+      return push_action( "alaio.token"_n, "create"_n, mvo()
            ( "issuer", issuer)
            ( "maximum_supply", maximum_supply)
       );
@@ -97,9 +97,9 @@ public:
    abi_serializer abi_ser;
 };
 
-BOOST_AUTO_TEST_SUITE(eosio_token_tests)
+BOOST_AUTO_TEST_SUITE(alaio_token_tests)
 
-BOOST_FIXTURE_TEST_CASE( create_tests, eosio_token_tester ) try {
+BOOST_FIXTURE_TEST_CASE( create_tests, alaio_token_tester ) try {
 
    auto token = create( "alice"_n, asset::from_string("1000.000 TKN"));
    auto stats = get_stats("3,TKN");
@@ -112,7 +112,7 @@ BOOST_FIXTURE_TEST_CASE( create_tests, eosio_token_tester ) try {
 
 } FC_LOG_AND_RETHROW()
 
-BOOST_FIXTURE_TEST_CASE( create_negative_max_supply, eosio_token_tester ) try {
+BOOST_FIXTURE_TEST_CASE( create_negative_max_supply, alaio_token_tester ) try {
 
    BOOST_REQUIRE_EQUAL( wasm_assert_msg( "max-supply must be positive" ),
       create( "alice"_n, asset::from_string("-1000.000 TKN"))
@@ -120,7 +120,7 @@ BOOST_FIXTURE_TEST_CASE( create_negative_max_supply, eosio_token_tester ) try {
 
 } FC_LOG_AND_RETHROW()
 
-BOOST_FIXTURE_TEST_CASE( symbol_already_exists, eosio_token_tester ) try {
+BOOST_FIXTURE_TEST_CASE( symbol_already_exists, alaio_token_tester ) try {
 
    auto token = create( "alice"_n, asset::from_string("100 TKN"));
    auto stats = get_stats("0,TKN");
@@ -137,7 +137,7 @@ BOOST_FIXTURE_TEST_CASE( symbol_already_exists, eosio_token_tester ) try {
 
 } FC_LOG_AND_RETHROW()
 
-BOOST_FIXTURE_TEST_CASE( create_max_supply, eosio_token_tester ) try {
+BOOST_FIXTURE_TEST_CASE( create_max_supply, alaio_token_tester ) try {
 
    auto token = create( "alice"_n, asset::from_string("4611686018427387903 TKN"));
    auto stats = get_stats("0,TKN");
@@ -162,7 +162,7 @@ BOOST_FIXTURE_TEST_CASE( create_max_supply, eosio_token_tester ) try {
 
 } FC_LOG_AND_RETHROW()
 
-BOOST_FIXTURE_TEST_CASE( create_max_decimals, eosio_token_tester ) try {
+BOOST_FIXTURE_TEST_CASE( create_max_decimals, alaio_token_tester ) try {
 
    auto token = create( "alice"_n, asset::from_string("1.000000000000000000 TKN"));
    auto stats = get_stats("18,TKN");
@@ -187,7 +187,7 @@ BOOST_FIXTURE_TEST_CASE( create_max_decimals, eosio_token_tester ) try {
 
 } FC_LOG_AND_RETHROW()
 
-BOOST_FIXTURE_TEST_CASE( issue_tests, eosio_token_tester ) try {
+BOOST_FIXTURE_TEST_CASE( issue_tests, alaio_token_tester ) try {
 
    auto token = create( "alice"_n, asset::from_string("1000.000 TKN"));
    produce_blocks(1);
@@ -221,7 +221,7 @@ BOOST_FIXTURE_TEST_CASE( issue_tests, eosio_token_tester ) try {
 
 } FC_LOG_AND_RETHROW()
 
-BOOST_FIXTURE_TEST_CASE( transfer_tests, eosio_token_tester ) try {
+BOOST_FIXTURE_TEST_CASE( transfer_tests, alaio_token_tester ) try {
 
    auto token = create( "alice"_n, asset::from_string("1000 CERO"));
    produce_blocks(1);

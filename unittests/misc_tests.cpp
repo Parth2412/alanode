@@ -1,9 +1,9 @@
-#include <eosio/chain/asset.hpp>
-#include <eosio/chain/authority.hpp>
-#include <eosio/chain/authority_checker.hpp>
-#include <eosio/chain/types.hpp>
-#include <eosio/chain/thread_utils.hpp>
-#include <eosio/testing/tester.hpp>
+#include <alaio/chain/asset.hpp>
+#include <alaio/chain/authority.hpp>
+#include <alaio/chain/authority_checker.hpp>
+#include <alaio/chain/types.hpp>
+#include <alaio/chain/thread_utils.hpp>
+#include <alaio/testing/tester.hpp>
 
 #include <fc/io/json.hpp>
 #include <fc/log/logger_config.hpp>
@@ -20,8 +20,8 @@
 #define TESTER validating_tester
 #endif
 
-using namespace eosio::chain;
-using namespace eosio::testing;
+using namespace alaio::chain;
+using namespace alaio::testing;
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
@@ -80,7 +80,7 @@ FC_REFLECT( base_reflect, (bv) )
 FC_REFLECT_DERIVED( derived_reflect, (base_reflect), (dv) )
 FC_REFLECT_DERIVED( final_reflect, (derived_reflect), (fv) )
 
-namespace eosio
+namespace alaio
 {
 using namespace chain;
 using namespace std;
@@ -704,22 +704,22 @@ BOOST_AUTO_TEST_CASE(transaction_test) { try {
    fc::variant pretty_trx = fc::mutable_variant_object()
       ("actions", fc::variants({
          fc::mutable_variant_object()
-            ("account", "eosio")
+            ("account", "alaio")
             ("name", "reqauth")
             ("authorization", fc::variants({
                fc::mutable_variant_object()
-                  ("actor", "eosio")
+                  ("actor", "alaio")
                   ("permission", "active")
             }))
             ("data", fc::mutable_variant_object()
-               ("from", "eosio")
+               ("from", "alaio")
             )
          })
       )
       // lets also push a context free action, the multi chain test will then also include a context free action
       ("context_free_actions", fc::variants({
          fc::mutable_variant_object()
-            ("account", "eosio")
+            ("account", "alaio")
             ("name", "nonce")
             ("data", fc::raw::pack(std::string("dummy")))
          })
@@ -869,21 +869,21 @@ BOOST_AUTO_TEST_CASE(transaction_metadata_test) { try {
    fc::variant pretty_trx = fc::mutable_variant_object()
       ("actions", fc::variants({
          fc::mutable_variant_object()
-            ("account", "eosio")
+            ("account", "alaio")
             ("name", "reqauth")
             ("authorization", fc::variants({
                fc::mutable_variant_object()
-                  ("actor", "eosio")
+                  ("actor", "alaio")
                   ("permission", "active")
             }))
             ("data", fc::mutable_variant_object()
-               ("from", "eosio")
+               ("from", "alaio")
             )
          })
       )
       ("context_free_actions", fc::variants({
          fc::mutable_variant_object()
-            ("account", "eosio")
+            ("account", "alaio")
             ("name", "nonce")
             ("data", fc::raw::pack(std::string("dummy data")))
          })
@@ -1201,24 +1201,24 @@ BOOST_AUTO_TEST_CASE(bad_alloc_test) {
 
 BOOST_AUTO_TEST_CASE(public_key_from_hash) {
    auto private_key_string = std::string("5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3");
-   auto expected_public_key = std::string("EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV");
+   auto expected_public_key = std::string("ALA6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV");
    auto test_private_key = fc::crypto::private_key(private_key_string);
    auto test_public_key = test_private_key.get_public_key();
-   fc::crypto::public_key eos_pk(expected_public_key);
+   fc::crypto::public_key ala_pk(expected_public_key);
 
    BOOST_CHECK_EQUAL(private_key_string, test_private_key.to_string());
    BOOST_CHECK_EQUAL(expected_public_key, test_public_key.to_string());
-   BOOST_CHECK_EQUAL(expected_public_key, eos_pk.to_string());
+   BOOST_CHECK_EQUAL(expected_public_key, ala_pk.to_string());
 
    fc::ecc::public_key_data data;
    data.data[0] = 0x80; // not necessary, 0 also works
    fc::sha256 hash = fc::sha256::hash("unknown private key");
    std::memcpy(&data.data[1], hash.data(), hash.data_size() );
    fc::ecc::public_key_shim shim(data);
-   fc::crypto::public_key eos_unknown_pk(std::move(shim));
-   ilog( "public key with no known private key: ${k}", ("k", eos_unknown_pk) );
+   fc::crypto::public_key ala_unknown_pk(std::move(shim));
+   ilog( "public key with no known private key: ${k}", ("k", ala_unknown_pk) );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-} // namespace eosio
+} // namespace alaio

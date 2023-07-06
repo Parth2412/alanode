@@ -1,41 +1,41 @@
 #pragma once
 
-#include <eosio/eosio.hpp>
+#include <alaio/alaio.hpp>
 
-class [[eosio::contract]] ram_restrictions_test : public eosio::contract {
+class [[alaio::contract]] ram_restrictions_test : public alaio::contract {
 public:
-   struct [[eosio::table]] data {
+   struct [[alaio::table]] data {
       uint64_t           key;
       std::vector<char>  value;
 
       uint64_t primary_key() const { return key; }
    };
 
-   typedef eosio::multi_index<"tablea"_n, data> tablea;
-   typedef eosio::multi_index<"tableb"_n, data> tableb;
+   typedef alaio::multi_index<"tablea"_n, data> tablea;
+   typedef alaio::multi_index<"tableb"_n, data> tableb;
 
 public:
-   using eosio::contract::contract;
+   using alaio::contract::contract;
 
-   [[eosio::action]]
+   [[alaio::action]]
    void noop();
 
-   [[eosio::action]]
-   void setdata( uint32_t len1, uint32_t len2, eosio::name payer );
+   [[alaio::action]]
+   void setdata( uint32_t len1, uint32_t len2, alaio::name payer );
 
-   [[eosio::action]]
-   void notifysetdat( eosio::name acctonotify, uint32_t len1, uint32_t len2, eosio::name payer );
+   [[alaio::action]]
+   void notifysetdat( alaio::name acctonotify, uint32_t len1, uint32_t len2, alaio::name payer );
 
-   [[eosio::on_notify("tester2::notifysetdat")]]
-   void on_notify_setdata( eosio::name acctonotify, uint32_t len1, uint32_t len2, eosio::name payer );
+   [[alaio::on_notify("tester2::notifysetdat")]]
+   void on_notify_setdata( alaio::name acctonotify, uint32_t len1, uint32_t len2, alaio::name payer );
 
-   [[eosio::action]]
-   void senddefer( uint64_t senderid, eosio::name payer );
+   [[alaio::action]]
+   void senddefer( uint64_t senderid, alaio::name payer );
 
-   [[eosio::action]]
-   void notifydefer( eosio::name acctonotify, uint64_t senderid, eosio::name payer );
+   [[alaio::action]]
+   void notifydefer( alaio::name acctonotify, uint64_t senderid, alaio::name payer );
 
-   [[eosio::on_notify("tester2::notifydefer")]]
-   void on_notifydefer( eosio::name acctonotify, uint64_t senderid, eosio::name payer );
+   [[alaio::on_notify("tester2::notifydefer")]]
+   void on_notifydefer( alaio::name acctonotify, uint64_t senderid, alaio::name payer );
 
 };

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <eosio/testing/tester.hpp>
+#include <alaio/testing/tester.hpp>
 
-using namespace eosio::chain;
-using namespace eosio::testing;
+using namespace alaio::chain;
+using namespace alaio::testing;
 
 private_key_type get_private_key( name keyname, string role );
 

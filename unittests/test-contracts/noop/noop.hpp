@@ -1,13 +1,13 @@
 #pragma once
 
-#include <eosio/eosio.hpp>
+#include <alaio/alaio.hpp>
 
-class [[eosio::contract]] noop : public eosio::contract {
+class [[alaio::contract]] noop : public alaio::contract {
 public:
-   using eosio::contract::contract;
+   using alaio::contract::contract;
 
-   [[eosio::action]]
-   void anyaction( eosio::name                       from,
-                   const eosio::ignore<std::string>& type,
-                   const eosio::ignore<std::string>& data );
+   [[alaio::action]]
+   void anyaction( alaio::name                       from,
+                   const alaio::ignore<std::string>& type,
+                   const alaio::ignore<std::string>& data );
 };

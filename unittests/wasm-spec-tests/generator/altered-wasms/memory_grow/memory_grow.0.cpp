@@ -1,4 +1,4 @@
-#include <eosio/eosio.hpp>
+#include <alaio/alaio.hpp>
 
 extern "C" {
    int32_t _size() {
@@ -51,43 +51,43 @@ extern "C" {
    }
    void sub_apply_6() {
       int32_t x1 = _size();
-      eosio::check(x1 == (int32_t)1, "_size fail 1");
+      alaio::check(x1 == (int32_t)1, "_size fail 1");
 
       int32_t x2 = _grow((int32_t)1);
-      eosio::check(x2 == (int32_t)1, "_grow fail 2");
+      alaio::check(x2 == (int32_t)1, "_grow fail 2");
 
       int32_t x3 = _size();
-      eosio::check(x3 == (int32_t)2, "_size fail 3");
+      alaio::check(x3 == (int32_t)2, "_size fail 3");
 
       int32_t x4 = _load_at_zero();
-      eosio::check(x4 == (int32_t)0, "_load_at_zero fail 4");
+      alaio::check(x4 == (int32_t)0, "_load_at_zero fail 4");
 
       _store_at_zero();
 
       int32_t x6 = _load_at_zero();
-      eosio::check(x6 == (int32_t)2, "_load_at_zero fail 6");
+      alaio::check(x6 == (int32_t)2, "_load_at_zero fail 6");
 
       int32_t x7 = _grow((int32_t)4);
-      eosio::check(x7 == (int32_t)2, "_grow fail 7");
+      alaio::check(x7 == (int32_t)2, "_grow fail 7");
 
       int32_t x8 = _size();
-      eosio::check(x8 == (int32_t)6, "_size fail 8");
+      alaio::check(x8 == (int32_t)6, "_size fail 8");
 
       int32_t x9 = _load_at_zero();
-      eosio::check(x9 == (int32_t)2, "_load_at_zero fail 9");
+      alaio::check(x9 == (int32_t)2, "_load_at_zero fail 9");
 
       _store_at_zero();
 
       int32_t x11 = _load_at_zero();
-      eosio::check(x11 == (int32_t)2, "_load_at_zero fail 11");
+      alaio::check(x11 == (int32_t)2, "_load_at_zero fail 11");
 
       int32_t x12 = _load_at_page_size();
-      eosio::check(x12 == (int32_t)0, "_load_at_page_size fail 12");
+      alaio::check(x12 == (int32_t)0, "_load_at_page_size fail 12");
 
       _store_at_page_size();
 
       int32_t x14 = _load_at_page_size();
-      eosio::check(x14 == (int32_t)3, "_load_at_page_size fail 14");
+      alaio::check(x14 == (int32_t)3, "_load_at_page_size fail 14");
 
    }
    void apply(uint64_t, uint64_t, uint64_t test_to_run) {

@@ -1,12 +1,12 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE
+ *  @copyright defined in ala/LICENSE
  */
 #include <cstdlib>
 
 #include <iostream>
 
-#include <eosio/chain/exceptions.hpp>
+#include <alaio/chain/exceptions.hpp>
 
 #include <fc/log/logger.hpp>
 

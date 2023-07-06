@@ -15,15 +15,15 @@
 #include <boost/iostreams/stream_buffer.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
-#include <eosio/testing/tester.hpp>
-#include <eosio/chain/exceptions.hpp>
-#include <eosio/chain/account_object.hpp>
-#include <eosio/chain/contract_table_objects.hpp>
-#include <eosio/chain/block_summary_object.hpp>
-#include <eosio/chain/global_property_object.hpp>
-#include <eosio/chain/generated_transaction_object.hpp>
-#include <eosio/chain/wasm_interface.hpp>
-#include <eosio/chain/resource_limits.hpp>
+#include <alaio/testing/tester.hpp>
+#include <alaio/chain/exceptions.hpp>
+#include <alaio/chain/account_object.hpp>
+#include <alaio/chain/contract_table_objects.hpp>
+#include <alaio/chain/block_summary_object.hpp>
+#include <alaio/chain/global_property_object.hpp>
+#include <alaio/chain/generated_transaction_object.hpp>
+#include <alaio/chain/wasm_interface.hpp>
+#include <alaio/chain/resource_limits.hpp>
 
 #include <fc/crypto/digest.hpp>
 #include <fc/crypto/sha256.hpp>
@@ -57,7 +57,7 @@ static constexpr unsigned long long WASM_TEST_ACTION(const char *cls, const char
    return static_cast<unsigned long long>(DJBH(cls)) << 32 | static_cast<unsigned long long>(DJBH(method));
 }
 
-using namespace eosio::chain::literals;
+using namespace alaio::chain::literals;
 
 struct u128_action
 {
@@ -101,8 +101,8 @@ FC_REFLECT(invalid_access_action, (code)(val)(index)(store))
 #define TESTER validating_tester
 #endif
 
-using namespace eosio;
-using namespace eosio::testing;
+using namespace alaio;
+using namespace alaio::testing;
 using namespace chain;
 using namespace fc;
 
@@ -280,7 +280,7 @@ bool is_access_violation(fc::unhandled_exception const &e)
    {
       std::rethrow_exception(e.get_inner_exception());
    }
-   catch (const eosio::chain::wasm_execution_error &e)
+   catch (const alaio::chain::wasm_execution_error &e)
    {
       return true;
    }
@@ -294,7 +294,7 @@ bool is_access_violation(const Runtime::Exception &e) { return true; }
 bool is_assert_exception(fc::assert_exception const &e) { return true; }
 bool is_page_memory_error(page_memory_error const &e) { return true; }
 bool is_unsatisfied_authorization(unsatisfied_authorization const &e) { return true; }
-bool is_wasm_execution_error(eosio::chain::wasm_execution_error const &e) { return true; }
+bool is_wasm_execution_error(alaio::chain::wasm_execution_error const &e) { return true; }
 bool is_tx_net_usage_exceeded(const tx_net_usage_exceeded &e) { return true; }
 bool is_block_net_usage_exceeded(const block_net_usage_exceeded &e) { return true; }
 bool is_tx_cpu_usage_exceeded(const tx_cpu_usage_exceeded &e) { return true; }
@@ -412,10 +412,10 @@ BOOST_FIXTURE_TEST_CASE(action_receipt_tests, TESTER)
       BOOST_CHECK_EQUAL( m.begin()->first.to_string(), "test" );
       BOOST_CHECK_EQUAL( m.begin()->second, base_test_auth_seq_num + 4 ); });
 
-      set_code(config::system_account_name, contracts::eosio_bios_wasm());
+      set_code(config::system_account_name, contracts::alaio_bios_wasm());
 
-      set_code("test"_n, contracts::eosio_bios_wasm());
-      set_abi("test"_n, contracts::eosio_bios_abi().data());
+      set_code("test"_n, contracts::alaio_bios_wasm());
+      set_abi("test"_n, contracts::alaio_bios_abi().data());
       set_code("test"_n, contracts::payloadless_wasm());
 
       call_doit_and_check("test"_n, "test"_n, [&](const transaction_trace_ptr &res)
@@ -455,7 +455,7 @@ BOOST_FIXTURE_TEST_CASE(action_tests, TESTER)
 
       // test assert_false
       BOOST_CHECK_EXCEPTION(CALL_TEST_FUNCTION(*this, "test_action", "assert_false", {}),
-                            eosio_assert_message_exception, eosio_assert_message_is("test_action::assert_false"));
+                            alaio_assert_message_exception, alaio_assert_message_is("test_action::assert_false"));
 
       // test read_action_normal
       dummy_action dummy13{DUMMY_ACTION_DEFAULT_A, DUMMY_ACTION_DEFAULT_B, DUMMY_ACTION_DEFAULT_C};
@@ -467,8 +467,8 @@ BOOST_FIXTURE_TEST_CASE(action_tests, TESTER)
 
       // test read_action_to_0
       raw_bytes.resize((1 << 16) + 1);
-      BOOST_CHECK_EXCEPTION(CALL_TEST_FUNCTION(*this, "test_action", "read_action_to_0", raw_bytes), eosio::chain::wasm_execution_error,
-                            [](const eosio::chain::wasm_execution_error &e)
+      BOOST_CHECK_EXCEPTION(CALL_TEST_FUNCTION(*this, "test_action", "read_action_to_0", raw_bytes), alaio::chain::wasm_execution_error,
+                            [](const alaio::chain::wasm_execution_error &e)
                             {
                                return expect_assert_message(e, "access violation");
                             });
@@ -479,8 +479,8 @@ BOOST_FIXTURE_TEST_CASE(action_tests, TESTER)
 
       // test read_action_to_64k
       raw_bytes.resize(3);
-      BOOST_CHECK_EXCEPTION(CALL_TEST_FUNCTION(*this, "test_action", "read_action_to_64k", raw_bytes), eosio::chain::wasm_execution_error,
-                            [](const eosio::chain::wasm_execution_error &e)
+      BOOST_CHECK_EXCEPTION(CALL_TEST_FUNCTION(*this, "test_action", "read_action_to_64k", raw_bytes), alaio::chain::wasm_execution_error,
+                            [](const alaio::chain::wasm_execution_error &e)
                             {
                                return expect_assert_message(e, "access violation");
                             });
@@ -565,7 +565,7 @@ BOOST_FIXTURE_TEST_CASE(action_tests, TESTER)
       // test current_time
       produce_block();
       BOOST_CHECK_EXCEPTION(CALL_TEST_FUNCTION(*this, "test_action", "test_current_time", fc::raw::pack(now)),
-                            eosio_assert_message_exception, eosio_assert_message_is("tmp == current_time()"));
+                            alaio_assert_message_exception, alaio_assert_message_is("tmp == current_time()"));
 
       // test test_current_receiver
       CALL_TEST_FUNCTION(*this, "test_action", "test_current_receiver", fc::raw::pack("testapi"_n));
@@ -760,8 +760,8 @@ BOOST_FIXTURE_TEST_CASE(cf_action_tests, TESTER)
       BOOST_CHECK_EQUAL(ttrace->action_traces[1].act.authorization.size(), 0);
 
       BOOST_CHECK_EXCEPTION(CALL_TEST_FUNCTION(*this, "test_transaction", "send_cf_action_fail", {}),
-                            eosio_assert_message_exception,
-                            eosio_assert_message_is("context free actions cannot have authorizations"));
+                            alaio_assert_message_exception,
+                            alaio_assert_message_is("context free actions cannot have authorizations"));
 
       BOOST_REQUIRE_EQUAL(validate(), true);
    }
@@ -949,7 +949,7 @@ try
    auto conf_genesis = tester::default_config(tempdir);
 
    auto &cfg = conf_genesis.first;
-   cfg.trusted_producers = {"eosio"_n}; // light validation
+   cfg.trusted_producers = {"alaio"_n}; // light validation
 
    tester other(conf_genesis.first, conf_genesis.second);
    other.execute_setup_policy(setup_policy::full);
@@ -1095,11 +1095,11 @@ BOOST_AUTO_TEST_CASE(checktime_pause_max_trx_cpu_extended_test)
       cfg.min_transaction_cpu_usage = 1;
 
       tester t(conf_genesis.first, conf_genesis.second);
-      if (t.get_config().wasm_runtime == wasm_interface::vm_type::eos_vm_oc)
+      if (t.get_config().wasm_runtime == wasm_interface::vm_type::ala_vm_oc)
       {
-         // eos_vm_oc wasm_runtime does not tier-up and completes compile before continuing execution.
-         // A completely different test with different constraints would be needed to test with eos_vm_oc.
-         // Since non-tier-up is not a normal valid nodeos runtime, just skip this test for eos_vm_oc.
+         // ala_vm_oc wasm_runtime does not tier-up and completes compile before continuing execution.
+         // A completely different test with different constraints would be needed to test with ala_vm_oc.
+         // Since non-tier-up is not a normal valid alanode runtime, just skip this test for ala_vm_oc.
          return;
       }
       t.execute_setup_policy(setup_policy::full);
@@ -1166,11 +1166,11 @@ BOOST_AUTO_TEST_CASE(checktime_pause_max_trx_extended_test)
       cfg.min_transaction_cpu_usage = 1;
 
       tester t(conf_genesis.first, conf_genesis.second);
-      if (t.get_config().wasm_runtime == wasm_interface::vm_type::eos_vm_oc)
+      if (t.get_config().wasm_runtime == wasm_interface::vm_type::ala_vm_oc)
       {
-         // eos_vm_oc wasm_runtime does not tier-up and completes compile before continuing execution.
-         // A completely different test with different constraints would be needed to test with eos_vm_oc.
-         // Since non-tier-up is not a normal valid nodeos runtime, just skip this test for eos_vm_oc.
+         // ala_vm_oc wasm_runtime does not tier-up and completes compile before continuing execution.
+         // A completely different test with different constraints would be needed to test with ala_vm_oc.
+         // Since non-tier-up is not a normal valid alanode runtime, just skip this test for ala_vm_oc.
          return;
       }
       t.execute_setup_policy(setup_policy::full);
@@ -1217,11 +1217,11 @@ BOOST_AUTO_TEST_CASE(checktime_pause_block_deadline_not_extended_test)
       cfg.min_transaction_cpu_usage = 1;
 
       tester t(conf_genesis.first, conf_genesis.second);
-      if (t.get_config().wasm_runtime == wasm_interface::vm_type::eos_vm_oc)
+      if (t.get_config().wasm_runtime == wasm_interface::vm_type::ala_vm_oc)
       {
-         // eos_vm_oc wasm_runtime does not tier-up and completes compile before continuing execution.
-         // A completely different test with different constraints would be needed to test with eos_vm_oc.
-         // Since non-tier-up is not a normal valid nodeos runtime, just skip this test for eos_vm_oc.
+         // ala_vm_oc wasm_runtime does not tier-up and completes compile before continuing execution.
+         // A completely different test with different constraints would be needed to test with ala_vm_oc.
+         // Since non-tier-up is not a normal valid alanode runtime, just skip this test for ala_vm_oc.
          return;
       }
       t.execute_setup_policy(setup_policy::full);
@@ -1265,11 +1265,11 @@ BOOST_AUTO_TEST_CASE(checktime_pause_block_deadline_not_extended_while_loading_t
       cfg.min_transaction_cpu_usage = 1;
 
       tester t(conf_genesis.first, conf_genesis.second);
-      if (t.get_config().wasm_runtime == wasm_interface::vm_type::eos_vm_oc)
+      if (t.get_config().wasm_runtime == wasm_interface::vm_type::ala_vm_oc)
       {
-         // eos_vm_oc wasm_runtime does not tier-up and completes compile before continuing execution.
-         // A completely different test with different constraints would be needed to test with eos_vm_oc.
-         // Since non-tier-up is not a normal valid nodeos runtime, just skip this test for eos_vm_oc.
+         // ala_vm_oc wasm_runtime does not tier-up and completes compile before continuing execution.
+         // A completely different test with different constraints would be needed to test with ala_vm_oc.
+         // Since non-tier-up is not a normal valid alanode runtime, just skip this test for ala_vm_oc.
          return;
       }
       t.execute_setup_policy(setup_policy::full);
@@ -1537,8 +1537,8 @@ BOOST_FIXTURE_TEST_CASE(transaction_tests, TESTER)
 
       // test send_action_inline_fail
       BOOST_CHECK_EXCEPTION(CALL_TEST_FUNCTION(*this, "test_transaction", "send_action_inline_fail", {}),
-                            eosio_assert_message_exception,
-                            eosio_assert_message_is("test_action::assert_false"));
+                            alaio_assert_message_exception,
+                            alaio_assert_message_is("test_action::assert_false"));
 
       //   test send_transaction
       CALL_TEST_FUNCTION(*this, "test_transaction", "send_transaction", {});
@@ -1611,8 +1611,8 @@ BOOST_FIXTURE_TEST_CASE(transaction_tests, TESTER)
       CALL_TEST_FUNCTION(*this, "test_transaction", "test_tapos_block_prefix", fc::raw::pack(control->head_block_id()._hash[1]));
 
       // test send_action_recurse
-      BOOST_CHECK_EXCEPTION(CALL_TEST_FUNCTION(*this, "test_transaction", "send_action_recurse", {}), eosio::chain::transaction_exception,
-                            [](const eosio::chain::transaction_exception &e)
+      BOOST_CHECK_EXCEPTION(CALL_TEST_FUNCTION(*this, "test_transaction", "send_action_recurse", {}), alaio::chain::transaction_exception,
+                            [](const alaio::chain::transaction_exception &e)
                             {
                                return expect_assert_message(e, "max inline action depth per transaction reached");
                             });
@@ -1951,7 +1951,7 @@ BOOST_FIXTURE_TEST_CASE(deferred_transaction_tests, TESTER)
          dtt_act2.delay_sec = 5;
 
          auto auth = authority(get_public_key(name("testapi"), name(dtt_act2.permission_name).to_string()), 10);
-         auth.accounts.push_back(permission_level_weight{{"testapi"_n, config::eosio_code_name}, 1});
+         auth.accounts.push_back(permission_level_weight{{"testapi"_n, config::alaio_code_name}, 1});
 
          push_action(config::system_account_name, updateauth::get_name(), name("testapi"), fc::mutable_variant_object()("account", "testapi")("permission", name(dtt_act2.permission_name))("parent", "active")("auth", auth));
          push_action(config::system_account_name, linkauth::get_name(), name("testapi"), fc::mutable_variant_object()("account", "testapi")("code", name(dtt_act2.deferred_account))("type", name(dtt_act2.deferred_action))("requirement", name(dtt_act2.permission_name)));
@@ -1963,7 +1963,7 @@ BOOST_FIXTURE_TEST_CASE(deferred_transaction_tests, TESTER)
 
          // If the deferred tx receiver == this tx receiver, the authorization checking would originally be bypassed.
          // But not anymore. With the RESTRICT_ACTION_TO_SELF protocol feature activated, it should now objectively
-         // fail because testapi@additional permission is not unilaterally satisfied by testapi@eosio.code.
+         // fail because testapi@additional permission is not unilaterally satisfied by testapi@alaio.code.
          dtt_action dtt_act3;
          dtt_act3.deferred_account = "testapi"_n.to_uint64_t();
          dtt_act3.permission_name = "additional"_n.to_uint64_t();
@@ -2040,8 +2040,8 @@ BOOST_AUTO_TEST_CASE(more_deferred_transaction_tests)
       trx.sign(chain.get_private_key(test_account, "active"), chain.control->get_chain_id());
       BOOST_REQUIRE_EXCEPTION(
           chain.push_transaction(trx),
-          eosio_assert_message_exception,
-          eosio_assert_message_is("fail"));
+          alaio_assert_message_exception,
+          alaio_assert_message_is("fail"));
 
       BOOST_REQUIRE_EQUAL(1, index.size());
       print_deferred();
@@ -2083,8 +2083,8 @@ BOOST_AUTO_TEST_CASE(more_deferred_transaction_tests)
       trx2.sign(chain.get_private_key(test_account, "active"), chain.control->get_chain_id());
       BOOST_REQUIRE_EXCEPTION(
           chain.push_transaction(trx2),
-          eosio_assert_message_exception,
-          eosio_assert_message_is("fail"));
+          alaio_assert_message_exception,
+          alaio_assert_message_is("fail"));
 
       BOOST_REQUIRE_EQUAL(3, index.size());
       print_deferred();
@@ -2243,7 +2243,7 @@ BOOST_FIXTURE_TEST_CASE(db_notify_tests, TESTER)
  (func $db_idx_double_find_primary (import "env" "db_idx_double_find_primary") (param i64 i64 i64 i32 i64) (result i32))
  (func $db_idx_long_double_store (import "env" "db_idx_long_double_store") (param i64 i64 i64 i64 i32) (result i32))
  (func $db_idx_long_double_find_primary (import "env" "db_idx_long_double_find_primary") (param i64 i64 i64 i32 i64) (result i32))
- (func $eosio_assert (import "env" "eosio_assert") (param i32 i32))
+ (func $alaio_assert (import "env" "alaio_assert") (param i32 i32))
  (func $require_recipient (import "env" "require_recipient") (param i64))
  (memory 1)
  (func (export "apply") (param i64 i64 i64)
@@ -2256,12 +2256,12 @@ BOOST_FIXTURE_TEST_CASE(db_notify_tests, TESTER)
   (drop (call $db_idx256_store (i64.const 0) (i64.const 0) (get_local 0) (i64.const 0) (i32.const 256) (i32.const 2)))
   (drop (call $db_idx_double_store (i64.const 0) (i64.const 0) (get_local 0) (i64.const 0) (i32.const 256)))
   (drop (call $db_idx_long_double_store (i64.const 0) (i64.const 0) (get_local 0) (i64.const 0) (i32.const 256)))
-  (call $eosio_assert (i32.eq (call $db_find_i64 (get_local 0) (i64.const 0) (i64.const 0) (i64.const 0) ) (get_local 3)) (i32.const 0))
-  (call $eosio_assert (i32.eq (call $db_idx64_find_primary (get_local 0) (i64.const 0) (i64.const 0) (i32.const 256) (i64.const 0)) (get_local 3)) (i32.const 32))
-  (call $eosio_assert (i32.eq (call $db_idx128_find_primary (get_local 0) (i64.const 0) (i64.const 0) (i32.const 256) (i64.const 0)) (get_local 3)) (i32.const 64))
-  (call $eosio_assert (i32.eq (call $db_idx256_find_primary (get_local 0) (i64.const 0) (i64.const 0) (i32.const 256) (i32.const 2) (i64.const 0)) (get_local 3)) (i32.const 96))
-  (call $eosio_assert (i32.eq (call $db_idx_double_find_primary (get_local 0) (i64.const 0) (i64.const 0) (i32.const 256) (i64.const 0)) (get_local 3)) (i32.const 128))
-  (call $eosio_assert (i32.eq (call $db_idx_long_double_find_primary (get_local 0) (i64.const 0) (i64.const 0) (i32.const 256) (i64.const 0)) (get_local 3)) (i32.const 160))
+  (call $alaio_assert (i32.eq (call $db_find_i64 (get_local 0) (i64.const 0) (i64.const 0) (i64.const 0) ) (get_local 3)) (i32.const 0))
+  (call $alaio_assert (i32.eq (call $db_idx64_find_primary (get_local 0) (i64.const 0) (i64.const 0) (i32.const 256) (i64.const 0)) (get_local 3)) (i32.const 32))
+  (call $alaio_assert (i32.eq (call $db_idx128_find_primary (get_local 0) (i64.const 0) (i64.const 0) (i32.const 256) (i64.const 0)) (get_local 3)) (i32.const 64))
+  (call $alaio_assert (i32.eq (call $db_idx256_find_primary (get_local 0) (i64.const 0) (i64.const 0) (i32.const 256) (i32.const 2) (i64.const 0)) (get_local 3)) (i32.const 96))
+  (call $alaio_assert (i32.eq (call $db_idx_double_find_primary (get_local 0) (i64.const 0) (i64.const 0) (i32.const 256) (i64.const 0)) (get_local 3)) (i32.const 128))
+  (call $alaio_assert (i32.eq (call $db_idx_long_double_find_primary (get_local 0) (i64.const 0) (i64.const 0) (i32.const 256) (i64.const 0)) (get_local 3)) (i32.const 160))
   (call $require_recipient (i64.const 11327368596746665984))
  )
  (data (i32.const 0) "notifier: primary")
@@ -2295,8 +2295,8 @@ BOOST_FIXTURE_TEST_CASE(multi_index_tests, TESTER)
       auto check_failure = [this](action_name a, const char *expected_error_msg)
       {
          BOOST_CHECK_EXCEPTION(push_action("testapi"_n, a, "testapi"_n, {}),
-                               eosio_assert_message_exception,
-                               eosio_assert_message_is(expected_error_msg));
+                               alaio_assert_message_exception,
+                               alaio_assert_message_is(expected_error_msg));
       };
 
       push_action("testapi"_n, "s1g"_n, "testapi"_n, {});        // idx64_general
@@ -2446,12 +2446,12 @@ BOOST_FIXTURE_TEST_CASE(crypto_tests, TESTER)
 static const char memcpy_pass_wast[] = R"======(
 (module
  (import "env" "memcpy" (func $memcpy (param i32 i32 i32) (result i32)))
- (import "env" "eosio_assert" (func $eosio_assert (param i32 i32)))
+ (import "env" "alaio_assert" (func $alaio_assert (param i32 i32)))
  (memory 1)
  (func (export "apply") (param i64 i64 i64)
   (i64.store (i32.const 0) (i64.const 0x8877665544332211))
-  (call $eosio_assert (i32.eq (call $memcpy (i32.const 65535) (i32.const 0) (i32.const 1)) (i32.const 65535)) (i32.const 128))
-  (call $eosio_assert (i64.eq (i64.load (i32.const 65528)) (i64.const 0x1100000000000000)) (i32.const 256))
+  (call $alaio_assert (i32.eq (call $memcpy (i32.const 65535) (i32.const 0) (i32.const 1)) (i32.const 65535)) (i32.const 128))
+  (call $alaio_assert (i64.eq (i64.load (i32.const 65528)) (i64.const 0x1100000000000000)) (i32.const 256))
   (drop (call $memcpy (i32.const 8) (i32.const 7) (i32.const 1)))
   (drop (call $memcpy (i32.const 7) (i32.const 8) (i32.const 1)))
  )
@@ -2483,7 +2483,7 @@ static const char memcpy_past_end_wast[] = R"======(
 static const char memmove_pass_wast[] = R"======(
 (module
  (import "env" "memmove" (func $memmove (param i32 i32 i32) (result i32)))
- (import "env" "eosio_assert" (func $eosio_assert (param i32 i32)))
+ (import "env" "alaio_assert" (func $alaio_assert (param i32 i32)))
  (memory 1)
  (func $fillmem (param i32 i32)
   (loop
@@ -2495,7 +2495,7 @@ static const char memmove_pass_wast[] = R"======(
  )
  (func $checkmem (param i32 i32 i32)
    (loop
-    (call $eosio_assert (i32.eq (i32.load8_u (get_local 0)) (get_local 1)) (get_local 2))
+    (call $alaio_assert (i32.eq (i32.load8_u (get_local 0)) (get_local 1)) (get_local 2))
     (set_local 1 (i32.sub (get_local 1) (i32.const 1)))
     (set_local 0 (i32.add (get_local 0) (i32.const 1)))
     (br_if 0 (get_local 1))
@@ -2503,8 +2503,8 @@ static const char memmove_pass_wast[] = R"======(
  )
  (func (export "apply") (param i64 i64 i64)
   (i64.store (i32.const 0) (i64.const 0x8877665544332211))
-  (call $eosio_assert (i32.eq (call $memmove (i32.const 65535) (i32.const 0) (i32.const 1)) (i32.const 65535)) (i32.const 128))
-  (call $eosio_assert (i64.eq (i64.load (i32.const 65528)) (i64.const 0x1100000000000000)) (i32.const 256))
+  (call $alaio_assert (i32.eq (call $memmove (i32.const 65535) (i32.const 0) (i32.const 1)) (i32.const 65535)) (i32.const 128))
+  (call $alaio_assert (i64.eq (i64.load (i32.const 65528)) (i64.const 0x1100000000000000)) (i32.const 256))
 
   (call $fillmem (i32.const 8) (i32.const 128))
   (drop (call $memmove (i32.const 64) (i32.const 8) (i32.const 128)))
@@ -2529,13 +2529,13 @@ static const char memmove_pass_wast[] = R"======(
 static const char memcmp_pass_wast[] = R"======(
 (module
  (import "env" "memcmp" (func $memcmp (param i32 i32 i32) (result i32)))
- (import "env" "eosio_assert" (func $eosio_assert (param i32 i32)))
+ (import "env" "alaio_assert" (func $alaio_assert (param i32 i32)))
  (memory 1)
  (func (export "apply") (param i64 i64 i64)
-  (call $eosio_assert (i32.eq (call $memcmp (i32.const 65535) (i32.const 65535) (i32.const 1)) (i32.const 0)) (i32.const 128))
-  (call $eosio_assert (i32.eq (call $memcmp (i32.const 0) (i32.const 2) (i32.const 3)) (i32.const 0)) (i32.const 256))
-  (call $eosio_assert (i32.eq (call $memcmp (i32.const 0) (i32.const 2) (i32.const 6)) (i32.const -1)) (i32.const 384))
-  (call $eosio_assert (i32.eq (call $memcmp (i32.const 2) (i32.const 0) (i32.const 6)) (i32.const 1)) (i32.const 512))
+  (call $alaio_assert (i32.eq (call $memcmp (i32.const 65535) (i32.const 65535) (i32.const 1)) (i32.const 0)) (i32.const 128))
+  (call $alaio_assert (i32.eq (call $memcmp (i32.const 0) (i32.const 2) (i32.const 3)) (i32.const 0)) (i32.const 256))
+  (call $alaio_assert (i32.eq (call $memcmp (i32.const 0) (i32.const 2) (i32.const 6)) (i32.const -1)) (i32.const 384))
+  (call $alaio_assert (i32.eq (call $memcmp (i32.const 2) (i32.const 0) (i32.const 6)) (i32.const 1)) (i32.const 512))
  )
  (data (i32.const 0) "abababcdcdcd")
  (data (i32.const 128) "memcmp at end of memory")
@@ -2548,11 +2548,11 @@ static const char memcmp_pass_wast[] = R"======(
 static const char memset_pass_wast[] = R"======(
 (module
  (import "env" "memset" (func $memset (param i32 i32 i32) (result i32)))
- (import "env" "eosio_assert" (func $eosio_assert (param i32 i32)))
+ (import "env" "alaio_assert" (func $alaio_assert (param i32 i32)))
  (memory 1)
  (func (export "apply") (param i64 i64 i64)
-  (call $eosio_assert (i32.eq (call $memset (i32.const 65535) (i32.const 0xCC) (i32.const 1)) (i32.const 65535)) (i32.const 128))
-  (call $eosio_assert (i64.eq (i64.load (i32.const 65528)) (i64.const 0xCC00000000000000)) (i32.const 256))
+  (call $alaio_assert (i32.eq (call $memset (i32.const 65535) (i32.const 0xCC) (i32.const 1)) (i32.const 65535)) (i32.const 128))
+  (call $alaio_assert (i64.eq (i64.load (i32.const 65528)) (i64.const 0xCC00000000000000)) (i32.const 256))
  )
  (data (i32.const 128) "expected memset to return 65535")
  (data (i32.const 256) "expected memset to write one byte")
@@ -2593,10 +2593,10 @@ BOOST_FIXTURE_TEST_CASE(memory_tests, TESTER)
 
 static const char cstr_wast[] = R"======(
 (module
- (import "env" "eosio_assert" (func $eosio_assert (param i32 i32)))
+ (import "env" "alaio_assert" (func $alaio_assert (param i32 i32)))
  (memory 1)
  (func (export "apply") (param i64 i64 i64)
-  (call $eosio_assert (i32.const 1) (i32.const 65534))
+  (call $alaio_assert (i32.const 1) (i32.const 65534))
  )
  (data (i32.const 65535) "x")
 )
@@ -2829,7 +2829,7 @@ BOOST_FIXTURE_TEST_CASE(permission_tests, TESTER)
                              .account = "testapi"_n,
                              .permission = "active"_n,
                              .pubkeys = {
-                                 public_key_type(string("EOS7GfRtyDWWgxV88a5TRaYY59XmHptyfjsFmHHfioGNJtPjpSmGX"))}}));
+                                 public_key_type(string("ALA7GfRtyDWWgxV88a5TRaYY59XmHptyfjsFmHHfioGNJtPjpSmGX"))}}));
       BOOST_CHECK_EQUAL(int64_t(0), get_result_int64());
 
       CALL_TEST_FUNCTION(*this, "test_permission", "check_authorization",
@@ -2838,7 +2838,7 @@ BOOST_FIXTURE_TEST_CASE(permission_tests, TESTER)
                              .permission = "active"_n,
                              .pubkeys = {
                                  get_public_key("testapi"_n, "active"),
-                                 public_key_type(string("EOS7GfRtyDWWgxV88a5TRaYY59XmHptyfjsFmHHfioGNJtPjpSmGX"))}}));
+                                 public_key_type(string("ALA7GfRtyDWWgxV88a5TRaYY59XmHptyfjsFmHHfioGNJtPjpSmGX"))}}));
       BOOST_CHECK_EQUAL(int64_t(0), get_result_int64()); // Failure due to irrelevant signatures
 
       CALL_TEST_FUNCTION(*this, "test_permission", "check_authorization",
@@ -2871,27 +2871,27 @@ static const char resource_limits_wast[] = R"=====(
 (module
  (func $set_resource_limits (import "env" "set_resource_limits") (param i64 i64 i64 i64))
  (func $get_resource_limits (import "env" "get_resource_limits") (param i64 i32 i32 i32))
- (func $eosio_assert (import "env" "eosio_assert") (param i32 i32))
+ (func $alaio_assert (import "env" "alaio_assert") (param i32 i32))
  (memory 1)
  (func (export "apply") (param i64 i64 i64)
   (call $set_resource_limits (get_local 2) (i64.const 2788) (i64.const 11) (i64.const 12))
   (call $get_resource_limits (get_local 2) (i32.const 0x100) (i32.const 0x108) (i32.const 0x110))
-  (call $eosio_assert (i64.eq (i64.const 2788) (i64.load (i32.const 0x100))) (i32.const 8))
-  (call $eosio_assert (i64.eq (i64.const 11) (i64.load (i32.const 0x108))) (i32.const 32))
-  (call $eosio_assert (i64.eq (i64.const 12) (i64.load (i32.const 0x110))) (i32.const 64))
+  (call $alaio_assert (i64.eq (i64.const 2788) (i64.load (i32.const 0x100))) (i32.const 8))
+  (call $alaio_assert (i64.eq (i64.const 11) (i64.load (i32.const 0x108))) (i32.const 32))
+  (call $alaio_assert (i64.eq (i64.const 12) (i64.load (i32.const 0x110))) (i32.const 64))
   ;; Aligned overlap
   (call $get_resource_limits (get_local 2) (i32.const 0x100) (i32.const 0x100) (i32.const 0x110))
-  (call $eosio_assert (i64.eq (i64.const 11) (i64.load (i32.const 0x100))) (i32.const 96))
+  (call $alaio_assert (i64.eq (i64.const 11) (i64.load (i32.const 0x100))) (i32.const 96))
   (call $get_resource_limits (get_local 2) (i32.const 0x100) (i32.const 0x110) (i32.const 0x110))
-  (call $eosio_assert (i64.eq (i64.const 12) (i64.load (i32.const 0x110))) (i32.const 128))
+  (call $alaio_assert (i64.eq (i64.const 12) (i64.load (i32.const 0x110))) (i32.const 128))
   ;; Unaligned beats aligned
   (call $get_resource_limits (get_local 2) (i32.const 0x101) (i32.const 0x108) (i32.const 0x100))
-  (call $eosio_assert (i64.eq (i64.const 2788) (i64.load (i32.const 0x101))) (i32.const 160))
+  (call $alaio_assert (i64.eq (i64.const 2788) (i64.load (i32.const 0x101))) (i32.const 160))
   ;; Unaligned overlap
   (call $get_resource_limits (get_local 2) (i32.const 0x101) (i32.const 0x101) (i32.const 0x110))
-  (call $eosio_assert (i64.eq (i64.const 11) (i64.load (i32.const 0x101))) (i32.const 192))
+  (call $alaio_assert (i64.eq (i64.const 11) (i64.load (i32.const 0x101))) (i32.const 192))
   (call $get_resource_limits (get_local 2) (i32.const 0x100) (i32.const 0x111) (i32.const 0x111))
-  (call $eosio_assert (i64.eq (i64.const 12) (i64.load (i32.const 0x111))) (i32.const 224))
+  (call $alaio_assert (i64.eq (i64.const 12) (i64.load (i32.const 0x111))) (i32.const 224))
  )
  (data (i32.const 8) "expected ram 2788")
  (data (i32.const 32) "expected net 11")
@@ -2938,7 +2938,7 @@ BOOST_FIXTURE_TEST_CASE(resource_limits_tests, TESTER)
 {
    create_accounts({"rlimits"_n, "testacnt"_n});
    set_code("rlimits"_n, resource_limits_wast);
-   push_action("eosio"_n, "setpriv"_n, "eosio"_n, mutable_variant_object()("account", "rlimits"_n)("is_priv", 1));
+   push_action("alaio"_n, "setpriv"_n, "alaio"_n, mutable_variant_object()("account", "rlimits"_n)("is_priv", 1));
    produce_block();
 
    auto pushit = [&]
@@ -3071,13 +3071,13 @@ BOOST_FIXTURE_TEST_CASE(permission_usage_tests, TESTER)
                                            fc::raw::pack(test_permission_last_used_action{
                                                "testapi"_n, config::active_name,
                                                control->head_block_time() + fc::milliseconds(config::block_interval_ms)})),
-                        eosio_assert_message_exception);
+                        alaio_assert_message_exception);
 
       produce_blocks(5);
 
       set_authority("bob"_n, "perm1"_n, authority(get_private_key("bob"_n, "perm1").get_public_key()));
 
-      push_action(config::system_account_name, linkauth::get_name(), "bob"_n, fc::mutable_variant_object()("account", "bob")("code", "eosio")("type", "reqauth")("requirement", "perm1"));
+      push_action(config::system_account_name, linkauth::get_name(), "bob"_n, fc::mutable_variant_object()("account", "bob")("code", "alaio")("type", "reqauth")("requirement", "perm1"));
 
       auto permission_creation_time = control->pending_block_time();
 
@@ -3103,7 +3103,7 @@ BOOST_FIXTURE_TEST_CASE(permission_usage_tests, TESTER)
                                            fc::raw::pack(test_permission_last_used_action{
                                                "bob"_n, "perm1"_n,
                                                permission_creation_time})),
-                        eosio_assert_message_exception);
+                        alaio_assert_message_exception);
 
       CALL_TEST_FUNCTION(*this, "test_permission", "test_permission_last_used",
                          fc::raw::pack(test_permission_last_used_action{
@@ -3187,9 +3187,9 @@ BOOST_FIXTURE_TEST_CASE(extended_symbol_api_tests, TESTER)
 }
 
 /*************************************************************************************
- * eosio_assert_code_tests test cases
+ * alaio_assert_code_tests test cases
  *************************************************************************************/
-BOOST_FIXTURE_TEST_CASE(eosio_assert_code_tests, TESTER)
+BOOST_FIXTURE_TEST_CASE(alaio_assert_code_tests, TESTER)
 {
    try
    {
@@ -3200,7 +3200,7 @@ BOOST_FIXTURE_TEST_CASE(eosio_assert_code_tests, TESTER)
 
       const char *abi_string = R"=====(
 {
-   "version": "eosio::abi/1.0",
+   "version": "alaio::abi/1.0",
    "types": [],
    "structs": [],
    "actions": [],
@@ -3222,7 +3222,7 @@ BOOST_FIXTURE_TEST_CASE(eosio_assert_code_tests, TESTER)
       produce_blocks(10);
 
       BOOST_CHECK_EXCEPTION(CALL_TEST_FUNCTION(*this, "test_action", "test_assert_code", fc::raw::pack((uint64_t)42)),
-                            eosio_assert_code_exception, eosio_assert_code_is(42));
+                            alaio_assert_code_exception, alaio_assert_code_is(42));
 
       auto trace = CALL_TEST_FUNCTION_NO_THROW(*this, "test_action", "test_assert_code", fc::raw::pack((uint64_t)42));
       BOOST_REQUIRE(trace);

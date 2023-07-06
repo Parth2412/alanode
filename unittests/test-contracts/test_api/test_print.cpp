@@ -1,9 +1,9 @@
- #include <eosio/eosio.hpp>
- #include <eosio/print.hpp>
+ #include <alaio/alaio.hpp>
+ #include <alaio/print.hpp>
 
 #include "test_api.hpp"
 
-using namespace eosio::internal_use_do_not_use;
+using namespace alaio::internal_use_do_not_use;
 
 void test_print::test_prints_l() {
   char ab[] = { 'a', 'b' };
@@ -60,25 +60,25 @@ void test_print::test_printui128() {
 }
 
 void test_print::test_printn() {
-   printn(eosio::name{"1"}.value);
-   printn(eosio::name{"5"}.value);
-   printn(eosio::name{"a"}.value);
-   printn(eosio::name{"z"}.value);
+   printn(alaio::name{"1"}.value);
+   printn(alaio::name{"5"}.value);
+   printn(alaio::name{"a"}.value);
+   printn(alaio::name{"z"}.value);
 
-   printn(eosio::name{"abc"}.value);
-   printn(eosio::name{"123"}.value);
+   printn(alaio::name{"abc"}.value);
+   printn(alaio::name{"123"}.value);
 
-   printn(eosio::name{"abc.123"}.value);
-   printn(eosio::name{"123.abc"}.value);
+   printn(alaio::name{"abc.123"}.value);
+   printn(alaio::name{"123.abc"}.value);
 
-   printn(eosio::name{"12345abcdefgj"}.value);
-   printn(eosio::name{"ijklmnopqrstj"}.value);
-   printn(eosio::name{"vwxyz.12345aj"}.value);
+   printn(alaio::name{"12345abcdefgj"}.value);
+   printn(alaio::name{"ijklmnopqrstj"}.value);
+   printn(alaio::name{"vwxyz.12345aj"}.value);
 
-   printn(eosio::name{"111111111111j"}.value);
-   printn(eosio::name{"555555555555j"}.value);
-   printn(eosio::name{"aaaaaaaaaaaaj"}.value);
-   printn(eosio::name{"zzzzzzzzzzzzj"}.value);
+   printn(alaio::name{"111111111111j"}.value);
+   printn(alaio::name{"555555555555j"}.value);
+   printn(alaio::name{"aaaaaaaaaaaaj"}.value);
+   printn(alaio::name{"zzzzzzzzzzzzj"}.value);
 }
 
 
@@ -120,7 +120,7 @@ void test_print::test_printqf() {
 
 void test_print::test_print_simple() {
     const std::string cvalue = "cvalue";
-    eosio::print(cvalue);
+    alaio::print(cvalue);
     std::string value = "value";
-    eosio::print(std::move(value));
+    alaio::print(std::move(value));
 }

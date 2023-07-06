@@ -2,10 +2,10 @@
 
 #include <fc/bitutil.hpp>
 
-#include <eosio/chain/block_log.hpp>
-#include <eosio/chain/block.hpp>
+#include <alaio/chain/block_log.hpp>
+#include <alaio/chain/block.hpp>
 
-using namespace eosio::chain;
+using namespace alaio::chain;
 
 struct block_log_extract_fixture {
    block_log_extract_fixture() {

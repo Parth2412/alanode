@@ -1,7 +1,7 @@
-#include <eosio/chain/generated_transaction_object.hpp>
-#include <eosio/chain/global_property_object.hpp>
-#include <eosio/testing/tester_network.hpp>
-#include <eosio/testing/tester.hpp>
+#include <alaio/chain/generated_transaction_object.hpp>
+#include <alaio/chain/global_property_object.hpp>
+#include <alaio/testing/tester_network.hpp>
+#include <alaio/testing/tester.hpp>
 
 #include <boost/test/unit_test.hpp>
 
@@ -13,9 +13,9 @@
 #define TESTER validating_tester
 #endif
 
-using namespace eosio;
-using namespace eosio::chain;
-using namespace eosio::testing;
+using namespace alaio;
+using namespace alaio::chain;
+using namespace alaio::testing;
 
 
 BOOST_AUTO_TEST_SUITE(delay_tests)
@@ -85,10 +85,10 @@ BOOST_FIXTURE_TEST_CASE( delay_error_create_account, validating_tester) { try {
 
 
 asset get_currency_balance(const TESTER& chain, account_name account) {
-   return chain.get_currency_balance("eosio.token"_n, symbol(SY(4,CUR)), account);
+   return chain.get_currency_balance("alaio.token"_n, symbol(SY(4,CUR)), account);
 }
 
-const std::string eosio_token = name("eosio.token"_n).to_string();
+const std::string alaio_token = name("alaio.token"_n).to_string();
 
 // test link to permission with delay directly on it
 BOOST_AUTO_TEST_CASE( link_delay_direct_test ) { try {
@@ -97,11 +97,11 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_test ) { try {
    const auto& tester_account = "tester"_n;
 
    chain.produce_blocks();
-   chain.create_account("eosio.token"_n);
+   chain.create_account("alaio.token"_n);
    chain.produce_blocks(10);
 
-   chain.set_code("eosio.token"_n, contracts::eosio_token_wasm());
-   chain.set_abi("eosio.token"_n, contracts::eosio_token_abi().data());
+   chain.set_code("alaio.token"_n, contracts::alaio_token_wasm());
+   chain.set_abi("alaio.token"_n, contracts::alaio_token_abi().data());
 
    chain.produce_blocks();
    chain.create_account("tester"_n);
@@ -116,24 +116,24 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_test ) { try {
    );
    chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer")
            ("requirement", "first"));
    chain.produce_blocks();
-   chain.push_action("eosio.token"_n, "create"_n, "eosio.token"_n, mutable_variant_object()
-           ("issuer", eosio_token)
+   chain.push_action("alaio.token"_n, "create"_n, "alaio.token"_n, mutable_variant_object()
+           ("issuer", alaio_token)
            ("maximum_supply", "9000000.0000 CUR")
    );
 
 
-   chain.push_action("eosio.token"_n, name("issue"), "eosio.token"_n, fc::mutable_variant_object()
-           ("to",       eosio_token)
+   chain.push_action("alaio.token"_n, name("issue"), "alaio.token"_n, fc::mutable_variant_object()
+           ("to",       alaio_token)
            ("quantity", "1000000.0000 CUR")
            ("memo", "for stuff")
    );
 
-   auto trace = chain.push_action("eosio.token"_n, name("transfer"), "eosio.token"_n, fc::mutable_variant_object()
-       ("from", eosio_token)
+   auto trace = chain.push_action("alaio.token"_n, name("transfer"), "alaio.token"_n, fc::mutable_variant_object()
+       ("from", alaio_token)
        ("to", "tester")
        ("quantity", "100.0000 CUR")
        ("memo", "hi" )
@@ -144,12 +144,12 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_test ) { try {
 
    chain.produce_blocks();
 
-   auto liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   auto liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
 
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "1.0000 CUR")
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_test ) { try {
 
    chain.produce_blocks();
 
-   liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("99.0000 CUR"), liquid_balance);
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_test ) { try {
 
    chain.produce_blocks();
 
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "3.0000 CUR")
@@ -235,11 +235,11 @@ BOOST_AUTO_TEST_CASE(delete_auth_test) { try {
    const auto& tester_account = "tester"_n;
 
    chain.produce_blocks();
-   chain.create_account("eosio.token"_n);
+   chain.create_account("alaio.token"_n);
    chain.produce_blocks(10);
 
-   chain.set_code("eosio.token"_n, contracts::eosio_token_wasm());
-   chain.set_abi("eosio.token"_n, contracts::eosio_token_abi().data());
+   chain.set_code("alaio.token"_n, contracts::alaio_token_wasm());
+   chain.set_abi("alaio.token"_n, contracts::alaio_token_abi().data());
 
    chain.produce_blocks();
    chain.create_account("tester"_n);
@@ -270,27 +270,27 @@ BOOST_AUTO_TEST_CASE(delete_auth_test) { try {
    // link auth
    chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", "eosio.token")
+           ("code", "alaio.token")
            ("type", "transfer")
            ("requirement", "first"));
 
    // create CUR token
    chain.produce_blocks();
-   chain.push_action("eosio.token"_n, "create"_n, "eosio.token"_n, mutable_variant_object()
-           ("issuer", "eosio.token" )
+   chain.push_action("alaio.token"_n, "create"_n, "alaio.token"_n, mutable_variant_object()
+           ("issuer", "alaio.token" )
            ("maximum_supply", "9000000.0000 CUR" )
    );
 
-   // issue to account "eosio.token"
-   chain.push_action("eosio.token"_n, name("issue"), "eosio.token"_n, fc::mutable_variant_object()
-           ("to",       "eosio.token")
+   // issue to account "alaio.token"
+   chain.push_action("alaio.token"_n, name("issue"), "alaio.token"_n, fc::mutable_variant_object()
+           ("to",       "alaio.token")
            ("quantity", "1000000.0000 CUR")
            ("memo", "for stuff")
    );
 
-   // transfer from eosio.token to tester
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "eosio.token"_n, fc::mutable_variant_object()
-       ("from", "eosio.token")
+   // transfer from alaio.token to tester
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "alaio.token"_n, fc::mutable_variant_object()
+       ("from", "alaio.token")
        ("to", "tester")
        ("quantity", "100.0000 CUR")
        ("memo", "hi" )
@@ -299,12 +299,12 @@ BOOST_AUTO_TEST_CASE(delete_auth_test) { try {
 
    chain.produce_blocks();
 
-   auto liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   auto liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
 
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "1.0000 CUR")
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE(delete_auth_test) { try {
 
    BOOST_REQUIRE_EQUAL(transaction_receipt::executed, trace->receipt->status);
 
-   liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("99.0000 CUR"), liquid_balance);
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE(delete_auth_test) { try {
    // unlink auth
    trace = chain.push_action(config::system_account_name, unlinkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", "eosio.token")
+           ("code", "alaio.token")
            ("type", "transfer"));
    BOOST_REQUIRE_EQUAL(transaction_receipt::executed, trace->receipt->status);
 
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(delete_auth_test) { try {
 
    chain.produce_blocks(1);;
 
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "3.0000 CUR")
@@ -372,11 +372,11 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_parent_permission_test ) { try {
    const auto& tester_account = "tester"_n;
 
    chain.produce_blocks();
-   chain.create_account("eosio.token"_n);
+   chain.create_account("alaio.token"_n);
    chain.produce_blocks(10);
 
-   chain.set_code("eosio.token"_n, contracts::eosio_token_wasm());
-   chain.set_abi("eosio.token"_n, contracts::eosio_token_abi().data());
+   chain.set_code("alaio.token"_n, contracts::alaio_token_wasm());
+   chain.set_abi("alaio.token"_n, contracts::alaio_token_abi().data());
 
    chain.produce_blocks();
    chain.create_account("tester"_n);
@@ -391,24 +391,24 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_parent_permission_test ) { try {
    );
    chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer")
            ("requirement", "first"));
 
    chain.produce_blocks();
-   chain.push_action("eosio.token"_n, "create"_n, "eosio.token"_n, mutable_variant_object()
-           ("issuer", eosio_token)
+   chain.push_action("alaio.token"_n, "create"_n, "alaio.token"_n, mutable_variant_object()
+           ("issuer", alaio_token)
            ("maximum_supply", "9000000.0000 CUR")
    );
 
-   chain.push_action("eosio.token"_n, name("issue"), "eosio.token"_n, fc::mutable_variant_object()
-           ("to",       eosio_token)
+   chain.push_action("alaio.token"_n, name("issue"), "alaio.token"_n, fc::mutable_variant_object()
+           ("to",       alaio_token)
            ("quantity", "1000000.0000 CUR")
            ("memo", "for stuff")
    );
 
-   auto trace = chain.push_action("eosio.token"_n, name("transfer"), "eosio.token"_n, fc::mutable_variant_object()
-       ("from", eosio_token)
+   auto trace = chain.push_action("alaio.token"_n, name("transfer"), "alaio.token"_n, fc::mutable_variant_object()
+       ("from", alaio_token)
        ("to", "tester")
        ("quantity", "100.0000 CUR")
        ("memo", "hi" )
@@ -419,12 +419,12 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_parent_permission_test ) { try {
 
    chain.produce_blocks();
 
-   auto liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   auto liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
 
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "1.0000 CUR")
@@ -437,7 +437,7 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_parent_permission_test ) { try {
 
    chain.produce_blocks();
 
-   liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("99.0000 CUR"), liquid_balance);
@@ -456,7 +456,7 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_parent_permission_test ) { try {
 
    chain.produce_blocks();
 
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "3.0000 CUR")
@@ -510,11 +510,11 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_walk_parent_permissions_test ) { try {
    const auto& tester_account = "tester"_n;
 
    chain.produce_blocks();
-   chain.create_account("eosio.token"_n);
+   chain.create_account("alaio.token"_n);
    chain.produce_blocks(10);
 
-   chain.set_code("eosio.token"_n, contracts::eosio_token_wasm());
-   chain.set_abi("eosio.token"_n, contracts::eosio_token_abi().data());
+   chain.set_code("alaio.token"_n, contracts::alaio_token_wasm());
+   chain.set_abi("alaio.token"_n, contracts::alaio_token_abi().data());
 
    chain.produce_blocks();
    chain.create_account("tester"_n);
@@ -535,24 +535,24 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_walk_parent_permissions_test ) { try {
    );
    chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer")
            ("requirement", "second"));
 
    chain.produce_blocks();
-   chain.push_action("eosio.token"_n, "create"_n, "eosio.token"_n, mutable_variant_object()
-           ("issuer", eosio_token)
+   chain.push_action("alaio.token"_n, "create"_n, "alaio.token"_n, mutable_variant_object()
+           ("issuer", alaio_token)
            ("maximum_supply", "9000000.0000 CUR")
    );
 
-   chain.push_action("eosio.token"_n, name("issue"), "eosio.token"_n, fc::mutable_variant_object()
-           ("to",       eosio_token)
+   chain.push_action("alaio.token"_n, name("issue"), "alaio.token"_n, fc::mutable_variant_object()
+           ("to",       alaio_token)
            ("quantity", "1000000.0000 CUR")
            ("memo", "for stuff")
    );
 
-   auto trace = chain.push_action("eosio.token"_n, name("transfer"), "eosio.token"_n, fc::mutable_variant_object()
-       ("from", eosio_token)
+   auto trace = chain.push_action("alaio.token"_n, name("transfer"), "alaio.token"_n, fc::mutable_variant_object()
+       ("from", alaio_token)
        ("to", "tester")
        ("quantity", "100.0000 CUR")
        ("memo", "hi" )
@@ -563,12 +563,12 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_walk_parent_permissions_test ) { try {
 
    chain.produce_blocks();
 
-   auto liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   auto liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
 
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "1.0000 CUR")
@@ -581,7 +581,7 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_walk_parent_permissions_test ) { try {
 
    chain.produce_blocks();
 
-   liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("99.0000 CUR"), liquid_balance);
@@ -600,7 +600,7 @@ BOOST_AUTO_TEST_CASE( link_delay_direct_walk_parent_permissions_test ) { try {
 
    chain.produce_blocks();
 
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "3.0000 CUR")
@@ -654,11 +654,11 @@ BOOST_AUTO_TEST_CASE( link_delay_permission_change_test ) { try {
    const auto& tester_account = "tester"_n;
 
    chain.produce_blocks();
-   chain.create_account("eosio.token"_n);
+   chain.create_account("alaio.token"_n);
    chain.produce_blocks(10);
 
-   chain.set_code("eosio.token"_n, contracts::eosio_token_wasm());
-   chain.set_abi("eosio.token"_n, contracts::eosio_token_abi().data());
+   chain.set_code("alaio.token"_n, contracts::alaio_token_wasm());
+   chain.set_abi("alaio.token"_n, contracts::alaio_token_abi().data());
 
    chain.produce_blocks();
    chain.create_account("tester"_n);
@@ -673,24 +673,24 @@ BOOST_AUTO_TEST_CASE( link_delay_permission_change_test ) { try {
    );
    chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer")
            ("requirement", "first"));
 
    chain.produce_blocks();
-   chain.push_action("eosio.token"_n, "create"_n, "eosio.token"_n, mutable_variant_object()
-           ("issuer", eosio_token )
+   chain.push_action("alaio.token"_n, "create"_n, "alaio.token"_n, mutable_variant_object()
+           ("issuer", alaio_token )
            ("maximum_supply", "9000000.0000 CUR" )
    );
 
-   chain.push_action("eosio.token"_n, name("issue"), "eosio.token"_n, fc::mutable_variant_object()
-           ("to",       eosio_token)
+   chain.push_action("alaio.token"_n, name("issue"), "alaio.token"_n, fc::mutable_variant_object()
+           ("to",       alaio_token)
            ("quantity", "1000000.0000 CUR")
            ("memo", "for stuff")
    );
 
-   auto trace = chain.push_action("eosio.token"_n, name("transfer"), "eosio.token"_n, fc::mutable_variant_object()
-       ("from", eosio_token)
+   auto trace = chain.push_action("alaio.token"_n, name("transfer"), "alaio.token"_n, fc::mutable_variant_object()
+       ("from", alaio_token)
        ("to", "tester")
        ("quantity", "100.0000 CUR")
        ("memo", "hi" )
@@ -701,13 +701,13 @@ BOOST_AUTO_TEST_CASE( link_delay_permission_change_test ) { try {
 
    chain.produce_blocks();
 
-   auto liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   auto liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
 
    // this transaction will be delayed 20 blocks
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "1.0000 CUR")
@@ -722,7 +722,7 @@ BOOST_AUTO_TEST_CASE( link_delay_permission_change_test ) { try {
 
    chain.produce_blocks();
 
-   liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
@@ -756,7 +756,7 @@ BOOST_AUTO_TEST_CASE( link_delay_permission_change_test ) { try {
    BOOST_REQUIRE_EQUAL(asset::from_string("0.0000 CUR"), liquid_balance);
 
    // this transaction will be delayed 20 blocks
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "5.0000 CUR")
@@ -800,7 +800,7 @@ BOOST_AUTO_TEST_CASE( link_delay_permission_change_test ) { try {
    BOOST_CHECK_EQUAL(1, gen_size);
 
    // this transfer is performed right away since delay is removed
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "10.0000 CUR")
@@ -845,11 +845,11 @@ BOOST_AUTO_TEST_CASE( link_delay_permission_change_with_delay_heirarchy_test ) {
    const auto& tester_account = "tester"_n;
 
    chain.produce_blocks();
-   chain.create_account("eosio.token"_n);
+   chain.create_account("alaio.token"_n);
    chain.produce_blocks(10);
 
-   chain.set_code("eosio.token"_n, contracts::eosio_token_wasm());
-   chain.set_abi("eosio.token"_n, contracts::eosio_token_abi().data());
+   chain.set_code("alaio.token"_n, contracts::alaio_token_wasm());
+   chain.set_abi("alaio.token"_n, contracts::alaio_token_abi().data());
 
    chain.produce_blocks();
    chain.create_account("tester"_n);
@@ -870,24 +870,24 @@ BOOST_AUTO_TEST_CASE( link_delay_permission_change_with_delay_heirarchy_test ) {
    );
    chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer")
            ("requirement", "second"));
 
    chain.produce_blocks();
-   chain.push_action("eosio.token"_n, "create"_n, "eosio.token"_n, mutable_variant_object()
-           ("issuer", eosio_token)
+   chain.push_action("alaio.token"_n, "create"_n, "alaio.token"_n, mutable_variant_object()
+           ("issuer", alaio_token)
            ("maximum_supply", "9000000.0000 CUR" )
    );
 
-   chain.push_action("eosio.token"_n, name("issue"), "eosio.token"_n, fc::mutable_variant_object()
-           ("to",       eosio_token)
+   chain.push_action("alaio.token"_n, name("issue"), "alaio.token"_n, fc::mutable_variant_object()
+           ("to",       alaio_token)
            ("quantity", "1000000.0000 CUR")
            ("memo", "for stuff")
    );
 
-   auto trace = chain.push_action("eosio.token"_n, name("transfer"), "eosio.token"_n, fc::mutable_variant_object()
-       ("from", eosio_token)
+   auto trace = chain.push_action("alaio.token"_n, name("transfer"), "alaio.token"_n, fc::mutable_variant_object()
+       ("from", alaio_token)
        ("to", "tester")
        ("quantity", "100.0000 CUR")
        ("memo", "hi" )
@@ -898,13 +898,13 @@ BOOST_AUTO_TEST_CASE( link_delay_permission_change_with_delay_heirarchy_test ) {
 
    chain.produce_blocks();
 
-   auto liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   auto liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
 
    // this transaction will be delayed 20 blocks
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "1.0000 CUR")
@@ -919,7 +919,7 @@ BOOST_AUTO_TEST_CASE( link_delay_permission_change_with_delay_heirarchy_test ) {
 
    chain.produce_blocks();
 
-   liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
@@ -955,7 +955,7 @@ BOOST_AUTO_TEST_CASE( link_delay_permission_change_with_delay_heirarchy_test ) {
    BOOST_REQUIRE_EQUAL(asset::from_string("0.0000 CUR"), liquid_balance);
 
    // this transaction will be delayed 20 blocks
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "5.0000 CUR")
@@ -993,7 +993,7 @@ BOOST_AUTO_TEST_CASE( link_delay_permission_change_with_delay_heirarchy_test ) {
    chain.produce_blocks();
 
    // this transfer is performed right away since delay is removed
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "10.0000 CUR")
@@ -1042,11 +1042,11 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_test ) { try {
    const auto& tester_account = "tester"_n;
 
    chain.produce_blocks();
-   chain.create_account("eosio.token"_n);
+   chain.create_account("alaio.token"_n);
    chain.produce_blocks(10);
 
-   chain.set_code("eosio.token"_n, contracts::eosio_token_wasm());
-   chain.set_abi("eosio.token"_n, contracts::eosio_token_abi().data());
+   chain.set_code("alaio.token"_n, contracts::alaio_token_wasm());
+   chain.set_abi("alaio.token"_n, contracts::alaio_token_abi().data());
 
    chain.produce_blocks();
    chain.create_account("tester"_n);
@@ -1061,7 +1061,7 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_test ) { try {
    );
    chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer")
            ("requirement", "first"));
    chain.push_action(config::system_account_name, updateauth::get_name(), tester_account, fc::mutable_variant_object()
@@ -1072,19 +1072,19 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_test ) { try {
    );
 
    chain.produce_blocks();
-   chain.push_action("eosio.token"_n, "create"_n, "eosio.token"_n, mutable_variant_object()
-           ("issuer", eosio_token)
+   chain.push_action("alaio.token"_n, "create"_n, "alaio.token"_n, mutable_variant_object()
+           ("issuer", alaio_token)
            ("maximum_supply", "9000000.0000 CUR" )
    );
 
-   chain.push_action("eosio.token"_n, name("issue"), "eosio.token"_n, fc::mutable_variant_object()
-           ("to",       eosio_token)
+   chain.push_action("alaio.token"_n, name("issue"), "alaio.token"_n, fc::mutable_variant_object()
+           ("to",       alaio_token)
            ("quantity", "1000000.0000 CUR")
            ("memo", "for stuff")
    );
 
-   auto trace = chain.push_action("eosio.token"_n, name("transfer"), "eosio.token"_n, fc::mutable_variant_object()
-       ("from", eosio_token)
+   auto trace = chain.push_action("alaio.token"_n, name("transfer"), "alaio.token"_n, fc::mutable_variant_object()
+       ("from", alaio_token)
        ("to", "tester")
        ("quantity", "100.0000 CUR")
        ("memo", "hi" )
@@ -1095,13 +1095,13 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_test ) { try {
 
    chain.produce_blocks();
 
-   auto liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   auto liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
 
    // this transaction will be delayed 20 blocks
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "1.0000 CUR")
@@ -1115,7 +1115,7 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_test ) { try {
 
    chain.produce_blocks();
 
-   liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
@@ -1127,7 +1127,7 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_test ) { try {
                          vector<permission_level>{permission_level{tester_account, "first"_n}},
                          fc::mutable_variant_object()
       ("account", "tester")
-      ("code", eosio_token)
+      ("code", alaio_token)
       ("type", "transfer")
       ("requirement", "second"),
       30, 3),
@@ -1140,7 +1140,7 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_test ) { try {
                       vector<permission_level>{{tester_account, "first"_n}},
                       fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer")
            ("requirement", "second"),
            30, 10
@@ -1165,7 +1165,7 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_test ) { try {
    BOOST_REQUIRE_EQUAL(asset::from_string("0.0000 CUR"), liquid_balance);
 
    // this transaction will be delayed 20 blocks
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "5.0000 CUR")
@@ -1203,7 +1203,7 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_test ) { try {
    chain.produce_blocks();
 
    // this transfer is performed right away since delay is removed
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "10.0000 CUR")
@@ -1244,11 +1244,11 @@ BOOST_AUTO_TEST_CASE( link_delay_unlink_test ) { try {
    const auto& tester_account = "tester"_n;
 
    chain.produce_blocks();
-   chain.create_account("eosio.token"_n);
+   chain.create_account("alaio.token"_n);
    chain.produce_blocks(10);
 
-   chain.set_code("eosio.token"_n, contracts::eosio_token_wasm());
-   chain.set_abi("eosio.token"_n, contracts::eosio_token_abi().data());
+   chain.set_code("alaio.token"_n, contracts::alaio_token_wasm());
+   chain.set_abi("alaio.token"_n, contracts::alaio_token_abi().data());
 
    chain.produce_blocks();
    chain.create_account("tester"_n);
@@ -1263,24 +1263,24 @@ BOOST_AUTO_TEST_CASE( link_delay_unlink_test ) { try {
    );
    chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer")
            ("requirement", "first"));
 
    chain.produce_blocks();
-   chain.push_action("eosio.token"_n, "create"_n, "eosio.token"_n, mutable_variant_object()
-           ("issuer", eosio_token )
+   chain.push_action("alaio.token"_n, "create"_n, "alaio.token"_n, mutable_variant_object()
+           ("issuer", alaio_token )
            ("maximum_supply", "9000000.0000 CUR" )
    );
 
-   chain.push_action("eosio.token"_n, name("issue"), "eosio.token"_n, fc::mutable_variant_object()
-           ("to",       eosio_token)
+   chain.push_action("alaio.token"_n, name("issue"), "alaio.token"_n, fc::mutable_variant_object()
+           ("to",       alaio_token)
            ("quantity", "1000000.0000 CUR")
            ("memo", "for stuff")
    );
 
-   auto trace = chain.push_action("eosio.token"_n, name("transfer"), "eosio.token"_n, fc::mutable_variant_object()
-       ("from", eosio_token)
+   auto trace = chain.push_action("alaio.token"_n, name("transfer"), "alaio.token"_n, fc::mutable_variant_object()
+       ("from", alaio_token)
        ("to", "tester")
        ("quantity", "100.0000 CUR")
        ("memo", "hi" )
@@ -1289,13 +1289,13 @@ BOOST_AUTO_TEST_CASE( link_delay_unlink_test ) { try {
 
    chain.produce_blocks();
 
-   auto liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   auto liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
 
    // this transaction will be delayed 20 blocks
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "1.0000 CUR")
@@ -1309,7 +1309,7 @@ BOOST_AUTO_TEST_CASE( link_delay_unlink_test ) { try {
 
    chain.produce_blocks();
 
-   liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
@@ -1321,7 +1321,7 @@ BOOST_AUTO_TEST_CASE( link_delay_unlink_test ) { try {
                          vector<permission_level>{{tester_account, "first"_n}},
                          fc::mutable_variant_object()
          ("account", "tester")
-         ("code", eosio_token)
+         ("code", alaio_token)
          ("type", "transfer"),
          30, 7
       ),
@@ -1332,7 +1332,7 @@ BOOST_AUTO_TEST_CASE( link_delay_unlink_test ) { try {
    // this transaction will be delayed 20 blocks
    chain.push_action(config::system_account_name, unlinkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer"),
            30, 10
    );
@@ -1356,7 +1356,7 @@ BOOST_AUTO_TEST_CASE( link_delay_unlink_test ) { try {
    BOOST_REQUIRE_EQUAL(asset::from_string("0.0000 CUR"), liquid_balance);
 
    // this transaction will be delayed 20 blocks
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "5.0000 CUR")
@@ -1394,7 +1394,7 @@ BOOST_AUTO_TEST_CASE( link_delay_unlink_test ) { try {
    chain.produce_blocks();
 
    // this transfer is performed right away since delay is removed
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "10.0000 CUR")
@@ -1433,11 +1433,11 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_heirarchy_test ) { try {
    const auto& tester_account = "tester"_n;
 
    chain.produce_blocks();
-   chain.create_account("eosio.token"_n);
+   chain.create_account("alaio.token"_n);
    chain.produce_blocks(10);
 
-   chain.set_code("eosio.token"_n, contracts::eosio_token_wasm());
-   chain.set_abi("eosio.token"_n, contracts::eosio_token_abi().data());
+   chain.set_code("alaio.token"_n, contracts::alaio_token_wasm());
+   chain.set_abi("alaio.token"_n, contracts::alaio_token_abi().data());
 
    chain.produce_blocks();
    chain.create_account("tester"_n);
@@ -1458,7 +1458,7 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_heirarchy_test ) { try {
    );
    chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer")
            ("requirement", "second"));
    chain.push_action(config::system_account_name, updateauth::get_name(), tester_account, fc::mutable_variant_object()
@@ -1469,19 +1469,19 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_heirarchy_test ) { try {
    );
 
    chain.produce_blocks();
-   chain.push_action("eosio.token"_n, "create"_n, "eosio.token"_n, mutable_variant_object()
-           ("issuer", eosio_token)
+   chain.push_action("alaio.token"_n, "create"_n, "alaio.token"_n, mutable_variant_object()
+           ("issuer", alaio_token)
            ("maximum_supply", "9000000.0000 CUR" )
    );
 
-   chain.push_action("eosio.token"_n, name("issue"), "eosio.token"_n, fc::mutable_variant_object()
-           ("to",       eosio_token)
+   chain.push_action("alaio.token"_n, name("issue"), "alaio.token"_n, fc::mutable_variant_object()
+           ("to",       alaio_token)
            ("quantity", "1000000.0000 CUR")
            ("memo", "for stuff")
    );
 
-   auto trace = chain.push_action("eosio.token"_n, name("transfer"), "eosio.token"_n, fc::mutable_variant_object()
-       ("from", eosio_token)
+   auto trace = chain.push_action("alaio.token"_n, name("transfer"), "alaio.token"_n, fc::mutable_variant_object()
+       ("from", alaio_token)
        ("to", "tester")
        ("quantity", "100.0000 CUR")
        ("memo", "hi" )
@@ -1492,13 +1492,13 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_heirarchy_test ) { try {
 
    chain.produce_blocks();
 
-   auto liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   auto liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
 
    // this transaction will be delayed 20 blocks
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "1.0000 CUR")
@@ -1512,7 +1512,7 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_heirarchy_test ) { try {
 
    chain.produce_blocks();
 
-   liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
@@ -1522,7 +1522,7 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_heirarchy_test ) { try {
    // this transaction will be delayed 20 blocks
    chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer")
            ("requirement", "third"),
            30, 10
@@ -1547,7 +1547,7 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_heirarchy_test ) { try {
    BOOST_REQUIRE_EQUAL(asset::from_string("0.0000 CUR"), liquid_balance);
 
    // this transaction will be delayed 20 blocks
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "5.0000 CUR")
@@ -1585,7 +1585,7 @@ BOOST_AUTO_TEST_CASE( link_delay_link_change_heirarchy_test ) { try {
    chain.produce_blocks();
 
    // this transfer is performed right away since delay is removed
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "10.0000 CUR")
@@ -1622,30 +1622,30 @@ BOOST_AUTO_TEST_CASE( mindelay_test ) { try {
    TESTER chain;
 
    chain.produce_blocks();
-   chain.create_account("eosio.token"_n);
+   chain.create_account("alaio.token"_n);
    chain.produce_blocks(10);
 
-   chain.set_code("eosio.token"_n, contracts::eosio_token_wasm());
-   chain.set_abi("eosio.token"_n, contracts::eosio_token_abi().data());
+   chain.set_code("alaio.token"_n, contracts::alaio_token_wasm());
+   chain.set_abi("alaio.token"_n, contracts::alaio_token_abi().data());
 
    chain.produce_blocks();
    chain.create_account("tester"_n);
    chain.create_account("tester2"_n);
    chain.produce_blocks(10);
 
-   chain.push_action("eosio.token"_n, "create"_n, "eosio.token"_n, mutable_variant_object()
-           ("issuer", eosio_token)
+   chain.push_action("alaio.token"_n, "create"_n, "alaio.token"_n, mutable_variant_object()
+           ("issuer", alaio_token)
            ("maximum_supply", "9000000.0000 CUR")
    );
 
-   chain.push_action("eosio.token"_n, name("issue"), "eosio.token"_n, fc::mutable_variant_object()
-           ("to",       eosio_token)
+   chain.push_action("alaio.token"_n, name("issue"), "alaio.token"_n, fc::mutable_variant_object()
+           ("to",       alaio_token)
            ("quantity", "1000000.0000 CUR")
            ("memo", "for stuff")
    );
 
-   auto trace = chain.push_action("eosio.token"_n, name("transfer"), "eosio.token"_n, fc::mutable_variant_object()
-       ("from", eosio_token)
+   auto trace = chain.push_action("alaio.token"_n, name("transfer"), "alaio.token"_n, fc::mutable_variant_object()
+       ("from", alaio_token)
        ("to", "tester")
        ("quantity", "100.0000 CUR")
        ("memo", "hi" )
@@ -1656,12 +1656,12 @@ BOOST_AUTO_TEST_CASE( mindelay_test ) { try {
 
    chain.produce_blocks();
 
-   auto liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   auto liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
 
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "1.0000 CUR")
@@ -1674,7 +1674,7 @@ BOOST_AUTO_TEST_CASE( mindelay_test ) { try {
 
    chain.produce_blocks();
 
-   liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("99.0000 CUR"), liquid_balance);
@@ -1682,15 +1682,15 @@ BOOST_AUTO_TEST_CASE( mindelay_test ) { try {
    BOOST_REQUIRE_EQUAL(asset::from_string("1.0000 CUR"), liquid_balance);
 
    // send transfer with delay_sec set to 10
-   const auto& acnt = chain.control->db().get<account_object,by_name>("eosio.token"_n);
+   const auto& acnt = chain.control->db().get<account_object,by_name>("alaio.token"_n);
    const auto abi = acnt.get_abi();
    chain::abi_serializer abis(abi, abi_serializer::create_yield_function( chain.abi_serializer_max_time ));
-   const auto a = chain.control->db().get<account_object,by_name>("eosio.token"_n).get_abi();
+   const auto a = chain.control->db().get<account_object,by_name>("alaio.token"_n).get_abi();
 
    string action_type_name = abis.get_action_type(name("transfer"));
 
    action act;
-   act.account = "eosio.token"_n;
+   act.account = "alaio.token"_n;
    act.name = name("transfer");
    act.authorization.push_back(permission_level{"tester"_n, config::active_name});
    act.data = abis.variant_to_binary(action_type_name, fc::mutable_variant_object()
@@ -1754,11 +1754,11 @@ BOOST_AUTO_TEST_CASE( canceldelay_test ) { try {
    std::vector<transaction_id_type> ids;
 
    chain.produce_blocks();
-   chain.create_account("eosio.token"_n);
+   chain.create_account("alaio.token"_n);
    chain.produce_blocks(10);
 
-   chain.set_code("eosio.token"_n, contracts::eosio_token_wasm());
-   chain.set_abi("eosio.token"_n, contracts::eosio_token_abi().data());
+   chain.set_code("alaio.token"_n, contracts::alaio_token_wasm());
+   chain.set_abi("alaio.token"_n, contracts::alaio_token_abi().data());
 
    chain.produce_blocks();
    chain.create_account("tester"_n);
@@ -1773,24 +1773,24 @@ BOOST_AUTO_TEST_CASE( canceldelay_test ) { try {
    );
    chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer")
            ("requirement", "first"));
 
    chain.produce_blocks();
-   chain.push_action("eosio.token"_n, "create"_n, "eosio.token"_n, mutable_variant_object()
-           ("issuer", eosio_token)
+   chain.push_action("alaio.token"_n, "create"_n, "alaio.token"_n, mutable_variant_object()
+           ("issuer", alaio_token)
            ("maximum_supply", "9000000.0000 CUR")
    );
 
-   chain.push_action("eosio.token"_n, name("issue"), "eosio.token"_n, fc::mutable_variant_object()
-           ("to",       eosio_token)
+   chain.push_action("alaio.token"_n, name("issue"), "alaio.token"_n, fc::mutable_variant_object()
+           ("to",       alaio_token)
            ("quantity", "1000000.0000 CUR")
            ("memo", "for stuff")
    );
 
-   auto trace = chain.push_action("eosio.token"_n, name("transfer"), "eosio.token"_n, fc::mutable_variant_object()
-       ("from", eosio_token)
+   auto trace = chain.push_action("alaio.token"_n, name("transfer"), "alaio.token"_n, fc::mutable_variant_object()
+       ("from", alaio_token)
        ("to", "tester")
        ("quantity", "100.0000 CUR")
        ("memo", "hi" )
@@ -1800,13 +1800,13 @@ BOOST_AUTO_TEST_CASE( canceldelay_test ) { try {
    BOOST_REQUIRE_EQUAL(0, gen_size);
 
    chain.produce_blocks();
-   auto liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   auto liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
 
    // this transaction will be delayed 20 blocks
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "1.0000 CUR")
@@ -1826,7 +1826,7 @@ BOOST_AUTO_TEST_CASE( canceldelay_test ) { try {
 
    chain.produce_blocks();
 
-   liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
@@ -1878,7 +1878,7 @@ BOOST_AUTO_TEST_CASE( canceldelay_test ) { try {
    BOOST_REQUIRE_EQUAL(asset::from_string("0.0000 CUR"), liquid_balance);
 
    // this transaction will be delayed 20 blocks
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "5.0000 CUR")
@@ -1943,7 +1943,7 @@ BOOST_AUTO_TEST_CASE( canceldelay_test ) { try {
    BOOST_REQUIRE_EQUAL(asset::from_string("0.0000 CUR"), liquid_balance);
 
    // this transfer is performed right away since delay is removed
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
        ("from", "tester")
        ("to", "tester2")
        ("quantity", "10.0000 CUR")
@@ -1991,11 +1991,11 @@ BOOST_AUTO_TEST_CASE( canceldelay_test2 ) { try {
    const auto& tester_account = "tester"_n;
 
    chain.produce_blocks();
-   chain.create_account("eosio.token"_n);
+   chain.create_account("alaio.token"_n);
    chain.produce_blocks();
 
-   chain.set_code("eosio.token"_n, contracts::eosio_token_wasm());
-   chain.set_abi("eosio.token"_n, contracts::eosio_token_abi().data());
+   chain.set_code("alaio.token"_n, contracts::alaio_token_wasm());
+   chain.set_abi("alaio.token"_n, contracts::alaio_token_abi().data());
 
    chain.produce_blocks();
    chain.create_account("tester"_n);
@@ -2016,24 +2016,24 @@ BOOST_AUTO_TEST_CASE( canceldelay_test2 ) { try {
    );
    chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer")
            ("requirement", "first"));
 
    chain.produce_blocks();
-   chain.push_action("eosio.token"_n, "create"_n, "eosio.token"_n, mutable_variant_object()
-           ("issuer", eosio_token)
+   chain.push_action("alaio.token"_n, "create"_n, "alaio.token"_n, mutable_variant_object()
+           ("issuer", alaio_token)
            ("maximum_supply", "9000000.0000 CUR")
    );
 
-   chain.push_action("eosio.token"_n, name("issue"), "eosio.token"_n, fc::mutable_variant_object()
-           ("to",       eosio_token)
+   chain.push_action("alaio.token"_n, name("issue"), "alaio.token"_n, fc::mutable_variant_object()
+           ("to",       alaio_token)
            ("quantity", "1000000.0000 CUR")
            ("memo", "for stuff")
    );
 
-   auto trace = chain.push_action("eosio.token"_n, name("transfer"), "eosio.token"_n, fc::mutable_variant_object()
-       ("from", eosio_token)
+   auto trace = chain.push_action("alaio.token"_n, name("transfer"), "alaio.token"_n, fc::mutable_variant_object()
+       ("from", alaio_token)
        ("to", "tester")
        ("quantity", "100.0000 CUR")
        ("memo", "hi" )
@@ -2043,7 +2043,7 @@ BOOST_AUTO_TEST_CASE( canceldelay_test2 ) { try {
    BOOST_REQUIRE_EQUAL(0, gen_size);
 
    chain.produce_blocks();
-   auto liquid_balance = get_currency_balance(chain, "eosio.token"_n);
+   auto liquid_balance = get_currency_balance(chain, "alaio.token"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("999900.0000 CUR"), liquid_balance);
    liquid_balance = get_currency_balance(chain, "tester"_n);
    BOOST_REQUIRE_EQUAL(asset::from_string("100.0000 CUR"), liquid_balance);
@@ -2052,7 +2052,7 @@ BOOST_AUTO_TEST_CASE( canceldelay_test2 ) { try {
 
    {
       // this transaction will be delayed 10 blocks
-      trace = chain.push_action("eosio.token"_n, name("transfer"), vector<permission_level>{{"tester"_n, "first"_n}}, fc::mutable_variant_object()
+      trace = chain.push_action("alaio.token"_n, name("transfer"), vector<permission_level>{{"tester"_n, "first"_n}}, fc::mutable_variant_object()
           ("from", "tester")
           ("to", "tester2")
           ("quantity", "1.0000 CUR")
@@ -2127,7 +2127,7 @@ BOOST_AUTO_TEST_CASE( canceldelay_test2 ) { try {
 
    chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
            ("account", "tester")
-           ("code", eosio_token)
+           ("code", alaio_token)
            ("type", "transfer")
            ("requirement", "second"),
            30, 5
@@ -2139,7 +2139,7 @@ BOOST_AUTO_TEST_CASE( canceldelay_test2 ) { try {
    ilog("attempting second delayed transfer");
    {
       // this transaction will be delayed 10 blocks
-      trace = chain.push_action("eosio.token"_n, name("transfer"), vector<permission_level>{{"tester"_n, "second"_n}}, fc::mutable_variant_object()
+      trace = chain.push_action("alaio.token"_n, name("transfer"), vector<permission_level>{{"tester"_n, "second"_n}}, fc::mutable_variant_object()
           ("from", "tester")
           ("to", "tester2")
           ("quantity", "5.0000 CUR")
@@ -2191,7 +2191,7 @@ BOOST_AUTO_TEST_CASE( canceldelay_test2 ) { try {
 
    {
       // this transaction will be delayed 10 blocks
-      trace = chain.push_action("eosio.token"_n, name("transfer"), vector<permission_level>{{"tester"_n, config::owner_name}}, fc::mutable_variant_object()
+      trace = chain.push_action("alaio.token"_n, name("transfer"), vector<permission_level>{{"tester"_n, config::owner_name}}, fc::mutable_variant_object()
           ("from", "tester")
           ("to", "tester2")
           ("quantity", "10.0000 CUR")
@@ -2279,19 +2279,19 @@ BOOST_AUTO_TEST_CASE( max_transaction_delay_execute ) { try {
 
    const auto& tester_account = "tester"_n;
 
-   chain.create_account("eosio.token"_n);
-   chain.set_code("eosio.token"_n, contracts::eosio_token_wasm());
-   chain.set_abi("eosio.token"_n, contracts::eosio_token_abi().data());
+   chain.create_account("alaio.token"_n);
+   chain.set_code("alaio.token"_n, contracts::alaio_token_wasm());
+   chain.set_abi("alaio.token"_n, contracts::alaio_token_abi().data());
 
    chain.produce_blocks();
    chain.create_account("tester"_n);
 
    chain.produce_blocks();
-   chain.push_action("eosio.token"_n, "create"_n, "eosio.token"_n, mutable_variant_object()
-           ("issuer", "eosio.token" )
+   chain.push_action("alaio.token"_n, "create"_n, "alaio.token"_n, mutable_variant_object()
+           ("issuer", "alaio.token" )
            ("maximum_supply", "9000000.0000 CUR" )
    );
-   chain.push_action("eosio.token"_n, name("issue"), "eosio.token"_n, fc::mutable_variant_object()
+   chain.push_action("alaio.token"_n, name("issue"), "alaio.token"_n, fc::mutable_variant_object()
            ("to",       "tester")
            ("quantity", "100.0000 CUR")
            ("memo", "for stuff")
@@ -2308,7 +2308,7 @@ BOOST_AUTO_TEST_CASE( max_transaction_delay_execute ) { try {
 
    trace = chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
                      ("account", "tester")
-                     ("code", "eosio.token")
+                     ("code", "alaio.token")
                      ("type", "transfer")
                      ("requirement", "first"));
    BOOST_REQUIRE_EQUAL(transaction_receipt::executed, trace->receipt->status);
@@ -2323,9 +2323,9 @@ BOOST_AUTO_TEST_CASE( max_transaction_delay_execute ) { try {
 
    chain.produce_blocks();
    //should be able to create transaction with delay 60 sec, despite permission delay being 30 days, because max_transaction_delay is 60 sec
-   trace = chain.push_action("eosio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
+   trace = chain.push_action("alaio.token"_n, name("transfer"), "tester"_n, fc::mutable_variant_object()
                            ("from", "tester")
-                           ("to", "eosio.token")
+                           ("to", "alaio.token")
                            ("quantity", "9.0000 CUR")
                            ("memo", "" ), 120, 60);
    BOOST_REQUIRE_EQUAL(transaction_receipt::delayed, trace->receipt->status);

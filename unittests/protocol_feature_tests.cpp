@@ -1,7 +1,7 @@
-#include <eosio/chain/abi_serializer.hpp>
-#include <eosio/chain/resource_limits.hpp>
-#include <eosio/chain/generated_transaction_object.hpp>
-#include <eosio/testing/tester.hpp>
+#include <alaio/chain/abi_serializer.hpp>
+#include <alaio/chain/resource_limits.hpp>
+#include <alaio/chain/generated_transaction_object.hpp>
+#include <alaio/testing/tester.hpp>
 
 #include <Runtime/Runtime.h>
 
@@ -13,8 +13,8 @@
 
 #include "fork_test_utilities.hpp"
 
-using namespace eosio::chain;
-using namespace eosio::testing;
+using namespace alaio::chain;
+using namespace alaio::testing;
 using namespace std::literals;
 
 BOOST_AUTO_TEST_SUITE(protocol_feature_tests)
@@ -26,13 +26,13 @@ BOOST_AUTO_TEST_CASE( activate_preactivate_feature ) try {
    c.produce_block();
 
    // Cannot set latest bios contract since it requires intrinsics that have not yet been whitelisted.
-   BOOST_CHECK_EXCEPTION( c.set_code( config::system_account_name, contracts::eosio_bios_wasm() ),
+   BOOST_CHECK_EXCEPTION( c.set_code( config::system_account_name, contracts::alaio_bios_wasm() ),
                           wasm_exception, fc_exception_message_is("env.is_feature_activated unresolveable")
    );
 
    // But the old bios contract can still be set.
-   c.set_code( config::system_account_name, contracts::before_preactivate_eosio_bios_wasm() );
-   c.set_abi( config::system_account_name, contracts::before_preactivate_eosio_bios_abi().data() );
+   c.set_code( config::system_account_name, contracts::before_preactivate_alaio_bios_wasm() );
+   c.set_abi( config::system_account_name, contracts::before_preactivate_alaio_bios_abi().data() );
 
    auto t = c.control->pending_block_time();
    c.control->abort_block();
@@ -55,8 +55,8 @@ BOOST_AUTO_TEST_CASE( activate_preactivate_feature ) try {
 
    BOOST_CHECK_EXCEPTION( c.push_action( config::system_account_name, "reqactivated"_n, config::system_account_name,
                                           mutable_variant_object()("feature_digest",  digest_type()) ),
-                           eosio_assert_message_exception,
-                           eosio_assert_message_is( "protocol feature is not activated" )
+                           alaio_assert_message_exception,
+                           alaio_assert_message_is( "protocol feature is not activated" )
    );
 
    c.push_action( config::system_account_name, "reqactivated"_n, config::system_account_name, mutable_variant_object()
@@ -602,7 +602,7 @@ BOOST_AUTO_TEST_CASE( no_duplicate_deferred_id_test ) try {
 
    trace1 = nullptr;
 
-   // Retire the delayed eosio::reqauth transaction.
+   // Retire the delayed alaio::reqauth transaction.
    c.produce_blocks(5);
    BOOST_REQUIRE( trace1 );
    BOOST_REQUIRE_EQUAL(0, index.size());
@@ -710,15 +710,15 @@ BOOST_AUTO_TEST_CASE( fix_linkauth_restriction ) { try {
                ("type", type)
                ("requirement", "first")),
          action_validate_exception,
-         fc_exception_message_is(std::string("Cannot link eosio::") + std::string(type) + std::string(" to a minimum permission"))
+         fc_exception_message_is(std::string("Cannot link alaio::") + std::string(type) + std::string(" to a minimum permission"))
       );
    };
 
-   validate_disallow("eosio", "linkauth");
-   validate_disallow("eosio", "unlinkauth");
-   validate_disallow("eosio", "deleteauth");
-   validate_disallow("eosio", "updateauth");
-   validate_disallow("eosio", "canceldelay");
+   validate_disallow("alaio", "linkauth");
+   validate_disallow("alaio", "unlinkauth");
+   validate_disallow("alaio", "deleteauth");
+   validate_disallow("alaio", "updateauth");
+   validate_disallow("alaio", "canceldelay");
 
    validate_disallow("currency", "linkauth");
    validate_disallow("currency", "unlinkauth");
@@ -741,11 +741,11 @@ BOOST_AUTO_TEST_CASE( fix_linkauth_restriction ) { try {
             ("requirement", "first"));
    };
 
-   validate_disallow("eosio", "linkauth");
-   validate_disallow("eosio", "unlinkauth");
-   validate_disallow("eosio", "deleteauth");
-   validate_disallow("eosio", "updateauth");
-   validate_disallow("eosio", "canceldelay");
+   validate_disallow("alaio", "linkauth");
+   validate_disallow("alaio", "unlinkauth");
+   validate_disallow("alaio", "deleteauth");
+   validate_disallow("alaio", "updateauth");
+   validate_disallow("alaio", "canceldelay");
 
    validate_allowed("currency", "linkauth");
    validate_allowed("currency", "unlinkauth");
@@ -957,15 +957,15 @@ BOOST_AUTO_TEST_CASE( forward_setcode_test ) { try {
    c.create_accounts( {tester1_account, tester2_account} );
 
    // Deploy contract that rejects all actions dispatched to it with the following exceptions:
-   //   * eosio::setcode to set code on the eosio is allowed (unless the rejectall account exists)
-   //   * eosio::newaccount is allowed only if it creates the rejectall account.
+   //   * alaio::setcode to set code on the alaio is allowed (unless the rejectall account exists)
+   //   * alaio::newaccount is allowed only if it creates the rejectall account.
    c.set_code( config::system_account_name, contracts::reject_all_wasm() );
    c.produce_block();
 
-   // Before activation, deploying a contract should work since setcode won't be forwarded to the WASM on eosio.
+   // Before activation, deploying a contract should work since setcode won't be forwarded to the WASM on alaio.
    c.set_code( tester1_account, contracts::noop_wasm() );
 
-   // Activate FORWARD_SETCODE protocol feature and then return contract on eosio back to what it was.
+   // Activate FORWARD_SETCODE protocol feature and then return contract on alaio back to what it was.
    const auto& pfm = c.control->get_protocol_feature_manager();
    const auto& d = pfm.get_builtin_digest( builtin_protocol_feature_t::forward_setcode );
    BOOST_REQUIRE( d );
@@ -975,11 +975,11 @@ BOOST_AUTO_TEST_CASE( forward_setcode_test ) { try {
    c.set_code( config::system_account_name, contracts::reject_all_wasm() );
    c.produce_block();
 
-   // After activation, deploying a contract causes setcode to be dispatched to the WASM on eosio,
+   // After activation, deploying a contract causes setcode to be dispatched to the WASM on alaio,
    // and in this case the contract is configured to reject the setcode action.
    BOOST_REQUIRE_EXCEPTION( c.set_code( tester2_account, contracts::noop_wasm() ),
-                            eosio_assert_message_exception,
-                            eosio_assert_message_is( "rejecting all actions" ) );
+                            alaio_assert_message_exception,
+                            alaio_assert_message_is( "rejecting all actions" ) );
 
 
    tester c2(setup_policy::none);
@@ -990,20 +990,20 @@ BOOST_AUTO_TEST_CASE( forward_setcode_test ) { try {
    c.produce_block();
    // The existence of the rejectall account will make the reject_all contract reject all actions with no exception.
 
-   // It will now not be possible to deploy the reject_all contract to the eosio account,
+   // It will now not be possible to deploy the reject_all contract to the alaio account,
    // because after it is set by the native function, it is called immediately after which will reject the transaction.
    BOOST_REQUIRE_EXCEPTION( c.set_code( config::system_account_name, contracts::reject_all_wasm() ),
-                            eosio_assert_message_exception,
-                            eosio_assert_message_is( "rejecting all actions" ) );
+                            alaio_assert_message_exception,
+                            alaio_assert_message_is( "rejecting all actions" ) );
 
 
    // Going back to the backup chain, we can create the rejectall account while the reject_all contract is
-   // already deployed on eosio.
+   // already deployed on alaio.
    c2.create_account( "rejectall"_n );
    c2.produce_block();
-   // Now all actions dispatched to the eosio account should be rejected.
+   // Now all actions dispatched to the alaio account should be rejected.
 
-   // However, it should still be possible to set the bios contract because the WASM on eosio is called after the
+   // However, it should still be possible to set the bios contract because the WASM on alaio is called after the
    // native setcode function completes.
    c2.set_before_producer_authority_bios_contract();
    c2.produce_block();
@@ -1037,8 +1037,8 @@ BOOST_AUTO_TEST_CASE( get_sender_test ) { try {
    BOOST_CHECK_EXCEPTION(  c.push_action( tester1_account, "sendinline"_n, tester1_account, mutable_variant_object()
                                              ("to", tester2_account.to_string())
                                              ("expected_sender", account_name{}) ),
-                           eosio_assert_message_exception,
-                           eosio_assert_message_is( "sender did not match" ) );
+                           alaio_assert_message_exception,
+                           alaio_assert_message_is( "sender did not match" ) );
 
    c.push_action( tester1_account, "sendinline"_n, tester1_account, mutable_variant_object()
       ("to", tester2_account.to_string())
@@ -1342,7 +1342,7 @@ BOOST_AUTO_TEST_CASE( webauthn_producer ) { try {
 
    BOOST_CHECK_THROW(
       c.push_action(config::system_account_name, "setprods"_n, config::system_account_name, fc::mutable_variant_object()("schedule", waprodsched)),
-      eosio::chain::unactivated_key_type
+      alaio::chain::unactivated_key_type
    );
 
    c.preactivate_protocol_features( {*d} );
@@ -1372,7 +1372,7 @@ BOOST_AUTO_TEST_CASE( webauthn_create_account ) { try {
 
    c.set_transaction_headers(trx);
    trx.sign(get_private_key(config::system_account_name, "active"), c.control->get_chain_id());
-   BOOST_CHECK_THROW(c.push_transaction(trx), eosio::chain::unactivated_key_type);
+   BOOST_CHECK_THROW(c.push_transaction(trx), alaio::chain::unactivated_key_type);
 
    c.preactivate_protocol_features( {*d} );
    c.produce_block();
@@ -1391,7 +1391,7 @@ BOOST_AUTO_TEST_CASE( webauthn_update_account_auth ) { try {
 
    BOOST_CHECK_THROW(c.set_authority("billy"_n, config::active_name,
                         authority(public_key_type("PUB_WA_WdCPfafVNxVMiW5ybdNs83oWjenQXvSt1F49fg9mv7qrCiRwHj5b38U3ponCFWxQTkDsMC"s))),
-                     eosio::chain::unactivated_key_type);
+                     alaio::chain::unactivated_key_type);
 
    c.preactivate_protocol_features( {*d} );
    c.produce_block();
@@ -1450,7 +1450,7 @@ BOOST_AUTO_TEST_CASE( webauthn_recover_key ) { try {
 
    c.set_transaction_headers(trx);
    trx.sign(c.get_private_key( "bob"_n, "active" ), c.control->get_chain_id());
-   BOOST_CHECK_THROW(c.push_transaction(trx), eosio::chain::unactivated_signature_type);
+   BOOST_CHECK_THROW(c.push_transaction(trx), alaio::chain::unactivated_signature_type);
 
    c.preactivate_protocol_features( {*d} );
    c.produce_block();
@@ -1498,7 +1498,7 @@ BOOST_AUTO_TEST_CASE( webauthn_assert_recover_key ) { try {
 
    c.set_transaction_headers(trx);
    trx.sign(c.get_private_key( "bob"_n, "active" ), c.control->get_chain_id());
-   BOOST_CHECK_THROW(c.push_transaction(trx), eosio::chain::unactivated_signature_type);
+   BOOST_CHECK_THROW(c.push_transaction(trx), alaio::chain::unactivated_signature_type);
 
    c.preactivate_protocol_features( {*d} );
    c.produce_block();
@@ -1597,7 +1597,7 @@ BOOST_AUTO_TEST_CASE( producer_schedule_change_extension_test ) { try {
       // re-sign the bad block
       auto header_bmroot = digest_type::hash( std::make_pair( bad_block->digest(), remote.control->head_block_state()->blockroot_merkle ) );
       auto sig_digest = digest_type::hash( std::make_pair(header_bmroot, remote.control->head_block_state()->pending_schedule.schedule_hash) );
-      bad_block->producer_signature = remote.get_private_key("eosio"_n, "active").sign(sig_digest);
+      bad_block->producer_signature = remote.get_private_key("alaio"_n, "active").sign(sig_digest);
 
       // ensure it is rejected as an unknown extension
       BOOST_REQUIRE_EXCEPTION(
@@ -1616,7 +1616,7 @@ BOOST_AUTO_TEST_CASE( producer_schedule_change_extension_test ) { try {
       // re-sign the bad block
       auto header_bmroot = digest_type::hash( std::make_pair( bad_block->digest(), remote.control->head_block_state()->blockroot_merkle ) );
       auto sig_digest = digest_type::hash( std::make_pair(header_bmroot, remote.control->head_block_state()->pending_schedule.schedule_hash) );
-      bad_block->producer_signature = remote.get_private_key("eosio"_n, "active").sign(sig_digest);
+      bad_block->producer_signature = remote.get_private_key("alaio"_n, "active").sign(sig_digest);
 
       // ensure it is accepted (but rejected because it doesn't match expected state)
       BOOST_REQUIRE_EXCEPTION(
@@ -1644,7 +1644,7 @@ BOOST_AUTO_TEST_CASE( producer_schedule_change_extension_test ) { try {
       // re-sign the bad block
       auto header_bmroot = digest_type::hash( std::make_pair( bad_block->digest(), remote.control->head_block_state()->blockroot_merkle ) );
       auto sig_digest = digest_type::hash( std::make_pair(header_bmroot, remote.control->head_block_state()->pending_schedule.schedule_hash) );
-      bad_block->producer_signature = remote.get_private_key("eosio"_n, "active").sign(sig_digest);
+      bad_block->producer_signature = remote.get_private_key("alaio"_n, "active").sign(sig_digest);
 
       // ensure it is rejected because it doesn't match expected state (but the extention was accepted)
       BOOST_REQUIRE_EXCEPTION(
@@ -1663,7 +1663,7 @@ BOOST_AUTO_TEST_CASE( producer_schedule_change_extension_test ) { try {
       // re-sign the bad block
       auto header_bmroot = digest_type::hash( std::make_pair( bad_block->digest(), remote.control->head_block_state()->blockroot_merkle ) );
       auto sig_digest = digest_type::hash( std::make_pair(header_bmroot, remote.control->head_block_state()->pending_schedule.schedule_hash) );
-      bad_block->producer_signature = remote.get_private_key("eosio"_n, "active").sign(sig_digest);
+      bad_block->producer_signature = remote.get_private_key("alaio"_n, "active").sign(sig_digest);
 
       // ensure it is rejected because the new_producers field is not null
       BOOST_REQUIRE_EXCEPTION(
@@ -1687,7 +1687,7 @@ BOOST_AUTO_TEST_CASE( wtmsig_block_signing_inflight_legacy_test ) { try {
 
    // activate the feature, and start an in-flight producer schedule change with the legacy format
    c.preactivate_protocol_features( {*d} );
-   vector<legacy::producer_key> sched = {{"eosio"_n, c.get_public_key("eosio"_n, "bsk")}};
+   vector<legacy::producer_key> sched = {{"alaio"_n, c.get_public_key("alaio"_n, "bsk")}};
    c.push_action(config::system_account_name, "setprods"_n, config::system_account_name, fc::mutable_variant_object()("schedule", sched));
    c.produce_block();
 
@@ -1702,7 +1702,7 @@ BOOST_AUTO_TEST_CASE( wtmsig_block_signing_inflight_legacy_test ) { try {
    BOOST_REQUIRE_EXCEPTION( c.produce_block(), no_block_signatures, fc_exception_message_is( "Signer returned no signatures" ));
    c.control->abort_block();
 
-   c.block_signing_private_keys.emplace(get_public_key("eosio"_n, "bsk"), get_private_key("eosio"_n, "bsk"));
+   c.block_signing_private_keys.emplace(get_public_key("alaio"_n, "bsk"), get_private_key("alaio"_n, "bsk"));
    c.produce_block();
 
 } FC_LOG_AND_RETHROW() }
@@ -1721,7 +1721,7 @@ BOOST_AUTO_TEST_CASE( wtmsig_block_signing_inflight_extension_test ) { try {
    c.produce_block();
 
    // start an in-flight producer schedule change before the activation is availble to header only validators
-   vector<legacy::producer_key> sched = {{"eosio"_n, c.get_public_key("eosio"_n, "bsk")}};
+   vector<legacy::producer_key> sched = {{"alaio"_n, c.get_public_key("alaio"_n, "bsk")}};
    c.push_action(config::system_account_name, "setprods"_n, config::system_account_name, fc::mutable_variant_object()("schedule", sched));
    c.produce_block();
 
@@ -1738,7 +1738,7 @@ BOOST_AUTO_TEST_CASE( wtmsig_block_signing_inflight_extension_test ) { try {
    BOOST_REQUIRE_EXCEPTION( c.produce_block(), no_block_signatures, fc_exception_message_is( "Signer returned no signatures" ));
    c.control->abort_block();
 
-   c.block_signing_private_keys.emplace(get_public_key("eosio"_n, "bsk"), get_private_key("eosio"_n, "bsk"));
+   c.block_signing_private_keys.emplace(get_public_key("alaio"_n, "bsk"), get_private_key("alaio"_n, "bsk"));
    c.produce_block();
 
 } FC_LOG_AND_RETHROW() }
