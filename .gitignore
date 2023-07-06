@@ -49,17 +49,17 @@ libraries/wasm-jit/Source/Programs/Disassemble
 libraries/wasm-jit/Source/Programs/Test
 libraries/wasm-jit/Source/Programs/wavm
 
-programs/cleos/cleos
+programs/alacli/alacli
 programs/js_operation_serializer/js_operation_serializer
 programs/data-dir
 programs/alaio-abigen/alaio-abigen
-programs/cleos/config.hpp
+programs/alacli/config.hpp
 programs/alaio-applesedemo/alaio-applesedemo
 programs/alaio-launcher/config.hpp
 programs/alaio-launcher/alaio-launcher
-programs/keosd/keosd
-programs/nodeos/config.hpp
-programs/nodeos/nodeos
+programs/kalad/kalad
+programs/alanode/config.hpp
+programs/alanode/alanode
 
 scripts/tn_init.sh
 
